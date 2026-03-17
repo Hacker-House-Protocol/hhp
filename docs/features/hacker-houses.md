@@ -8,7 +8,7 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 
 - Builder individual
 - Hack Space — via shortcut cuando el equipo está completo
-- Organización verificada — financia y gestiona con sus propias reglas
+- Organización verificada — financia y gestiona con sus propias reglas (Fase 2)
 
 ---
 
@@ -20,7 +20,7 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 - Zona / Barrio aproximado (no dirección exacta — privacidad)
 - Fechas (inicio y fin)
 - Capacidad máxima de personas
-- Costo por persona (o si es patrocinada)
+- Costo por persona (solo si es de pago — Fase 2)
 - Qué incluye: cuarto privado/compartido · comidas · internet · workspace
 
 ### Sobre la Comunidad
@@ -38,49 +38,41 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 ### Filtros de Acceso
 - Aplicación: `abierta / por invitación / curada`
 - Deadline para aplicar
-- Filtros on-chain: POAPs específicos · NFTs · Talent Protocol score mínimo
-- Staking requerido (opcional, definido por el creador)
+- ~~Filtros on-chain: POAPs, NFTs, Talent Protocol score~~ → **Pospuesto a Fase 2**
+- ~~Staking requerido~~ → **Pospuesto a Fase 2**
 
 ---
 
 ## Modalidades
 
-| Modalidad | Descripción |
-|---|---|
-| **Gratuita** | Sin pago ni staking. Filtros opcionales. Disponible desde Fase 1. |
-| **De pago** | Monto total + límite de personas. Cada builder paga su parte via smart contract. El creador claimea fondos solo cuando se alcanza el 100%. Si no se llena 7 días antes, **el smart contract ejecuta reembolso automático**. |
-| **Con staking** | Misma lógica que de pago, pero el stake puede perderse si el builder no asiste. El creador gestiona desde su dashboard de asistencia. |
+| Modalidad | Fase | Descripción |
+|---|---|---|
+| **Gratuita** | Fase 1 ✅ | Sin pago ni staking. Filtros opcionales de acceso. |
+| **De pago** | Fase 2 🔒 | Pago grupal via smart contract auditado. Split automático. Reembolso si no se llena en 7 días. |
+| **Con staking** | Fase 2 🔒 | Stake perdible si el builder no asiste. Gestionado por el creador via dashboard. |
 
-> La plataforma no custodia fondos. Todo opera via smart contract. 100% de responsabilidad recae en los builders.
-
----
-
-## Hacker Houses de Organizaciones
-
-- Las organizaciones cubren todos los costos.
-- Prefiltro automático: si el builder no cumple los requisitos, no ve el botón de aplicar.
-- La organización define el monto mínimo de staking y gestiona el dashboard de asistencia.
+> La plataforma no custodia fondos. Todo opera via smart contract (Fase 2).
 
 ---
 
-## Dashboard de Asistencia (`/dashboard`)
+## Hacker Houses de Organizaciones (Fase 2)
 
-El creador marca cada builder como: `asistió / no asistió`. El smart contract procesa automáticamente la liberación o pérdida del stake. Solo el creador puede editar el dashboard.
-
----
-
-## Key NFT — Acceso Transferible *(Fase 2)*
-
-Cada Hacker House de pago genera N keys (una por cupo). Cada key es un NFT con metadata: evento, fechas, número de cupo.
-
-- **Ticket de acceso**: el smart contract valida quién posee la key en el check-in.
-- **Proof of attendance**: la key queda en la wallet como registro verificable.
-- **Transferible**: si un builder no puede asistir, puede transferir su key sin intervención del creador.
+Fuera del alcance de Fase 1. Las organizaciones cubren todos los costos y definen sus propias reglas de acceso y staking.
 
 ---
 
-## HHP POAPs — Proof of Presence *(Fase 2)*
+## Dashboard de Asistencia (`/dashboard`) — Fase 2
+
+El creador marca cada builder como `asistió / no asistió`. El smart contract procesa automáticamente la liberación o pérdida del stake.
+
+---
+
+## Key NFT — Acceso Transferible (Fase 2)
+
+Cada Hacker House de pago genera N keys (una por cupo). NFT con metadata: evento, fechas, número de cupo. Transferible entre builders sin intervención del creador.
+
+---
+
+## HHP POAPs — Proof of Presence (Fase 2)
 
 Cada Hacker House genera su propio POAP para los asistentes confirmados. Queda en el Achievement Gallery del builder como badge on-chain.
-
-Ejemplos: `'Hacker House Buenos Aires — ETH Global 2025'`, `'HHP Cannes 2026'`

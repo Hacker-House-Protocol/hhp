@@ -10,9 +10,9 @@
 
 Plataforma que conecta builders del ecosistema crypto/Web3 en dos dimensiones complementarias:
 
-**🏠 Hacker Houses** — Web3 Airbnb para builders. Co-living físico en eventos y ciudades clave. Pagos en crypto via smart contract. Modalidades: Gratuita / De pago / Con staking. Pueden ser patrocinadas por organizaciones verificadas.
+**🔗 Hack Spaces + Builder Matching** — LinkedIn + Tinder para builders. Proyectos virtuales con convocatoria de roles específicos. Matching algorítmico por arquetipos, skills, región e idioma. **Es el gancho principal de la plataforma** — genera uso recurrente y lleva naturalmente a la creación de Hacker Houses.
 
-**🔗 Hack Spaces + Builder Matching** — LinkedIn + Tinder para builders. Proyectos virtuales con convocatoria de roles específicos. Matching algorítmico por arquetipos, skills, región e idioma.
+**🏠 Hacker Houses** — Web3 Airbnb para builders. Co-living físico en eventos y ciudades clave. Pagos en crypto via smart contract (Fase 2). Pueden ser patrocinadas por organizaciones verificadas.
 
 Ambas features comparten una sola capa de identidad on-chain, el mismo algoritmo de matching y una sola marca.
 
@@ -37,13 +37,41 @@ Los colores de arquetipo se usan en bordes de avatares, badges de perfil, highli
 ## Tipos de Usuario
 
 ### Builder / Hacker
-Usuario principal. Puede crear perfil, conectar wallet, importar credenciales Web3, crear y participar en Hack Spaces y Hacker Houses. El onboarding es accesible tanto para crypto-nativos como para quienes aún no tienen wallet.
+Usuario principal. Puede crear perfil, conectar wallet, importar credenciales Web3, crear y participar en Hack Spaces y Hacker Houses. El onboarding es accesible tanto para crypto-nativos como para quienes aún no tienen wallet (Privy genera una embedded wallet automáticamente).
+
+Builders sin wallet pueden usar la plataforma pero no pueden participar en Hacker Houses de pago o con staking.
 
 ### Organización
-Entidad verificada manualmente por el equipo HHP. Puede financiar Hacker Houses patrocinadas, definir filtros de entrada y requisitos de staking. Onboarding manual en MVP — requiere solicitud con documentación.
+Entidad verificada manualmente por el equipo HHP. Puede financiar Hacker Houses patrocinadas con sus propias reglas. Onboarding manual en MVP — requiere solicitud con documentación. Feature de Fase 2.
 
-### Comunidad (Post-MVP / V2)
-Grupos de builders que forman organizaciones propias dentro de la plataforma. Fuera del alcance del MVP.
+### Comunidad (V2)
+Grupos de builders que forman organizaciones propias. Fuera del alcance del MVP.
+
+---
+
+## Decisiones de Producto Confirmadas
+
+| Decisión | Resolución |
+|---|---|
+| Modelo de negocio MVP | **100% free** — sin fees ni planes de pago en el MVP |
+| Mercado objetivo | **Global** — ecosistema crypto/Web3, sin foco geográfico específico |
+| Feature principal | **Hack Spaces** — es el gancho de uso recurrente. Hacker Houses son el paso siguiente natural |
+| Filtros on-chain (POAPs, NFTs, Talent Protocol score) | **Pospuestos a Fase 2** — los campos existen en el formulario pero no se validan en MVP |
+| Modalidades de pago en Hacker Houses | **Solo gratuitas en Fase 1** — de pago y staking son Fase 2 (requieren smart contract auditado) |
+| Landing page | **Waitlist** — captura emails, CTA "Join the Waitlist", en inglés |
+| Routing | `/` es la landing, `/home` es la app post-login |
+| Sin competidores directos conocidos en el mercado | Propuesta única — no anclar vs. otro producto |
+
+---
+
+## Assets Disponibles
+
+| Asset | Ruta |
+|---|---|
+| Logo mark (ícono) | `/public/assets/hacker-house-protocol-logo.svg` |
+| Logo texto | `/public/assets/hacker-house-protocol-text.svg` |
+| Cypher Kittens GIFs | Existen, pendientes de subir al repo |
+| Screenshots del prototipo | Existen, pendientes de subir al repo |
 
 ---
 
@@ -51,13 +79,13 @@ Grupos de builders que forman organizaciones propias dentro de la plataforma. Fu
 
 | Capa | Tecnología |
 |---|---|
-| Auth | Privy — login social + wallets + embedded wallet automática |
+| Auth | Privy — login social + wallets + embedded wallet (API keys pendientes) |
 | Backend / DB | Supabase — Postgres + RLS + Edge Functions + Realtime |
 | Frontend | Next.js + TypeScript (App Router) — deploy en Vercel |
-| Blockchain | Ethereum Mainnet via Alchemy RPC. Smart contract propio en Solidity (Hardhat). |
-| Mapa | Leaflet + OpenStreetMap — open source, dark mode |
+| Blockchain | Ethereum Mainnet via Alchemy RPC. Smart contract Solidity/Hardhat (Fase 2) |
+| Mapa | Leaflet + OpenStreetMap |
 | ORM / Validación | Prisma + Zod |
-| Integraciones | Talent Protocol · POAP · Luma (link externo) |
+| Integraciones | Talent Protocol · POAP · Luma |
 
 ---
 
@@ -65,8 +93,21 @@ Grupos de builders que forman organizaciones propias dentro de la plataforma. Fu
 
 | Fase | Foco |
 |---|---|
-| **Fase 0** | Repo, sistema de diseño en Figma, dominio y handles |
+| **Fase 0** | Repo, design system, dominio y handles |
 | **Fase 1 — MVP Core** | Auth + Cypher Identity + Hack Spaces + Hacker Houses gratuitas + Mapa + Matching + Notificaciones |
-| **Fase 2 — Pagos On-chain** | Smart contract auditado + Hacker Houses de pago + Key NFT + POAPs propios + Staking + Organizaciones |
+| **Fase 2 — Pagos On-chain** | Smart contract auditado + Hacker Houses de pago + Key NFT + POAPs propios + Staking + Organizaciones + Filtros on-chain |
 | **V2** | Chat interno + Comunidades + Cypher Kittens NFT + Analytics + EVVM Name Service |
 | **V3** | ZK Matching privado + ZK Identity |
+
+---
+
+## Pendientes Operativos
+
+| Ítem | Estado |
+|---|---|
+| Privy API keys | Pendiente |
+| Email del proyecto | Pendiente |
+| Handles Twitter/X, GitHub org | Pendiente |
+| Cypher Kittens GIFs subidos al repo | Pendiente |
+| Screenshots prototipo subidos | Pendiente |
+| Auditoría smart contract | A definir (Fase 2) |

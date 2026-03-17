@@ -1,5 +1,7 @@
 # Feature: Hack Spaces — Hacker House Protocol
 
+> **Feature principal de la plataforma.** Es el gancho de uso recurrente — los builders usan Hack Spaces de forma continua y cuando su equipo está completo, el flujo los lleva naturalmente a crear una Hacker House.
+
 Un Hack Space es un proyecto online donde un builder convoca a otros con habilidades específicas para construir algo juntos. No es un job board — es una convocatoria activa donde el creador tiene skin in the game.
 
 ---
@@ -32,7 +34,7 @@ Un Hack Space es un proyecto online donde un builder convoca a otros con habilid
 ### Filtros de Acceso
 - Aplicación: `abierta / por invitación / curada`
 - Deadline para aplicar (opcional)
-- Filtros on-chain: POAPs específicos · NFTs específicos · Talent Protocol score mínimo
+- ~~Filtros on-chain: POAPs, NFTs, Talent Protocol score~~ → **Pospuesto a Fase 2**
 
 ---
 
@@ -51,7 +53,7 @@ Un Hack Space es un proyecto online donde un builder convoca a otros con habilid
 
 - Los builders aplican con su perfil.
 - El creador recibe notificación y puede aceptar o rechazar.
-- Si el builder no cumple los filtros on-chain, **no ve el botón de aplicar**.
+- En Fase 1: cualquier builder puede ver el botón de aplicar (sin validación on-chain).
 
 ---
 

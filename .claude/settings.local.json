@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(git push:*)"
+    ]
+  }
+}
