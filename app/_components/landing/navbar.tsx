@@ -1,12 +1,16 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { AuthButton } from "@/components/auth/auth-button"
+import { useAuth } from "@/hooks/use-auth"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -14,9 +18,11 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const scrollToWaitlist = () => {
-    document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth" })
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/dashboard")
+    }
+  }, [isAuthenticated, router])
 
   return (
     <header
@@ -41,13 +47,7 @@ export function Navbar() {
           </span>
         </div>
 
-        <Button
-          size="sm"
-          onClick={scrollToWaitlist}
-          className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5"
-        >
-          Join the Waitlist
-        </Button>
+        <AuthButton />
       </nav>
     </header>
   )

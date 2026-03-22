@@ -4,7 +4,22 @@
       "Bash(git remote:*)",
       "Bash(git fetch:*)",
       "Bash(echo \"Exit code: $?\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(pnpm add:*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"D:/dev/hack-house-protocol\" && pnpm build 2>&1 | tail -5",
+            "timeout": 120,
+            "statusMessage": "Validating build..."
+          }
+        ]
+      }
     ]
   }
 }
