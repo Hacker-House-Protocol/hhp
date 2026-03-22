@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,12 @@ interface AuthButtonProps {
 
 export function AuthButton({ className }: AuthButtonProps) {
   const { isAuthenticated, isLoading, user, login, logout } = useAuth();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await logout();
+    router.replace("/");
+  }
 
   if (isLoading) {
     return <Button size="sm" disabled className={className}>Loading...</Button>;
@@ -49,7 +56,7 @@ export function AuthButton({ className }: AuthButtonProps) {
         <Button size="sm" variant="outline" className={className}>{label}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={logout}>Disconnect</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>Disconnect</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

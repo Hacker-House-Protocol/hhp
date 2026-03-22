@@ -1,7 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { identitySchema, type IdentityInput } from "@/lib/schemas/onboarding"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+} from "@/components/ui/field"
+
+type FormValues = IdentityInput
 
 interface StepIdentityProps {
   onNext: (handle: string, bio: string) => void
@@ -10,19 +22,20 @@ interface StepIdentityProps {
   error: string | null
 }
 
-export function StepIdentity({ onNext, onBack, loading, error }: StepIdentityProps) {
-  const [handle, setHandle] = useState("")
-  const [bio, setBio] = useState("")
+export function StepIdentity({
+  onNext,
+  onBack,
+  loading,
+  error,
+}: StepIdentityProps) {
+  const { control, handleSubmit } = useForm<IdentityInput>({
+    resolver: zodResolver(identitySchema),
+    defaultValues: { handle: "", bio: "" },
+  })
 
-  const handleError = (() => {
-    if (!handle) return null
-    if (!/^[a-z0-9_]{3,20}$/.test(handle)) {
-      return "3–20 chars. Lowercase letters, numbers, and underscores only."
-    }
-    return null
-  })()
-
-  const canSubmit = handle.length >= 3 && !handleError && !loading
+  function onSubmit(values: FormValues) {
+    onNext(values.handle, values.bio ?? "")
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -35,60 +48,90 @@ export function StepIdentity({ onNext, onBack, loading, error }: StepIdentityPro
         </p>
       </div>
 
-      <div className="flex flex-col gap-6 max-w-md">
-        {/* Handle */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-            Handle *
-          </label>
-          <div className="flex items-center border border-border rounded-md bg-card focus-within:border-primary transition-colors">
-            <span className="pl-4 text-muted-foreground font-mono text-sm select-none">@</span>
-            <input
-              type="text"
-              value={handle}
-              onChange={(e) => setHandle(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
-              placeholder="your_handle"
-              maxLength={20}
-              className="flex-1 bg-transparent px-2 py-3 text-foreground font-mono text-sm placeholder:text-muted-foreground/50 focus:outline-none"
-            />
-          </div>
-          {handleError && (
-            <p className="text-xs text-destructive">{handleError}</p>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-6 max-w-md"
+      >
+        <Controller
+          name="handle"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Handle *</FieldLabel>
+              <div className="flex items-center border border-input rounded-md bg-transparent focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 transition-[color,box-shadow]">
+                <span className="pl-3 text-muted-foreground font-mono text-sm select-none">
+                  @
+                </span>
+                <Input
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  placeholder="your_handle"
+                  maxLength={20}
+                  onChange={(e) =>
+                    field.onChange(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                    )
+                  }
+                  className="border-0 shadow-none focus-visible:ring-0 focus-visible:border-0 font-mono"
+                />
+              </div>
+              <FieldDescription>
+                3–20 chars. Lowercase letters, numbers, and underscores only.
+              </FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
-          {error && (
-            <p className="text-xs text-destructive">{error}</p>
+        />
+
+        <Controller
+          name="bio"
+          control={control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>
+                Bio{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </FieldLabel>
+              <Textarea
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                placeholder="What are you building?"
+                maxLength={160}
+                rows={3}
+                className="resize-none"
+              />
+              <FieldDescription>
+                {(field.value ?? "").length}/160
+              </FieldDescription>
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
-        </div>
+        />
 
-        {/* Bio */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-            Bio <span className="normal-case">(optional)</span>
-          </label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="What are you building?"
-            maxLength={160}
-            rows={3}
-            className="bg-card border border-border rounded-md px-4 py-3 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary transition-colors resize-none"
-          />
-          <p className="text-xs text-muted-foreground text-right">{bio.length}/160</p>
-        </div>
-      </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="flex items-center justify-between pt-2">
-        <Button variant="ghost" onClick={onBack} disabled={loading}>
-          ← Back
-        </Button>
-        <Button
-          onClick={() => onNext(handle, bio)}
-          disabled={!canSubmit}
-          className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
-        >
-          {loading ? "Saving..." : "Enter the Protocol →"}
-        </Button>
-      </div>
+        <div className="flex items-center justify-between pt-2">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onBack}
+            disabled={loading}
+          >
+            ← Back
+          </Button>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
+          >
+            {loading ? "Saving..." : "Enter the Protocol →"}
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }

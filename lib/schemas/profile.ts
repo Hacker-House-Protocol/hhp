@@ -1,7 +1,8 @@
 import { z } from "zod"
+import { ARCHETYPE_IDS } from "@/lib/onboarding"
 
 export const patchProfileSchema = z.object({
-  archetype: z.enum(["visionary", "strategist", "builder"]).optional(),
+  archetype: z.enum(ARCHETYPE_IDS).optional(),
   skills: z.array(z.string()).optional(),
   handle: z
     .string()

@@ -1,28 +1,22 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { AuthButton } from "@/components/auth/auth-button"
 import { useAuth } from "@/hooks/use-auth"
+import { Button } from "@/components/ui/button"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const { isAuthenticated } = useAuth()
-  const router = useRouter()
+  const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/dashboard")
-    }
-  }, [isAuthenticated, router])
 
   return (
     <header
@@ -47,7 +41,17 @@ export function Navbar() {
           </span>
         </div>
 
-        <AuthButton />
+        {!isLoading && isAuthenticated ? (
+          <Button
+            size="sm"
+            asChild
+            className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5"
+          >
+            <Link href="/dashboard">Dashboard →</Link>
+          </Button>
+        ) : (
+          <AuthButton />
+        )}
       </nav>
     </header>
   )

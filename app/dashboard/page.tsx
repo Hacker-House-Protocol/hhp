@@ -9,6 +9,7 @@ import { CypherIdentityCard } from "./_components/cypher-identity-card"
 import { HackSpacesFeed } from "./_components/hack-spaces-feed"
 
 interface UserProfile {
+  id: string
   handle: string | null
   bio: string | null
   archetype: string | null
@@ -68,7 +69,7 @@ export default function DashboardPage() {
             <CypherIdentityCard profile={profile} />
           </aside>
           <section>
-            <HackSpacesFeed />
+            <HackSpacesFeed currentUserId={profile.id} />
           </section>
         </div>
       </main>

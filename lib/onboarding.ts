@@ -1,3 +1,6 @@
+// Single source of truth for archetype IDs — import this in Zod schemas
+export const ARCHETYPE_IDS = ["visionary", "strategist", "builder"] as const
+
 export const ARCHETYPES = [
   {
     id: "visionary" as const,

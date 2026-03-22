@@ -1,11 +1,12 @@
 "use client"
 
+import { useCallback } from "react"
 import { usePrivy } from "@privy-io/react-auth"
 
 export function useAuthFetch() {
   const { getAccessToken } = usePrivy()
 
-  async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const authFetch = useCallback(async (input: string, init: RequestInit = {}): Promise<Response> => {
     const token = await getAccessToken()
     return fetch(input, {
       ...init,
@@ -15,7 +16,7 @@ export function useAuthFetch() {
         "Content-Type": "application/json",
       },
     })
-  }
+  }, [getAccessToken])
 
   return { authFetch }
 }
