@@ -62,6 +62,28 @@ const LANGUAGES = ["English", "Spanish", "Portuguese", "French", "German", "Mand
 const STEPS = ["Project", "Team", "Event", "Access"] as const
 type Step = typeof STEPS[number]
 
+// Which step owns each field — used to navigate back on server-side field errors
+const FIELD_TO_STEP: Partial<Record<keyof CreateHackSpaceInput, Step>> = {
+  title: "Project",
+  description: "Project",
+  track: "Project",
+  stage: "Project",
+  repo_url: "Project",
+  looking_for: "Team",
+  skills_needed: "Team",
+  max_team_size: "Team",
+  experience_level: "Team",
+  language: "Team",
+  timezone_region: "Team",
+  has_event: "Event",
+  event_name: "Event",
+  event_url: "Event",
+  event_date: "Event",
+  event_timing: "Event",
+  application_type: "Access",
+  application_deadline: "Access",
+}
+
 export function CreateHackSpaceForm() {
   const router = useRouter()
   const createHackSpace = useCreateHackSpace()
@@ -75,6 +97,7 @@ export function CreateHackSpaceForm() {
     handleSubmit,
     watch,
     trigger,
+    setError,
     formState: { isSubmitting },
   } = useForm<CreateHackSpaceInput>({
     resolver: zodResolver(createHackSpaceSchema),
@@ -110,6 +133,7 @@ export function CreateHackSpaceForm() {
   }
 
   async function goNext() {
+    setServerError(null)
     const valid = await trigger(STEP_FIELDS[step])
     if (valid) setStep(STEPS[stepIndex + 1])
   }
@@ -120,7 +144,21 @@ export function CreateHackSpaceForm() {
       const hs = await createHackSpace.mutateAsync(values)
       router.push(`/dashboard/hack-spaces/${hs.id}`)
     } catch (e) {
-      setServerError(e instanceof Error ? e.message : "Something went wrong")
+      const message = e instanceof Error ? e.message : "Something went wrong"
+
+      // Try to match the error to a specific field by name in the message.
+      // If matched: set a field-level error and navigate to the owning step.
+      // If not: fall back to a generic error shown at the current step.
+      const matchedField = (
+        Object.keys(FIELD_TO_STEP) as (keyof CreateHackSpaceInput)[]
+      ).find((field) => message.toLowerCase().includes(field.toLowerCase()))
+
+      if (matchedField && FIELD_TO_STEP[matchedField]) {
+        setError(matchedField, { type: "server", message })
+        setStep(FIELD_TO_STEP[matchedField]!)
+      } else {
+        setServerError(message)
+      }
     }
   }
 
@@ -653,10 +691,12 @@ export function CreateHackSpaceForm() {
               )}
             />
 
-            {serverError && (
-              <p className="text-sm text-destructive">{serverError}</p>
-            )}
           </div>
+        )}
+
+        {/* Server error — always visible, outside step blocks */}
+        {serverError && (
+          <p className="text-sm text-destructive">{serverError}</p>
         )}
 
         {/* Navigation */}
