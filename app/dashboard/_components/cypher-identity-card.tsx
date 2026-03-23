@@ -32,15 +32,14 @@ export function CypherIdentityCard({ profile }: CypherIdentityCardProps) {
         </div>
         {archetypeData && (
           <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-sm border text-xs font-mono"
+            className="px-3 py-1.5 rounded-sm border text-xs font-mono"
             style={{
               borderColor: `var(${archetypeData.colorVar})`,
               color: `var(${archetypeData.colorVar})`,
               backgroundColor: `color-mix(in oklch, var(${archetypeData.colorVar}) 10%, transparent)`,
             }}
           >
-            <span>{archetypeData.emoji}</span>
-            <span>{archetypeData.name}</span>
+            {archetypeData.name}
           </div>
         )}
       </div>

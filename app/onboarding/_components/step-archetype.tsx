@@ -40,7 +40,6 @@ export function StepArchetype({ onSelect, loading }: StepArchetypeProps) {
             }
           >
             <div className="flex flex-col gap-2">
-              <span className="text-3xl">{archetype.emoji}</span>
               <h3
                 className="font-display font-bold text-foreground text-xl group-hover:transition-colors"
                 style={{ color: `var(${archetype.colorVar})` }}

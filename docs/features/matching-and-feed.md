@@ -46,3 +46,33 @@ Sugerencias en el sidebar del feed, similar al panel de X (Twitter). **No es mat
 - Solicitud de amistad → notificación → aceptar/rechazar
 - Amigos aparecen como primera opción al crear Hacker Houses
 - Amigos que van a un evento se muestran en el mapa: 'X builders de tu red van a este evento'
+
+---
+
+## UI: Card de Builder
+
+| Elemento | Contenido |
+|---|---|
+| Avatar | GIF Cypher Kitten con borde del color del arquetipo. |
+| Username + Arquetipo | Username bold + badge del arquetipo con color. |
+| Wallet | Truncada en JetBrains Mono (0xd7ed...6C0e). Solo si tiene wallet conectada. |
+| Verified badge | Checkmark si tiene Talent Protocol y/o POAP conectados. |
+| Skills | Hasta 3 skills en pills. Colores por categoría. |
+| POAPs recientes | Últimos 3 badges de POAP importados. Contador total si hay más. |
+| Onchain since | 'Onchain since Aug 2022' en JetBrains Mono. Solo con wallet. |
+| CTA | 'Conectar' / 'Pendiente' / 'Amigos' según estado de la relación. |
+
+---
+
+## UI: Cypher Identity (Perfil)
+
+| Elemento | Descripción |
+|---|---|
+| Avatar / Cypher Kitten | GIF animado con borde de color del arquetipo seleccionado. |
+| Username / Alias | Nombre público. Oculta wallet real en interfaces públicas. |
+| Arquetipo | Visionary / Strategist / Builder con color correspondiente. |
+| Wallet address | Truncada (0xd7ed...6C0e) en JetBrains Mono. |
+| Onchain since | Derivado de la wallet. Antigüedad en el ecosistema. |
+| Achievement Gallery | Colección horizontal de POAPs + badges importados con contador total. |
+| Linked accounts | Twitter/X, GitHub, Farcaster, Worldcoin. |
+| Verified badge | Cuando conecta Talent Protocol y/o POAP. |

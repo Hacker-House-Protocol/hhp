@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import Link from "next/link"
 import { useHackSpaces } from "@/services/api/hack-spaces"
 import { HackSpaceCard } from "./hack-space-card"
-import { CreateHackSpaceModal } from "./create-hack-space-modal"
 import { Button } from "@/components/ui/button"
+
+const PREVIEW_LIMIT = 3
 
 interface HackSpacesFeedProps {
   currentUserId: string | null
@@ -12,60 +13,99 @@ interface HackSpacesFeedProps {
 
 export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
   const { data: hackSpaces = [], isLoading } = useHackSpaces()
-  const [showModal, setShowModal] = useState(false)
+  const preview = hackSpaces.slice(0, PREVIEW_LIMIT)
+  const hasMore = hackSpaces.length > PREVIEW_LIMIT
 
   return (
-    <>
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display font-bold text-foreground text-lg">Hack Spaces</h2>
-          <Button
-            size="sm"
-            onClick={() => setShowModal(true)}
-            className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 text-xs"
-          >
-            + Create Space
-          </Button>
-        </div>
+    <div className="flex flex-col gap-4">
 
-        {isLoading ? (
-          <div className="flex flex-col gap-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-card border border-border rounded-lg p-5 h-40 animate-pulse" />
-            ))}
-          </div>
-        ) : hackSpaces.length === 0 ? (
-          <div className="bg-card border border-dashed border-border rounded-lg p-12 flex flex-col items-center gap-4 text-center">
-            <span className="text-4xl">🔗</span>
-            <div className="flex flex-col gap-1">
-              <p className="font-display font-semibold text-foreground">No Hack Spaces yet.</p>
-              <p className="text-muted-foreground text-sm">
-                Be the first to post a project and find your builders.
-              </p>
-            </div>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h2 className="font-display font-bold text-foreground text-lg">Hack Spaces</h2>
+          {!isLoading && hackSpaces.length > 0 && (
+            <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-sm">
+              {hackSpaces.length}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {hackSpaces.length > 0 && (
+            <Link
+              href="/hack-spaces"
+              className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors"
+            >
+              View all →
+            </Link>
+          )}
+          <Link href="/hack-spaces/create">
             <Button
               size="sm"
-              onClick={() => setShowModal(true)}
+              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 text-xs"
+            >
+              + Create
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="flex flex-col gap-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-card border border-border rounded-lg p-5 h-40 animate-pulse" />
+          ))}
+        </div>
+      ) : hackSpaces.length === 0 ? (
+        <div className="bg-card border border-dashed border-border rounded-lg p-12 flex flex-col items-center gap-4 text-center">
+          <div className="flex flex-col gap-1">
+            <p className="font-display font-semibold text-foreground">No Hack Spaces yet.</p>
+            <p className="text-muted-foreground text-sm">
+              Be the first to post a project and find your builders.
+            </p>
+          </div>
+          <Link href="/hack-spaces/create">
+            <Button
+              size="sm"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5 mt-2"
             >
               Create the first Space →
             </Button>
-          </div>
-        ) : (
+          </Link>
+        </div>
+      ) : (
+        <>
           <div className="flex flex-col gap-3">
-            {hackSpaces.map((hs) => (
+            {preview.map((hs) => (
               <HackSpaceCard key={hs.id} hackSpace={hs} currentUserId={currentUserId} />
             ))}
           </div>
-        )}
-      </div>
 
-      {showModal && (
-        <CreateHackSpaceModal
-          onCreated={() => setShowModal(false)}
-          onClose={() => setShowModal(false)}
-        />
+          {/* View all CTA */}
+          {hasMore && (
+            <Link href="/hack-spaces">
+              <div className="border border-dashed border-border rounded-lg px-5 py-4 flex items-center justify-between hover:border-primary/40 hover:bg-accent/30 transition-all group">
+                <span className="text-sm font-mono text-muted-foreground group-hover:text-foreground transition-colors">
+                  +{hackSpaces.length - PREVIEW_LIMIT} more Hack Spaces
+                </span>
+                <span className="text-xs font-mono text-primary">
+                  Browse all →
+                </span>
+              </div>
+            </Link>
+          )}
+
+          {!hasMore && (
+            <Link href="/hack-spaces">
+              <div className="border border-dashed border-border rounded-lg px-5 py-3 flex items-center justify-center hover:border-primary/40 hover:bg-accent/30 transition-all">
+                <span className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
+                  Browse all Hack Spaces →
+                </span>
+              </div>
+            </Link>
+          )}
+        </>
       )}
-    </>
+    </div>
   )
 }

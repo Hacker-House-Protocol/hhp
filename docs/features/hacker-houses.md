@@ -76,3 +76,17 @@ Cada Hacker House de pago genera N keys (una por cupo). NFT con metadata: evento
 ## HHP POAPs — Proof of Presence (Fase 2)
 
 Cada Hacker House genera su propio POAP para los asistentes confirmados. Queda en el Achievement Gallery del builder como badge on-chain.
+
+---
+
+## UI: Card de Hacker House
+
+| Elemento | Contenido |
+|---|---|
+| Header | Nombre + ciudad + país. Badge de modalidad: Gratuita / De pago / Con staking. |
+| Fechas | '15–22 Marzo 2026' con ícono calendario. Countdown si quedan < 7 días. |
+| Progreso | Barra: 'X/Y ETH recaudados' + 'X/Y cupos llenos'. Solo en modalidades de pago. |
+| Qué incluye | Íconos: 🛏 Cuarto · 🍳 Comidas · 💻 Workspace · 🌐 Internet. Solo los que aplican. |
+| Participantes | Avatares de builders confirmados con colores de arquetipo. |
+| Evento vinculado | Badge con ícono: 'Antes / Durante / Después de ETH Global Cannes'. |
+| CTA | 'Aplicar' / 'Pagar mi parte' / 'Lista de espera' según estado del builder. |

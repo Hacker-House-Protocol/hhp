@@ -153,7 +153,7 @@ export function CreateHackSpaceModal({
                               }
                         }
                       >
-                        {a.emoji} {a.name}
+                        {a.name}
                       </button>
                     )
                   })}

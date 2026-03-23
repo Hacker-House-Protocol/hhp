@@ -19,16 +19,22 @@ export async function GET() {
     .from("hack_spaces")
     .select(`
       *,
-      creator:users(id, handle, archetype)
+      creator:users(id, handle, archetype),
+      member_count:applications(count)
     `)
-    .eq("status", "open")
+    .in("status", ["open", "full", "in_progress"])
     .order("created_at", { ascending: false })
 
   if (error) {
     return NextResponse.json({ message: "Database error" }, { status: 500 })
   }
 
-  return NextResponse.json({ hack_spaces: data })
+  const hackSpaces = data.map((hs) => ({
+    ...hs,
+    member_count: (hs.member_count as unknown as { count: number }[])?.[0]?.count ?? 0,
+  }))
+
+  return NextResponse.json({ hack_spaces: hackSpaces })
 }
 
 export async function POST(req: NextRequest) {
@@ -56,13 +62,32 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  const { has_event, ...fields } = parsed.data
+
+  const insertData = {
+    creator_id: user.id,
+    title: fields.title,
+    description: fields.description,
+    track: fields.track,
+    stage: fields.stage,
+    repo_url: fields.repo_url || null,
+    looking_for: fields.looking_for,
+    skills_needed: fields.skills_needed ?? [],
+    max_team_size: fields.max_team_size,
+    experience_level: fields.experience_level,
+    language: fields.language,
+    timezone_region: fields.timezone_region || null,
+    application_type: fields.application_type,
+    application_deadline: fields.application_deadline || null,
+    event_name: has_event ? (fields.event_name || null) : null,
+    event_url: has_event ? (fields.event_url || null) : null,
+    event_date: has_event ? (fields.event_date || null) : null,
+    event_timing: has_event ? (fields.event_timing ?? null) : null,
+  }
+
   const { data, error } = await supabaseServer
     .from("hack_spaces")
-    .insert({
-      creator_id: user.id,
-      ...parsed.data,
-      skills_needed: parsed.data.skills_needed ?? [],
-    })
+    .insert(insertData)
     .select(`*, creator:users(id, handle, archetype)`)
     .single()
 

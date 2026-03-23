@@ -2,6 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Documentation
+
+All product and design documentation lives in `docs/`. **Always read the relevant doc before implementing a feature or making design decisions.**
+
+| Doc | Cuándo leerlo |
+|---|---|
+| [`docs/product-overview.md`](./docs/product-overview.md) | Visión general, arquetipos, tipos de usuario, stack, roadmap |
+| [`docs/prd.md`](./docs/prd.md) | Scope del MVP, métricas, criterios de aceptación, Definition of Done |
+| [`docs/open-questions.md`](./docs/open-questions.md) | Decisiones ya tomadas — consultar antes de proponer alternativas |
+| [`docs/design-system.md`](./docs/design-system.md) | Tokens de color, tipografía, espaciado, componentes — **fuente de verdad visual** |
+| [`docs/navigation.md`](./docs/navigation.md) | Rutas, bottom nav, estructura de pantallas |
+| [`docs/data-models.md`](./docs/data-models.md) | TypeScript types de todas las entidades |
+| [`docs/landing-page.md`](./docs/landing-page.md) | Brief completo de la landing page |
+| [`docs/features/onboarding.md`](./docs/features/onboarding.md) | Flujo de registro, Cypher Identity, edge cases |
+| [`docs/features/hack-spaces.md`](./docs/features/hack-spaces.md) | Feature principal — formularios, estados, UI card |
+| [`docs/features/hacker-houses.md`](./docs/features/hacker-houses.md) | Hacker Houses — modalidades, flujo, UI card |
+| [`docs/features/matching-and-feed.md`](./docs/features/matching-and-feed.md) | Algoritmo de matching, feed, Builder card, Cypher Identity |
+| [`docs/features/notifications.md`](./docs/features/notifications.md) | Copy de notificaciones por trigger |
+
 ## Commands
 
 ```bash
@@ -27,13 +46,22 @@ pnpm lint       # Run ESLint
 ### Key tech details
 
 - **Tailwind CSS v4** — configured via `@import "tailwindcss"` in `globals.css`, theme tokens defined with `@theme` inline syntax.
-- **shadcn/ui** — components live in `components/ui/`. Add new ones with `pnpm dlx shadcn@latest add <component>`.
+- **shadcn/ui** — components live in `components/ui/`. Add new ones with `pnpm dlx shadcn@latest add <component>`. **Before building a custom UI element, check `components/ui/` first — the component likely already exists.**
+
+### Custom components in `components/ui/`
+
+These are project-specific components built on top of shadcn primitives. **Always use these instead of raw `<input type="date">` or similar natives:**
+
+| Component | Import | Use when |
+|---|---|---|
+| `DatePicker` | `@/components/ui/date-picker` | Any date field in a form. Accepts `value: string` (ISO `YYYY-MM-DD`), `onChange`, `placeholder`, `fromDate`. Works with react-hook-form `Controller`. |
 - **Supabase** — used as DB only (no auth). Client singleton exported from `lib/supabase.ts`.
 - **Privy** — wallet + email auth. `AppPrivyProvider` wraps the app in `layout.tsx`. Use the `usePrivy` hook in client components.
 - **TanStack Query** — for server-state management in client components.
 - **Zod v3** — for schema validation and env config (`env.ts`). Note: Zod v3 (not v4) is installed. Do NOT upgrade to v4 — incompatible with @hookform/resolvers v3.
 - **react-hook-form 7 + @hookform/resolvers 3** — for all forms. See Forms section below. Do NOT upgrade resolvers to v5 — incompatible with Zod v3.
 - Path alias `@/*` maps to the project root.
+- **Archetypes have no emoji** — the `ARCHETYPES` constant in `lib/onboarding.ts` does not include an `emoji` field. Render only `name` and `colorVar`. Do not add emojis back.
 
 ### Provider hierarchy (layout.tsx)
 
@@ -211,7 +239,7 @@ export const useCreateThing = () => {
 
 ## Conventions
 
-- **File names** — always kebab-case (`user-profile.tsx`, `use-auth.ts`, `get-users.ts`). No exceptions.
+- **File and folder names** — always kebab-case **in English** — no exceptions, even when UI copy is in another language (`user-profile.tsx`, `use-auth.ts`, `get-users.ts`, `hack-spaces/create/`). **Never use Spanish or any other language** for file/folder names, even if the UI copy is in Spanish. No exceptions.
 - **TypeScript** — never use `any`. Use `unknown` and narrow, or define a proper type/interface.
 - **Data fetching** — always go through Next.js API routes (`app/api/**/route.ts`). Client components never call Supabase directly; they fetch from API routes instead.
 - **Images** — use plain `<img>` tags. `next/image` is not used in this project (`@next/next/no-img-element` ESLint rule is disabled).

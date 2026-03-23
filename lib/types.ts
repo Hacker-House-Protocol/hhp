@@ -12,19 +12,48 @@ export interface UserProfile {
   updated_at: string
 }
 
+export type HackSpaceStatus = "open" | "full" | "in_progress" | "finished"
+export type HackSpaceTrack =
+  | "DeFi"
+  | "DAO tools"
+  | "AI"
+  | "Social"
+  | "Gaming"
+  | "NFTs"
+  | "Infrastructure"
+  | "Other"
+export type ProjectStage = "idea" | "prototype" | "in_development"
+export type ApplicationType = "open" | "invite_only" | "curated"
+export type ExperienceLevel = "beginner" | "intermediate" | "advanced"
+
 export interface HackSpace {
   id: string
   title: string
   description: string
+  track: HackSpaceTrack
+  stage: ProjectStage
+  repo_url: string | null
+  status: HackSpaceStatus
   looking_for: string[]
   skills_needed: string[]
-  status: "open" | "closed"
+  max_team_size: number
+  experience_level: ExperienceLevel
+  language: string
+  timezone_region: string | null
+  application_type: ApplicationType
+  application_deadline: string | null
+  // Event (optional)
+  event_name: string | null
+  event_url: string | null
+  event_date: string | null
+  event_timing: "before" | "during" | "after" | null
   created_at: string
   creator: {
     id: string
     handle: string | null
     archetype: string | null
   }
+  member_count?: number
 }
 
 export interface Application {
@@ -34,4 +63,13 @@ export interface Application {
   message: string | null
   status: "pending" | "accepted" | "rejected"
   created_at: string
+}
+
+export interface ApplicationWithApplicant extends Application {
+  applicant: {
+    id: string
+    handle: string | null
+    archetype: string | null
+    skills: string[] | null
+  }
 }

@@ -49,32 +49,6 @@ Grupos de builders que forman organizaciones propias. Fuera del alcance del MVP.
 
 ---
 
-## Decisiones de Producto Confirmadas
-
-| Decisión | Resolución |
-|---|---|
-| Modelo de negocio MVP | **100% free** — sin fees ni planes de pago en el MVP |
-| Mercado objetivo | **Global** — ecosistema crypto/Web3, sin foco geográfico específico |
-| Feature principal | **Hack Spaces** — es el gancho de uso recurrente. Hacker Houses son el paso siguiente natural |
-| Filtros on-chain (POAPs, NFTs, Talent Protocol score) | **Pospuestos a Fase 2** — los campos existen en el formulario pero no se validan en MVP |
-| Modalidades de pago en Hacker Houses | **Solo gratuitas en Fase 1** — de pago y staking son Fase 2 (requieren smart contract auditado) |
-| Landing page | **Waitlist** — captura emails, CTA "Join the Waitlist", en inglés |
-| Routing | `/` es la landing, `/home` es la app post-login |
-| Sin competidores directos conocidos en el mercado | Propuesta única — no anclar vs. otro producto |
-
----
-
-## Assets Disponibles
-
-| Asset | Ruta |
-|---|---|
-| Logo mark (ícono) | `/public/assets/hacker-house-protocol-logo.svg` |
-| Logo texto | `/public/assets/hacker-house-protocol-text.svg` |
-| Cypher Kittens GIFs | Existen, pendientes de subir al repo |
-| Screenshots del prototipo | Existen, pendientes de subir al repo |
-
----
-
 ## Stack Tecnológico Decidido
 
 | Capa | Tecnología |

@@ -60,3 +60,26 @@ Un Hack Space es un proyecto online donde un builder convoca a otros con habilid
 ## Shortcut: Hack Space → Hacker House
 
 Cuando el Hack Space alcanza su meta de habilidades, la plataforma sugiere al creador convertir el equipo en una Hacker House directamente. Si el Hack Space estaba vinculado a un evento, la Hacker House se crea pre-configurada con fechas y ciudad.
+
+---
+
+## UI: Card de Hack Space
+
+| Elemento | Contenido |
+|---|---|
+| Header | Nombre + emoji de categoría + badge de estado (color según estado) |
+| Descripción | 2–3 líneas truncadas con '...' |
+| Skills buscadas | Pills de colores. Máximo 4 visibles + contador '+N más'. |
+| Equipo actual | Avatares con borde de color de arquetipo. Contador '3/5 miembros'. |
+| Metadata | Idioma · Región · Etapa del proyecto · Hace cuánto se creó |
+| Evento vinculado | Badge: 'Para ETH Global Cannes 2026'. Solo si aplica. |
+| CTA | 'Aplicar' (pill primario) / 'Ya aplicaste' (disabled) / 'Ver equipo' (si equipo completo) |
+
+### Colores de badge por estado
+
+| Estado | Token de color |
+|---|---|
+| Buscando miembros | `--primary` |
+| Equipo completo | `--builder-archetype` |
+| En progreso | `--strategist` |
+| Finalizado | `--muted-foreground` |

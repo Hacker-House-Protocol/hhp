@@ -1,6 +1,5 @@
 const archetypes = [
   {
-    emoji: "💡",
     name: "The Visionary",
     tagline: "You have the idea. The vision is clear — the team isn't.",
     body: "You define direction, generate narrative, and attract talent. You need builders who can execute on what you see.",
@@ -8,7 +7,6 @@ const archetypes = [
     colorVar: "--visionary",
   },
   {
-    emoji: "♟",
     name: "The Strategist",
     tagline: "You see the whole board. You connect the pieces.",
     body: "GTM, ops, partnerships, execution. You turn chaos into roadmap. You need a Visionary's idea and a Builder's hands.",
@@ -16,7 +14,6 @@ const archetypes = [
     colorVar: "--strategist",
   },
   {
-    emoji: "⚙️",
     name: "The Builder",
     tagline: "You ship. That's it. That's the whole bio.",
     body: "Frontend, backend, smart contracts, design — you make the thing real. The most wanted archetype on the protocol.",
@@ -51,7 +48,6 @@ export function Archetypes() {
               }}
             >
               <div className="flex flex-col gap-2">
-                <span className="text-3xl">{archetype.emoji}</span>
                 <h3 className="font-display font-bold text-foreground text-xl">
                   {archetype.name}
                 </h3>

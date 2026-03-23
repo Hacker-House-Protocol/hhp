@@ -21,7 +21,7 @@ Capturar emails para el **waitlist** antes del lanzamiento del MVP. No hay acces
 
 ### 1. Navbar
 - Logo (ícono + texto) alineado a la izquierda
-- CTA derecha: "Join Waitlist" (pill primario, `#6B00C9`)
+- CTA derecha: "Join Waitlist" (pill primario, `--primary`)
 - Fondo transparente con blur al hacer scroll
 
 ### 2. Hero
@@ -39,9 +39,9 @@ Cada bloque con ícono, título, descripción corta y 2-3 bullets de valor.
 
 ### 4. The Three Archetypes
 Cards visuales para los 3 arquetipos con su color, símbolo, nombre y descripción de 1 línea.
-- 💡 The Visionary `#990070`
-- ♟ The Strategist `#8B78E6`
-- ⚙️ The Builder `#6EE76E`
+- 💡 The Visionary `--visionary`
+- ♟ The Strategist `--strategist`
+- ⚙️ The Builder `--builder-archetype`
 Copy de apoyo: "Choose your archetype. The algorithm does the rest."
 
 ### 5. How it works

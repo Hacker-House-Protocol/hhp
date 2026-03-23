@@ -4,7 +4,6 @@ export const ARCHETYPE_IDS = ["visionary", "strategist", "builder"] as const
 export const ARCHETYPES = [
   {
     id: "visionary" as const,
-    emoji: "💡",
     name: "The Visionary",
     tagline: "You have the idea. The vision is clear — the team isn't.",
     body: "You define direction, generate narrative, and attract talent. You need builders who can execute on what you see.",
@@ -12,7 +11,6 @@ export const ARCHETYPES = [
   },
   {
     id: "strategist" as const,
-    emoji: "♟",
     name: "The Strategist",
     tagline: "You see the whole board. You connect the pieces.",
     body: "GTM, ops, partnerships, execution. You turn chaos into roadmap. You need a Visionary's idea and a Builder's hands.",
@@ -20,7 +18,6 @@ export const ARCHETYPES = [
   },
   {
     id: "builder" as const,
-    emoji: "⚙️",
     name: "The Builder",
     tagline: "You ship. That's it. That's the whole bio.",
     body: "Frontend, backend, smart contracts, design — you make the thing real. The most wanted archetype on the protocol.",

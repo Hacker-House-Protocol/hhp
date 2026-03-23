@@ -1,103 +1,172 @@
 # Design System — Hacker House Protocol
 
-## Paleta de Colores
+> Always-dark interface. Sin modo light. La clase `.dark` está fija en `<html>` en `app/layout.tsx`.
 
-| Token | Hex | Uso |
-|---|---|---|
-| `bg` | `#0D0B2B` | Background principal. Nunca fondo blanco. |
-| `surface` | `#1A1740` | Cards, modales, panels secundarios |
-| `border` | `#2E2A5A` | Separadores, bordes de cards, líneas de sección |
-| `primary` | `#6B00C9` | CTAs, botones principales, highlights |
-| `text` | `#F0EFF8` | Texto principal sobre fondo oscuro |
-| `muted` | `#7B7A8E` | Labels, metadata, texto de apoyo |
+---
 
-### Colores de Arquetipo
-| Arquetipo | Hex | Uso |
+## Tokens de color
+
+El sistema usa **oklch** (Tailwind v4 nativo). Todos los tokens viven en `app/globals.css` dentro de `:root`.
+Los tokens se mapean a clases Tailwind en el bloque `@theme inline` del mismo archivo.
+
+### Jerarquía de superficies
+
+Las superficies están escalonadas por luminosidad (L) para crear profundidad sin sombras:
+
+| Token CSS | oklch | L | Uso |
+|---|---|---|---|
+| `--background` | `oklch(0.09 0.04 277)` | 9% | Canvas base — nunca fondo blanco |
+| `--card` | `oklch(0.13 0.05 275)` | 13% | Cards, panels, secciones principales |
+| `--muted` | `oklch(0.17 0.06 276)` | 17% | Fondos apagados, áreas de relleno |
+| `--input` | `oklch(0.19 0.06 276)` | 19% | Fondo de inputs y textareas |
+| `--accent` | `oklch(0.20 0.12 280)` | 20% | Hover states, highlights interactivos |
+| `--secondary` | `oklch(0.22 0.07 276)` | 22% | Botones secondary, chips |
+| `--popover` | `oklch(0.16 0.05 275)` | 16% | Dropdowns y popovers — flotan sobre card |
+| `--border` | `oklch(0.28 0.06 276)` | 28% | Bordes de cards e inputs — visible sobre L=13 |
+
+**Regla de escala**: cada superficie es al menos 3–5 puntos de L más oscura que la que está encima. Esto garantiza separación visual sin box-shadow.
+
+### Foreground (texto)
+
+| Token CSS | oklch | L | Uso |
+|---|---|---|---|
+| `--foreground` | `oklch(0.96 0.01 277)` | 96% | Texto principal — contraste ~14:1 sobre background |
+| `--card-foreground` | `oklch(0.96 0.01 277)` | 96% | Texto dentro de cards |
+| `--muted-foreground` | `oklch(0.62 0.03 278)` | 62% | Labels, metadata, texto de apoyo — ~6.2:1 |
+
+### Brand — Primary
+
+| Token CSS | oklch | Uso |
 |---|---|---|
-| Visionary 💡 | `#990070` | Bordes de avatar, badges, highlights |
-| Strategist ♟ | `#8B78E6` | Bordes de avatar, badges, highlights |
-| Builder ⚙️ | `#6EE76E` | Bordes de avatar, badges, highlights |
+| `--primary` | `oklch(0.62 0.26 295)` | Purple brillante — CTAs, botones principales |
+| `--primary-foreground` | `oklch(0.09 0.04 277)` | Texto oscuro sobre primary (no blanco) |
+| `--ring` | `oklch(0.62 0.26 295)` | Focus ring — mismo tono que primary |
+
+> **Por qué foreground oscuro**: con primary en L=62%, el texto blanco baja a ~2.7:1 (falla WCAG). El texto oscuro sobre primary da ~5.8:1 y mantiene el look "neon on dark".
+
+### Arquetipos
+
+| Token CSS | oklch | Uso |
+|---|---|---|
+| `--visionary` | `oklch(0.52 0.24 333)` | Magenta — bordes de avatar, badges, highlights |
+| `--strategist` | `oklch(0.68 0.14 279)` | Lavender — bordes de avatar, badges, highlights |
+| `--builder-archetype` | `oklch(0.84 0.15 140)` | Green — bordes de avatar, badges, highlights |
+
+### Utilidades
+
+| Token CSS | oklch | Uso |
+|---|---|---|
+| `--destructive` | `oklch(0.577 0.245 27.325)` | Errores, acciones destructivas |
+
+---
+
+## Clases Tailwind
+
+Los tokens se usan con las clases estándar de Tailwind. Referencia rápida:
+
+```
+bg-background     text-foreground
+bg-card           text-card-foreground
+bg-muted          text-muted-foreground
+bg-secondary      text-secondary-foreground
+bg-accent         text-accent-foreground
+bg-primary        text-primary-foreground
+border-border
+ring-ring
+```
+
+---
 
 ## Tipografía
 
-| Rol | Fuente | Tamaño / Peso |
-|---|---|---|
-| Display / Headings | Space Grotesk | 24–48px / Bold |
-| Body | Inter Regular | 14–16px / Regular |
-| Wallet / código on-chain | JetBrains Mono | 12–14px / Regular |
+| Rol | Fuente | Variable CSS | Uso |
+|---|---|---|---|
+| Display / Headings | Space Grotesk | `--font-display` | `font-display` — `h1`–`h3`, hero copy |
+| Body | Inter | `--font-sans` | Default del body — texto corrido |
+| Wallet / código | JetBrains Mono | `--font-mono` | `font-mono` — addresses, hashes, code |
 
-## Espaciado y Bordes
+Escalas recomendadas:
+- Hero: `text-5xl` / `text-6xl` — Space Grotesk Bold
+- Section titles: `text-2xl` / `text-3xl` — Space Grotesk Semibold
+- Body: `text-base` / `text-sm` — Inter Regular
+- Metadata: `text-xs` — Inter o JetBrains Mono
+
+---
+
+## Espaciado y bordes
 
 - **Base unit**: 4px. Grid de 8px para el layout.
-- **Border radius**: 8px cards · 4px badges · 999px pills/botones
-- Cards siempre con `border: 1px solid #2E2A5A`
-- `box-shadow: none` — el contraste de color hace el trabajo visual
-- Íconos: **Lucide Icons** o **Phosphor Icons** — stroke, no fill
+- **Border radius** (tokens en `globals.css`):
 
-## Componentes Base
+| Token | Valor | Uso |
+|---|---|---|
+| `--radius-sm` | 4px | Badges, chips pequeños |
+| `--radius-md` | 8px | Cards, inputs, botones |
+| `--radius-lg` | 12px | Modales, sheets |
+| `--radius-xl` | 16px | Bottom sheets |
+| `--radius-full` | 9999px | Pills, botones CTA |
 
-### Botón Primario
+- **Sombras**: no se usan. La jerarquía de superficies hace el trabajo visual.
+- **Íconos**: Lucide Icons o Phosphor Icons — stroke, no fill.
+
+---
+
+## Componentes Base (shadcn/ui)
+
+Los componentes viven en `components/ui/`. Añadir nuevos con `pnpm dlx shadcn@latest add <component>`.
+
+### Botón primario (`variant="default"`)
 ```
-background: #6B00C9
-border-radius: 999px (pill)
-hover: #5500A0
-sin sombras
+bg-primary text-primary-foreground
+hover: bg-primary/80
+border-radius: radius-md (8px) o radius-full para CTAs
 ```
 
-### Botón Secundario
+### Botón secundario (`variant="secondary"`)
 ```
-border: 1px solid #6B00C9
-background: transparent
-color: #6B00C9
-border-radius: 999px
+bg-secondary text-secondary-foreground
+hover: bg-secondary/80
+```
+
+### Botón outline (`variant="outline"`)
+```
+border-border bg-background
+hover: bg-muted text-foreground
+dark: usa border-input y bg-input/30 — activo gracias a clase .dark en html
 ```
 
 ### Card
 ```
-background: #1A1740
-border: 1px solid #2E2A5A
-border-radius: 8px
-padding: 16px
-sin sombras
-```
-
-### Badge / Pill
-```
-border-radius: 4px
-padding: 4px 10px
-font-size: 12px
-colores por contexto
+bg-card text-card-foreground
+ring-1 ring-foreground/10
+border-radius: rounded-xl
 ```
 
 ### Input
 ```
-background: #0D0B2B
-border: 1px solid #2E2A5A
-focus: border-color #6B00C9
-border-radius: 8px
+bg-input border-border
+focus: ring-ring
+aria-invalid: border-destructive
 ```
 
-### Bottom Sheet
+### Badge
 ```
-overlay: rgba(0,0,0,0.6)
-panel desde abajo
-border-radius: 16px top
-patrón estilo Nomadtable
-```
-
-### Progress Bar
-```
-track: #2E2A5A
-fill: #6B00C9
-border-radius: 999px
-height: 8px
+border-radius: radius-sm (4px)
+padding: px-3 py-1
+font-mono text-xs para badges de metadata
 ```
 
-### Avatar con Borde de Arquetipo
+### Skills — Pills
+
+Categorías de skills para el picker del perfil y filtros de búsqueda:
+
 ```
-imagen circular o cuadrada redondeada
-border: 2–3px solid [color del arquetipo]
+Frontend · Backend · Smart Contracts · Design · PM · Research
 ```
+
+Usar `Badge` de shadcn con `variant` según categoría. Colores libres por categoría — aún no definidos, a determinar en implementación.
+
+---
 
 ## Cypher Kittens — Avatares
 
@@ -106,3 +175,9 @@ GIFs animados pre-armados en variantes de color y expresión. El builder elige u
 - MVP: colección pre-armada de GIFs seleccionables
 - V2: minteable como NFT personalizable
 - El kitten del Hack Space actúa como mascota del equipo
+
+El avatar siempre se muestra con un borde circular del color del arquetipo del usuario:
+```
+border: 2–3px solid var(--visionary | --strategist | --builder-archetype)
+border-radius: 9999px
+```
