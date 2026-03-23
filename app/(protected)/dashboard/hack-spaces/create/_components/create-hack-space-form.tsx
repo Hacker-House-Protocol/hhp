@@ -118,7 +118,7 @@ export function CreateHackSpaceForm() {
     setServerError(null)
     try {
       const hs = await createHackSpace.mutateAsync(values)
-      router.push(`/hack-spaces/${hs.id}`)
+      router.push(`/dashboard/hack-spaces/${hs.id}`)
     } catch (e) {
       setServerError(e instanceof Error ? e.message : "Something went wrong")
     }

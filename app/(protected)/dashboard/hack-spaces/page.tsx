@@ -3,9 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useHackSpaces } from "@/services/api/hack-spaces"
-import { HackSpaceCard } from "@/app/dashboard/_components/hack-space-card"
+import { HackSpaceCard } from "../_components/hack-space-card"
 import { useProfile } from "@/services/api/profile"
 import { Button } from "@/components/ui/button"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import type { HackSpaceTrack, HackSpaceStatus } from "@/lib/types"
 
@@ -34,17 +35,12 @@ export default function HackSpacesPage() {
   })
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border sticky top-0 bg-background/90 backdrop-blur-sm z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm">
-              ← Dashboard
-            </Link>
-            <span className="text-border">|</span>
-            <h1 className="font-display font-bold text-foreground">Hack Spaces</h1>
-          </div>
-          <Link href="/hack-spaces/create">
+    <>
+      <header className="flex h-14 items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur-md z-50">
+        <SidebarTrigger />
+        <h1 className="font-display font-bold text-sm text-foreground">Hack Spaces</h1>
+        <div className="ml-auto">
+          <Link href="/dashboard/hack-spaces/create">
             <Button
               size="sm"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 text-xs"
@@ -121,7 +117,7 @@ export default function HackSpacesPage() {
               </p>
             </div>
             {!selectedTrack && !selectedStatus && (
-              <Link href="/hack-spaces/create">
+              <Link href="/dashboard/hack-spaces/create">
                 <Button size="sm" className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5 mt-2">
                   Create the first Space →
                 </Button>
@@ -140,6 +136,6 @@ export default function HackSpacesPage() {
           </div>
         )}
       </main>
-    </div>
+    </>
   )
 }

@@ -3,9 +3,11 @@
 import { use, useState } from "react"
 import Link from "next/link"
 import { useHackSpace, useApplyToHackSpace } from "@/services/api/hack-spaces"
+import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useProfile } from "@/services/api/profile"
 import { ARCHETYPES } from "@/lib/onboarding"
 import { ApplicationManager } from "./_components/application-manager"
+import { LoadingScreen } from "@/components/loading-screen"
 import { Button } from "@/components/ui/button"
 
 const TRACK_EMOJIS: Record<string, string> = {
@@ -45,20 +47,17 @@ export default function HackSpaceDetailPage({
   const [message, setMessage] = useState("")
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground font-mono text-sm animate-pulse">Loading...</p>
-      </div>
-    )
+    return <LoadingScreen message="Loading" />
   }
 
   if (!hackSpace) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <p className="text-foreground font-display font-bold text-xl">Hack Space not found</p>
-        <Link href="/hack-spaces" className="text-primary font-mono text-sm hover:underline">
+        <Link href="/dashboard/hack-spaces" className="text-primary font-mono text-sm hover:underline">
           ← Back to Hack Spaces
         </Link>
+
       </div>
     )
   }
@@ -72,15 +71,14 @@ export default function HackSpaceDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-3">
-          <Link
-            href="/hack-spaces"
-            className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"
-          >
-            ← Hack Spaces
-          </Link>
-        </div>
+      <header className="flex h-14 items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur-md z-50">
+        <SidebarTrigger />
+        <Link
+          href="/dashboard/hack-spaces"
+          className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"
+        >
+          ← Hack Spaces
+        </Link>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-10">

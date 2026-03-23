@@ -32,13 +32,13 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
         <div className="flex items-center gap-2">
           {hackSpaces.length > 0 && (
             <Link
-              href="/hack-spaces"
+              href="/dashboard/hack-spaces"
               className="text-xs font-mono text-muted-foreground hover:text-primary transition-colors"
             >
               View all →
             </Link>
           )}
-          <Link href="/hack-spaces/create">
+          <Link href="/dashboard/hack-spaces/create">
             <Button
               size="sm"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-4 text-xs"
@@ -64,7 +64,7 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
               Be the first to post a project and find your builders.
             </p>
           </div>
-          <Link href="/hack-spaces/create">
+          <Link href="/dashboard/hack-spaces/create">
             <Button
               size="sm"
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5 mt-2"
@@ -83,7 +83,7 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
 
           {/* View all CTA */}
           {hasMore && (
-            <Link href="/hack-spaces">
+            <Link href="/dashboard/hack-spaces">
               <div className="border border-dashed border-border rounded-lg px-5 py-4 flex items-center justify-between hover:border-primary/40 hover:bg-accent/30 transition-all group">
                 <span className="text-sm font-mono text-muted-foreground group-hover:text-foreground transition-colors">
                   +{hackSpaces.length - PREVIEW_LIMIT} more Hack Spaces
@@ -96,7 +96,7 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
           )}
 
           {!hasMore && (
-            <Link href="/hack-spaces">
+            <Link href="/dashboard/hack-spaces">
               <div className="border border-dashed border-border rounded-lg px-5 py-3 flex items-center justify-center hover:border-primary/40 hover:bg-accent/30 transition-all">
                 <span className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors">
                   Browse all Hack Spaces →

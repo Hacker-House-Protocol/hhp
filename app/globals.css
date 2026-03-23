@@ -34,6 +34,16 @@
   --color-strategist: var(--strategist);
   --color-builder-archetype: var(--builder-archetype);
 
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
   /* Radius — base unit 8px */
   --radius-sm: calc(var(--radius) * 0.5);    /* 4px  — badges */
   --radius-md: var(--radius);                /* 8px  — cards, inputs */
@@ -86,6 +96,16 @@
 
   /* Base radius = 8px */
   --radius: 0.5rem;
+
+  /* Sidebar — mapped to design system tokens */
+  --sidebar: oklch(0.11 0.05 276);               /* slightly lighter than background */
+  --sidebar-foreground: oklch(0.96 0.01 277);    /* = foreground */
+  --sidebar-primary: oklch(0.62 0.26 295);       /* = primary */
+  --sidebar-primary-foreground: oklch(0.09 0.04 277);
+  --sidebar-accent: oklch(0.22 0.14 290);        /* purple-tinted active/hover state */
+  --sidebar-accent-foreground: oklch(0.96 0.01 277);
+  --sidebar-border: oklch(0.28 0.06 276);        /* = border */
+  --sidebar-ring: oklch(0.62 0.26 295);          /* = ring */
 }
 
 @layer base {

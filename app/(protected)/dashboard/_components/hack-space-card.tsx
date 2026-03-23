@@ -158,14 +158,14 @@ export function HackSpaceCard({ hackSpace, currentUserId }: HackSpaceCardProps) 
           <div className="flex items-center justify-between">
             <p className="text-xs font-mono text-muted-foreground">Your space</p>
             <Link
-              href={`/hack-spaces/${hackSpace.id}`}
+              href={`/dashboard/hack-spaces/${hackSpace.id}`}
               className="text-xs font-mono text-primary hover:underline"
             >
               Manage →
             </Link>
           </div>
         ) : hackSpace.status === "full" || hackSpace.status === "finished" ? (
-          <Link href={`/hack-spaces/${hackSpace.id}`}>
+          <Link href={`/dashboard/hack-spaces/${hackSpace.id}`}>
             <Button size="sm" variant="outline" className="text-xs font-mono">
               Ver equipo →
             </Button>
