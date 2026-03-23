@@ -3,119 +3,69 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { useAuthFetch } from "@/hooks/use-auth-fetch"
+import { useProfile, usePatchProfile } from "@/services/api/profile"
 import { StepArchetype } from "./step-archetype"
 import { StepSkills } from "./step-skills"
 import { StepIdentity } from "./step-identity"
-import type { ArchetypeId, OnboardingStep } from "@/lib/onboarding"
+import type { ArchetypeId } from "@/lib/onboarding"
 
 const STEPS = ["archetype", "skills", "identity"] as const
 type WizardStep = (typeof STEPS)[number]
 
-function stepToIndex(step: WizardStep): number {
-  return STEPS.indexOf(step)
-}
-
-interface ProfileData {
-  onboarding_step: OnboardingStep | null
-  archetype: ArchetypeId | null
-}
-
 export function OnboardingWizard() {
-  const { user, isAuthenticated, isLoading } = useAuth()
-  const { authFetch } = useAuthFetch()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
-  const [currentStep, setCurrentStep] = useState<WizardStep>("archetype")
-  const [archetype, setArchetype] = useState<ArchetypeId | null>(null)
-  const [ready, setReady] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const { data: profile, isLoading: profileLoading } = useProfile({
+    enabled: isAuthenticated && !isLoading,
+  })
+
+  const patchProfile = usePatchProfile()
   const [identityError, setIdentityError] = useState<string | null>(null)
 
-  // On mount: check auth + load current step from profile
   useEffect(() => {
     if (isLoading) return
-    if (!isAuthenticated || !user) {
-      router.replace("/")
-      return
-    }
+    if (!isAuthenticated) router.replace("/")
+  }, [isLoading, isAuthenticated, router])
 
-    authFetch("/api/profile")
-      .then((res) => res.json())
-      .then((data: { user?: ProfileData }) => {
-        const profile = data.user
-        if (!profile) return
+  useEffect(() => {
+    if (profile?.onboarding_step === "complete") router.replace("/dashboard")
+  }, [profile, router])
 
-        if (profile.onboarding_step === "complete") {
-          router.replace("/dashboard")
-          return
-        }
+  // Derived — no setState needed
+  const currentStep: WizardStep =
+    profile?.onboarding_step === "identity"
+      ? "identity"
+      : profile?.onboarding_step === "skills"
+        ? "skills"
+        : "archetype"
 
-        if (profile.archetype) setArchetype(profile.archetype)
-
-        if (profile.onboarding_step === "skills") setCurrentStep("skills")
-        else if (profile.onboarding_step === "identity") setCurrentStep("identity")
-        else setCurrentStep("archetype")
-
-        setReady(true)
-      })
-      .catch(() => setReady(true))
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, isAuthenticated])
-
-  const currentIndex = stepToIndex(currentStep)
-
-  async function patch(payload: Record<string, unknown>) {
-    const res = await authFetch("/api/profile", {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    })
-    if (!res.ok) {
-      const data = await res.json() as { message: string }
-      throw new Error(data.message ?? "Something went wrong")
-    }
-    return res.json()
-  }
+  const archetype = (profile?.archetype ?? null) as ArchetypeId | null
+  const currentIndex = STEPS.indexOf(currentStep)
 
   async function handleArchetypeSelect(selected: ArchetypeId) {
-    setLoading(true)
-    try {
-      await patch({ archetype: selected, onboarding_step: "archetype" satisfies OnboardingStep })
-      setArchetype(selected)
-      setCurrentStep("skills")
-    } finally {
-      setLoading(false)
-    }
+    await patchProfile.mutateAsync({ archetype: selected, onboarding_step: "skills" })
   }
 
   async function handleSkillsNext(skills: string[]) {
-    setLoading(true)
-    try {
-      await patch({ skills, onboarding_step: "skills" satisfies OnboardingStep })
-      setCurrentStep("identity")
-    } finally {
-      setLoading(false)
-    }
+    await patchProfile.mutateAsync({ skills, onboarding_step: "identity" })
   }
 
   async function handleIdentityNext(handle: string, bio: string) {
     setIdentityError(null)
-    setLoading(true)
     try {
-      await patch({
+      await patchProfile.mutateAsync({
         handle,
         bio: bio || undefined,
-        onboarding_step: "complete" satisfies OnboardingStep,
+        onboarding_step: "complete",
       })
       router.replace("/dashboard")
     } catch (err) {
       setIdentityError(err instanceof Error ? err.message : "Something went wrong")
-    } finally {
-      setLoading(false)
     }
   }
 
-  if (isLoading || !ready) {
+  if (isLoading || profileLoading || !profile || profile.onboarding_step === "complete") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground font-mono text-sm animate-pulse">
@@ -146,21 +96,24 @@ export function OnboardingWizard() {
       <div className="flex-1 flex items-start justify-center px-6 py-10">
         <div className="w-full max-w-5xl">
           {currentStep === "archetype" && (
-            <StepArchetype onSelect={handleArchetypeSelect} loading={loading} />
+            <StepArchetype
+              onSelect={handleArchetypeSelect}
+              loading={patchProfile.isPending}
+            />
           )}
           {currentStep === "skills" && archetype && (
             <StepSkills
               archetype={archetype}
               onNext={handleSkillsNext}
-              onBack={() => setCurrentStep("archetype")}
-              loading={loading}
+              onBack={() => patchProfile.mutate({ onboarding_step: "archetype" })}
+              loading={patchProfile.isPending}
             />
           )}
           {currentStep === "identity" && (
             <StepIdentity
               onNext={handleIdentityNext}
-              onBack={() => setCurrentStep("skills")}
-              loading={loading}
+              onBack={() => patchProfile.mutate({ onboarding_step: "skills" })}
+              loading={patchProfile.isPending}
               error={identityError}
             />
           )}

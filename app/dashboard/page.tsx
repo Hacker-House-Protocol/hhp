@@ -2,53 +2,43 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/use-auth"
-import { useAuthFetch } from "@/hooks/use-auth-fetch"
+import { useProfile, syncAndGetProfile } from "@/services/api/profile"
+import { queryKeys } from "@/lib/query-keys"
 import { DashboardNavbar } from "./_components/dashboard-navbar"
 import { CypherIdentityCard } from "./_components/cypher-identity-card"
 import { HackSpacesFeed } from "./_components/hack-spaces-feed"
 
-interface UserProfile {
-  id: string
-  handle: string | null
-  bio: string | null
-  archetype: string | null
-  skills: string[] | null
-  wallet_address: string | null
-  email: string | null
-  onboarding_step: string | null
-}
-
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading } = useAuth()
-  const { authFetch } = useAuthFetch()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [profileLoading, setProfileLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const [synced, setSynced] = useState(false)
 
   useEffect(() => {
     if (isLoading) return
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated) {
       router.replace("/")
       return
     }
-
-    authFetch("/api/auth/sync", { method: "POST" })
-      .then(() => authFetch("/api/profile"))
-      .then((res) => res.json())
-      .then((data: { user?: UserProfile }) => {
-        if (!data.user || data.user.onboarding_step !== "complete") {
-          router.replace("/onboarding")
-          return
-        }
-        setProfile(data.user)
+    syncAndGetProfile()
+      .then((data) => {
+        queryClient.setQueryData([queryKeys.profile], data)
+        setSynced(true)
       })
       .catch(console.error)
-      .finally(() => setProfileLoading(false))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, isAuthenticated])
 
-  if (isLoading || profileLoading) {
+  const { data: profile } = useProfile({ enabled: synced })
+
+  useEffect(() => {
+    if (!synced || !profile) return
+    if (profile.onboarding_step !== "complete") router.replace("/onboarding")
+  }, [synced, profile, router])
+
+  if (isLoading || !synced || !profile || profile.onboarding_step !== "complete") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground font-mono text-sm animate-pulse">
@@ -57,8 +47,6 @@ export default function DashboardPage() {
       </div>
     )
   }
-
-  if (!profile) return null
 
   return (
     <div className="min-h-screen bg-background">

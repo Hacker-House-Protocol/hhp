@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useAuthFetch } from "@/hooks/use-auth-fetch"
+import { useCreateHackSpace } from "@/services/api/hack-spaces"
 import { ARCHETYPES, ALL_SKILLS } from "@/lib/onboarding"
 import {
   createHackSpaceSchema,
@@ -29,8 +28,7 @@ export function CreateHackSpaceModal({
   onCreated,
   onClose,
 }: CreateHackSpaceModalProps) {
-  const { authFetch } = useAuthFetch()
-  const [serverError, setServerError] = useState<string | null>(null)
+  const createHackSpace = useCreateHackSpace()
 
   const {
     control,
@@ -47,16 +45,7 @@ export function CreateHackSpaceModal({
   })
 
   async function onSubmit(values: CreateHackSpaceInput) {
-    setServerError(null)
-    const res = await authFetch("/api/hack-spaces", {
-      method: "POST",
-      body: JSON.stringify(values),
-    })
-    const data = (await res.json()) as { message?: string }
-    if (!res.ok) {
-      setServerError(data.message ?? "Something went wrong")
-      return
-    }
+    await createHackSpace.mutateAsync(values)
     onCreated()
   }
 
@@ -222,8 +211,10 @@ export function CreateHackSpaceModal({
             )}
           />
 
-          {serverError && (
-            <p className="text-sm text-destructive">{serverError}</p>
+          {createHackSpace.error && (
+            <p className="text-sm text-destructive">
+              {createHackSpace.error.message}
+            </p>
           )}
 
           <div className="flex justify-end gap-2 pt-1">

@@ -38,8 +38,10 @@ pnpm lint       # Run ESLint
 ### Provider hierarchy (layout.tsx)
 
 ```
-AppPrivyProvider → TooltipProvider → {children}
+AppPrivyProvider → QueryProvider → TooltipProvider → {children}
 ```
+
+`QueryProvider` (`components/providers/query-provider.tsx`) mounts `ApiAuthSetup` internally, which calls `setTokenGetter(getAccessToken)` from Privy once — this is what gives `genericAuthRequest` its auth token without needing hooks.
 
 ### Environment variables
 
@@ -118,6 +120,94 @@ Do NOT upgrade resolvers to v5 or Zod to v4 — they are version-locked intentio
 7. **`isSubmitting` from `formState`** replaces manual loading state for submit buttons.
 
 8. **Server errors** (e.g. "handle already taken") go into local `useState`, not react-hook-form — display them near the relevant field or at the bottom of the form.
+
+## Data Fetching — Service Module Pattern
+
+All client-side data fetching follows the **Service Module Pattern**: one file per domain in `services/api/`, containing everything related to that domain.
+
+### Building blocks
+
+- **`lib/api-client.ts`** — singleton axios instance. Auth token is injected via `setTokenGetter` (called once from `QueryProvider`). Never import the axios instance directly — always use `genericAuthRequest`.
+- **`lib/query-hooks.ts`** — `useAppQuery` and `useAppMutation` wrappers around TanStack Query.
+- **`lib/query-keys.ts`** — plain string constants. The array wrapper goes at the call site: `queryKey: [queryKeys.profile]`.
+
+### Service file structure
+
+One file per domain at `services/api/<domain>.ts`. Each file exports plain async functions and hooks — nothing else.
+
+```ts
+// services/api/my-domain.ts
+"use client"
+
+import { useQueryClient } from "@tanstack/react-query"
+import { genericAuthRequest } from "@/lib/api-client"
+import { useAppQuery, useAppMutation } from "@/lib/query-hooks"
+import { queryKeys } from "@/lib/query-keys"
+
+// Plain async function (for one-off calls outside hooks)
+export async function getThings(): Promise<Thing[]> {
+  const { things } = await genericAuthRequest<{ things: Thing[] }>("get", "/api/things")
+  return things
+}
+
+// Query hook
+export const useThings = () => {
+  return useAppQuery<Thing[]>({
+    fetcher: async () => {
+      const { things } = await genericAuthRequest<{ things: Thing[] }>("get", "/api/things")
+      return things
+    },
+    queryKey: [queryKeys.things],
+  })
+}
+
+// Mutation hook
+export const useCreateThing = () => {
+  const queryClient = useQueryClient()
+  return useAppMutation<CreateThingInput, Thing>({
+    fetcher: async (input) => {
+      const { thing } = await genericAuthRequest<{ thing: Thing }>("post", "/api/things", input)
+      return thing
+    },
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [queryKeys.things] })
+      },
+    },
+  })
+}
+```
+
+### Rules
+
+1. **One file per domain** — `services/api/profile.ts`, `services/api/hack-spaces.ts`, etc. Never split a domain across multiple files.
+
+2. **Never use raw `fetch` or import axios directly in components** — always go through `genericAuthRequest` inside a service file.
+
+3. **Never create standalone hook files** (`hooks/queries/`, `hooks/mutations/`) — hooks live in their service file.
+
+4. **Query keys are plain strings** in `lib/query-keys.ts`. Wrap in array at the call site:
+   ```ts
+   // ❌ wrong
+   queryKey: queryKeys.profile          // not an array
+   queryKey: queryKeys.profile.all()    // not a function
+
+   // ✅ correct
+   queryKey: [queryKeys.profile]
+   ```
+
+5. **Add the key to `lib/query-keys.ts`** whenever a new domain is created:
+   ```ts
+   export const queryKeys = {
+     profile: "profile",
+     hackSpaces: "hack-spaces",
+     myNewDomain: "my-new-domain",  // ← add here
+   }
+   ```
+
+6. **`onSuccess` with `setQueryData` vs `invalidateQueries`**:
+   - Use `setQueryData` when the mutation returns the updated entity (avoids a refetch): patch profile, update item.
+   - Use `invalidateQueries` when the mutation changes a list (triggers refetch): create/delete item in a list.
 
 ## Conventions
 

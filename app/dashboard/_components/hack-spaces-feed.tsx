@@ -1,57 +1,18 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
-import { useAuthFetch } from "@/hooks/use-auth-fetch"
+import { useState } from "react"
+import { useHackSpaces } from "@/services/api/hack-spaces"
 import { HackSpaceCard } from "./hack-space-card"
 import { CreateHackSpaceModal } from "./create-hack-space-modal"
 import { Button } from "@/components/ui/button"
-
-interface HackSpace {
-  id: string
-  title: string
-  description: string
-  looking_for: string[]
-  skills_needed: string[]
-  created_at: string
-  creator: {
-    id: string
-    handle: string | null
-    archetype: string | null
-  }
-}
 
 interface HackSpacesFeedProps {
   currentUserId: string | null
 }
 
 export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
-  const { authFetch } = useAuthFetch()
-  const authFetchRef = useRef(authFetch)
-  authFetchRef.current = authFetch
-
-  const [hackSpaces, setHackSpaces] = useState<HackSpace[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: hackSpaces = [], isLoading } = useHackSpaces()
   const [showModal, setShowModal] = useState(false)
-
-  async function fetchHackSpaces() {
-    setLoading(true)
-    try {
-      const res = await authFetchRef.current("/api/hack-spaces")
-      const data = await res.json() as { hack_spaces?: HackSpace[] }
-      setHackSpaces(data.hack_spaces ?? [])
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchHackSpaces()
-  }, [])
-
-  function handleCreated() {
-    setShowModal(false)
-    fetchHackSpaces()
-  }
 
   return (
     <>
@@ -67,7 +28,7 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
           </Button>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex flex-col gap-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="bg-card border border-border rounded-lg p-5 h-40 animate-pulse" />
@@ -100,7 +61,10 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
       </div>
 
       {showModal && (
-        <CreateHackSpaceModal onCreated={handleCreated} onClose={() => setShowModal(false)} />
+        <CreateHackSpaceModal
+          onCreated={() => setShowModal(false)}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </>
   )
