@@ -1,22 +1,21 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useProfile, usePatchProfile } from "@/services/api/profile"
 import { useImportTalentScore, useImportPoaps } from "@/services/api/integrations"
 import { StepArchetype } from "./step-archetype"
+import { StepIdentity } from "./step-identity"
 import { StepSkills } from "./step-skills"
-import { StepAvatar } from "./step-avatar"
-import { StepProfile, type ProfileExtras } from "./step-profile"
+import { StepContext, type ContextExtras } from "./step-context"
 import { VISIBLE_STEPS } from "@/lib/onboarding"
 import type { ArchetypeId, OnboardingStep } from "@/lib/onboarding"
-import { useState } from "react"
 
 type WizardStep = Exclude<OnboardingStep, "complete">
 
 function resolveStep(step: string | null): WizardStep {
-  const valid: WizardStep[] = ["archetype", "skills", "avatar", "profile"]
+  const valid: WizardStep[] = ["archetype", "identity", "skills", "context"]
   return valid.includes(step as WizardStep) ? (step as WizardStep) : "archetype"
 }
 
@@ -31,7 +30,8 @@ export function OnboardingWizard() {
   const patchProfile = usePatchProfile()
   const importTalentScore = useImportTalentScore()
   const importPoaps = useImportPoaps()
-  const [profileError, setProfileError] = useState<string | null>(null)
+  const [identityError, setIdentityError] = useState<string | null>(null)
+  const [contextError, setContextError] = useState<string | null>(null)
 
   // Auto-import integrations once when wallet is available
   const importedRef = useRef(false)
@@ -60,19 +60,31 @@ export function OnboardingWizard() {
   const currentIndex = VISIBLE_STEPS.indexOf(currentStep)
 
   async function handleArchetypeSelect(selected: ArchetypeId) {
-    await patchProfile.mutateAsync({ archetype: selected, onboarding_step: "skills" })
+    await patchProfile.mutateAsync({ archetype: selected, onboarding_step: "identity" })
   }
 
-  async function handleSkillsNext(skills: string[]) {
-    await patchProfile.mutateAsync({ skills, onboarding_step: "avatar" })
-  }
-
-  async function handleProfileNext(handle: string, bio: string, extras: ProfileExtras) {
-    setProfileError(null)
+  async function handleIdentityNext(handle: string, avatarUrl: string) {
+    setIdentityError(null)
     try {
       await patchProfile.mutateAsync({
         handle,
-        bio: bio || undefined,
+        avatar_url: avatarUrl,
+        onboarding_step: "skills",
+      })
+    } catch (err) {
+      setIdentityError(err instanceof Error ? err.message : "Something went wrong")
+    }
+  }
+
+  async function handleSkillsNext(skills: string[]) {
+    await patchProfile.mutateAsync({ skills, onboarding_step: "context" })
+  }
+
+  async function handleContextNext(extras: ContextExtras) {
+    setContextError(null)
+    try {
+      await patchProfile.mutateAsync({
+        bio: extras.bio || undefined,
         languages: extras.languages.length > 0 ? extras.languages : undefined,
         region: extras.region || undefined,
         country: extras.country || undefined,
@@ -80,12 +92,18 @@ export function OnboardingWizard() {
         timezone: extras.timezone || undefined,
         github_url: extras.github_url || undefined,
         twitter_url: extras.twitter_url || undefined,
+        farcaster_url: extras.farcaster_url || undefined,
         onboarding_step: "complete",
       })
-      router.push("/home")
+      router.push("/dashboard")
     } catch (err) {
-      setProfileError(err instanceof Error ? err.message : "Something went wrong")
+      setContextError(err instanceof Error ? err.message : "Something went wrong")
     }
+  }
+
+  async function handleContextSkip() {
+    await patchProfile.mutateAsync({ onboarding_step: "complete" })
+    router.push("/dashboard")
   }
 
   if (isLoading || profileLoading || !profile || profile.onboarding_step === "complete") {
@@ -124,25 +142,29 @@ export function OnboardingWizard() {
               loading={patchProfile.isPending}
             />
           )}
+          {currentStep === "identity" && (
+            <StepIdentity
+              onNext={handleIdentityNext}
+              onBack={() => patchProfile.mutate({ onboarding_step: "archetype" })}
+              loading={patchProfile.isPending}
+              error={identityError}
+            />
+          )}
           {currentStep === "skills" && archetype && (
             <StepSkills
               archetype={archetype}
               onNext={handleSkillsNext}
-              onBack={() => patchProfile.mutate({ onboarding_step: "archetype" })}
+              onBack={() => patchProfile.mutate({ onboarding_step: "identity" })}
               loading={patchProfile.isPending}
             />
           )}
-          {currentStep === "avatar" && (
-            <StepAvatar
+          {currentStep === "context" && (
+            <StepContext
+              onNext={handleContextNext}
+              onSkip={handleContextSkip}
               onBack={() => patchProfile.mutate({ onboarding_step: "skills" })}
-            />
-          )}
-          {currentStep === "profile" && (
-            <StepProfile
-              onNext={handleProfileNext}
-              onBack={() => patchProfile.mutate({ onboarding_step: "avatar" })}
               loading={patchProfile.isPending}
-              error={profileError}
+              error={contextError}
             />
           )}
         </div>

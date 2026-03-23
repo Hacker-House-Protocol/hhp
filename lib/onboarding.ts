@@ -71,16 +71,16 @@ export { TIMEZONES } from "@/lib/constants/timezones"
 
 export type OnboardingStep =
   | "archetype"
+  | "identity"
   | "skills"
-  | "avatar"
-  | "profile"
+  | "context"
   | "complete"
 
 export const STEP_ORDER: OnboardingStep[] = [
   "archetype",
+  "identity",
   "skills",
-  "avatar",
-  "profile",
+  "context",
   "complete",
 ]
 

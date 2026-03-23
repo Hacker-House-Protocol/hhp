@@ -1,13 +1,41 @@
 import { z } from "zod"
 
-const urlField = z
-  .string()
-  .refine(
-    (val) => val === "" || /^https?:\/\/.+/.test(val),
-    "Must be a valid URL starting with http:// or https://",
-  )
-  .optional()
+// Handle-only schema used in StepIdentity
+export const handleSchema = z.object({
+  handle: z
+    .string()
+    .min(3, "Handle must be at least 3 characters")
+    .max(20, "Handle must be at most 20 characters")
+    .regex(/^[a-z0-9_]+$/, "Lowercase letters, numbers, and underscores only"),
+})
 
+export type HandleInput = z.infer<typeof handleSchema>
+
+// Context step schema (step 4)
+export const contextSchema = z.object({
+  bio: z.string().max(160, "Bio must be 160 characters or less").optional(),
+  languages: z.array(z.string()).optional(),
+  region: z.string().optional(),
+  country: z.string().optional(),
+  city: z.string().optional(),
+  timezone: z.string().optional(),
+  github_url: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]*$/, "Invalid GitHub username")
+    .optional(),
+  twitter_url: z
+    .string()
+    .regex(/^[a-zA-Z0-9_]*$/, "Invalid Twitter/X username")
+    .optional(),
+  farcaster_url: z
+    .string()
+    .regex(/^[a-zA-Z0-9_.]*$/, "Invalid Farcaster username")
+    .optional(),
+})
+
+export type ContextInput = z.infer<typeof contextSchema>
+
+// Legacy — kept for any code that still references profileSchema
 export const profileSchema = z.object({
   handle: z
     .string()
@@ -20,13 +48,13 @@ export const profileSchema = z.object({
   country: z.string().optional(),
   city: z.string().optional(),
   timezone: z.string().optional(),
-  github_url: urlField,
-  twitter_url: urlField,
+  github_url: z.string().optional(),
+  twitter_url: z.string().optional(),
 })
 
 export type ProfileInput = z.infer<typeof profileSchema>
 
-// Legacy exports — kept for any code that still references them
+// Legacy
 export const identitySchema = z.object({
   handle: z
     .string()
@@ -37,15 +65,3 @@ export const identitySchema = z.object({
 })
 
 export type IdentityInput = z.infer<typeof identitySchema>
-
-export const contextSchema = z.object({
-  languages: z.array(z.string()).optional(),
-  region: z.string().optional(),
-  timezone: z.string().optional(),
-  github_url: urlField,
-  twitter_url: urlField,
-  farcaster_url: urlField,
-  website_url: urlField,
-})
-
-export type ContextInput = z.infer<typeof contextSchema>

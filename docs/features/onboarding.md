@@ -9,10 +9,15 @@ Punto de entrada post-auth. El builder completa su Cypher Identity antes de lleg
 
 ```
 Auth (Privy)
-  └── Importación on-chain (automática)
-        └── Cypher Identity (formulario)
-              └── /home
+  └── Pantalla transitoria — "Scanning your on-chain history..." (2-3s)
+        └── Step 1 — Archetype
+              └── Step 2 — Identity (handle + Cypher Kitten)
+                    └── Step 3 — Skills
+                          └── Step 4 — Context (skippable)
+                                └── /dashboard
 ```
+
+El progreso se persiste en `profile.onboarding_step` (`archetype | identity | skills | context | complete`). Si el builder abandona y vuelve, retoma desde donde lo dejó.
 
 ---
 
@@ -33,78 +38,120 @@ El builder elige cómo entrar. Privy maneja toda la autenticación.
 
 ---
 
-## Paso 2 — Importación on-chain (automática, sin formulario)
+## Paso 2 — Importación on-chain
 
-Inmediatamente después del auth, la plataforma importa en silencio:
+Inmediatamente después del auth, la plataforma importa el historial on-chain del builder.
 
 | Dato | Fuente | Comportamiento si falla |
 |---|---|---|
-| POAPs | POAP API | Continúa sin POAPs — se pueden importar después desde `/perfil` |
+| POAPs | POAP API | Continúa sin POAPs — se pueden importar después desde el perfil |
 | Talent Protocol score | Talent Protocol API | Continúa sin score — campo queda vacío |
-| Fecha del primer tx on-chain | RPC Alchemy | Calcula `onchain_since` — opcional |
 
-El builder ve una pantalla de carga breve ("Importing your on-chain history..."). Si todo falla, continúa al paso 3 sin bloquear.
+**UX:** Se muestra una pantalla transitoria breve *"Scanning your on-chain history..."* mientras la importación corre en background. Avanza automáticamente sin esperar el resultado — nunca bloquea el flujo. El objetivo es hacer visible que el historial on-chain del builder es parte de su identidad en el protocolo.
 
----
+> **Estado actual:** La importación ocurre en background via `useImportTalentScore` y `useImportPoaps` en `OnboardingWizard`, pero **la pantalla transitoria no está implementada** — está pendiente.
 
-## Paso 3 — Cypher Identity
+**Condición importante:** Ambas APIs (Talent Protocol y POAP) buscan historial usando la `wallet_address` del usuario. Esto solo es útil si el builder entró con una **wallet externa existente** (MetaMask, etc.) que ya tiene actividad on-chain. Si entró con email, Privy le crea una embedded wallet nueva — sin historial — y ambas APIs devolverán vacío. La pantalla transitoria solo debería mostrarse si `wallet_address` corresponde a una wallet externa, no a una embedded.
 
-Formulario en 2 sub-pasos.
+**Arquitectura de las llamadas:** Las API keys (`TALENT_PROTOCOL_APIKEY`, `POAP_APIKEY`) viven en `env.server.ts` y nunca se exponen al cliente. El flujo es:
+```
+Browser → POST /api/integrations/talent-protocol → Next.js server (con API key) → api.talentprotocol.com
+Browser → POST /api/integrations/poap           → Next.js server (con API key) → api.poap.tech
+```
 
-### Sub-paso A — Identidad visual (obligatorio)
-
-| Campo | Tipo | Requerido | Notas |
-|---|---|---|---|
-| Username / Alias | Text input | ✅ | Único. Oculta la wallet en interfaces públicas. |
-| Arquetipo primario | Selector de 3 opciones | ✅ | Visionary / Strategist / Builder. Con descripción de cada uno. |
-| Cypher Kitten | Grid de GIFs seleccionables | ✅ | MVP: colección pre-armada. El seleccionado se usa como avatar. |
-
-### Sub-paso B — Contexto del builder (opcional pero recomendado)
-
-| Campo | Tipo | Requerido | Notas |
-|---|---|---|---|
-| Bio | Textarea (max 280 chars) | ❌ | Descripción corta del builder. |
-| Skills | Multi-select pills | ❌ | `Frontend · Backend · Smart Contracts · Design · PM · Research` |
-| Idiomas | Multi-select | ❌ | Idiomas en los que puede trabajar. |
-| Zona horaria / Región | Select | ❌ | Para matching por zona. |
-| GitHub | URL input | ❌ | |
-| Twitter/X | URL input | ❌ | |
-| Farcaster | URL input | ❌ | |
-| Website | URL input | ❌ | |
-
-> El sub-paso B puede saltarse con "Skip for now" — el builder puede completarlo desde `/perfil` en cualquier momento.
+**Fase 2 (futura):** Un paso dedicado donde el builder puede ver lo que se importó ("We found 12 POAPs and your Builder Score is 847") y conectar manualmente si no se detectó nada. Esto activa `is_verified: true` en el perfil.
 
 ---
 
-## Edge cases importantes
+## Step 1 — Archetype (`onboarding_step: "archetype"`)
 
-| Situación | Comportamiento |
-|---|---|
-| Username ya tomado | Error inline — sugerir variante (ej: `vitalik_` → "Try `vitalik_2`") |
-| Builder abandona a mitad del onboarding | Al volver, retoma desde donde lo dejó — no pierde el auth |
-| Builder intenta ir a `/home` sin completar el paso A | Redirige a `/onboarding` |
-| Builder conecta una wallet que ya tiene un perfil | Loguea directamente, no repite onboarding |
+| Campo | Tipo | Requerido |
+|---|---|---|
+| Arquetipo primario | Cards seleccionables (3 opciones) | ✅ |
+
+Opciones: **Visionary / Strategist / Builder**. Cada card muestra nombre, tagline y descripción. Al seleccionar, avanza automáticamente sin botón confirm.
+
+---
+
+## Step 2 — Identity (`onboarding_step: "identity"`)
+
+Dos decisiones permanentes en un mismo paso: el nombre y la cara del builder en el protocolo.
+
+| Campo | Tipo | Requerido | Notas |
+|---|---|---|---|
+| Handle | Text input con prefijo `@` | ✅ | 3-20 chars, `/^[a-z0-9_]+$/`, único. Permanente. |
+| Cypher Kitten | Grid de GIFs seleccionables | ✅ | Colección pre-armada en `CYPHER_KITTENS` (`lib/onboarding.ts`). Se guarda como `avatar_url`. |
+
+El botón Continue está deshabilitado hasta que ambos campos estén completos. El error de handle duplicado se muestra como error de servidor inline (`identityError` en `OnboardingWizard`).
+
+---
+
+## Step 3 — Skills (`onboarding_step: "skills"`)
+
+| Campo | Tipo | Requerido |
+|---|---|---|
+| Skills | Pills multi-select | ✅ (al menos 1) |
+
+Las skills se filtran por arquetipo elegido (`SKILLS_BY_ARCHETYPE` en `lib/onboarding.ts`), con opción de ver todas. Botón Back vuelve al paso Identity.
+
+---
+
+## Step 4 — Context (`onboarding_step: "context"`)
+
+Paso completamente opcional. El builder puede saltarlo con "Skip for now →" y completarlo después desde su perfil.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| Bio | Textarea | Máx 160 chars |
+| Idiomas | Multi-select pills | Lista en `lib/constants/languages.ts` |
+| Región | Combobox | Cascading: Región → País → Ciudad |
+| País | Combobox | Aparece al seleccionar región |
+| Ciudad | Combobox | Aparece al seleccionar país. Al elegir ciudad, `timezone` se asigna automáticamente desde `lib/constants/location.ts` |
+| GitHub | Input con prefijo `github.com/` | Solo username — regex `/^[a-zA-Z0-9_-]*$/` |
+| Twitter / X | Input con prefijo `x.com/` | Solo username — regex `/^[a-zA-Z0-9_]*$/` |
+| Farcaster | Input con prefijo `warpcast.com/` | Solo username — regex `/^[a-zA-Z0-9_.]*$/` |
+
+**Acciones al pie:**
+- `← Back` — vuelve a Skills
+- `Skip for now →` (ghost) — guarda `onboarding_step: "complete"` sin datos de contexto, redirige a `/home`
+- `Enter the Protocol →` (primary) — guarda todos los campos completados, redirige a `/home`
+
+Schema: `contextSchema` en `lib/schemas/onboarding.ts`.
 
 ---
 
 ## Datos que se crean al completar el onboarding
 
-Se inserta una fila en la tabla `profiles` de Supabase con:
-- `id` — generado por Privy
-- `username` — elegido en paso 3A
-- `archetype` — elegido en paso 3A
-- `avatar_url` — Cypher Kitten seleccionado
-- `wallet_address` — de Privy (embedded o externa)
-- `skills`, `languages`, `timezone`, `region`, `bio`, links — del paso 3B si completó
-- `poaps` — importados en paso 2 si hubo
-- `talent_protocol_score` — importado en paso 2 si hubo
-- `onchain_since` — calculado en paso 2 si hubo
-- `is_verified: false` — se activa cuando conecta Talent Protocol + POAP (Fase 2)
+Se actualiza la fila en `profiles` de Supabase con:
+
+| Campo | Origen |
+|---|---|
+| `archetype` | Step 1 |
+| `handle` | Step 2 |
+| `avatar_url` | Step 2 |
+| `skills` | Step 3 |
+| `bio`, `languages`, `region`, `country`, `city`, `timezone` | Step 4 (si no hizo skip) |
+| `github_url`, `twitter_url`, `farcaster_url` | Step 4 (si no hizo skip) |
+| `poaps` | Importación automática background |
+| `talent_protocol_score` | Importación automática background |
+| `is_verified` | `false` hasta Fase 2 |
+
+---
+
+## Pendientes / deuda técnica
+
+| Item | Prioridad |
+|---|---|
+| Pantalla transitoria "Scanning your on-chain history..." entre auth y Step 1 | Media |
+| Sugerencia de variante en error de handle duplicado (ej: "Try `vitalik_2`") | Baja |
+| Fase 2: paso de verificación on-chain con resumen de POAPs + Builder Score | Fase 2 |
 
 ---
 
 ## Relación con el resto del sistema
 
-- Auth state lo maneja **Privy** via `usePrivy` hook — ver `CLAUDE.md`
-- Crear el perfil en Supabase va por **API route** (`POST /api/profiles`) — nunca directo desde el cliente
-- Una vez creado el perfil, `QueryProvider` lo cachea via TanStack Query con key `queryKeys.profile`
+- Auth state: **Privy** via `usePrivy` — ver `CLAUDE.md`
+- Mutaciones: `usePatchProfile` (`PATCH /api/profiles/me`) — nunca Supabase directo desde cliente
+- Cache: TanStack Query con key `queryKeys.profile`
+- Schemas en `lib/schemas/onboarding.ts` — usar `handleSchema` (step 2) y `contextSchema` (step 4). Los schemas `profileSchema` e `identitySchema` son legacy.
+- Al completar cualquier paso: `onboarding_step` avanza en DB. Al completar step 4 o hacer skip: `router.push("/dashboard")`
