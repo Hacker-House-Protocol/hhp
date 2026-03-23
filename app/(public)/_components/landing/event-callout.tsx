@@ -1,4 +1,4 @@
-import { WaitlistForm } from "./waitlist-form"
+import { AuthButton } from "@/components/auth/auth-button"
 
 export function EventCallout() {
   return (
@@ -47,8 +47,8 @@ export function EventCallout() {
               </p>
             </div>
 
-            {/* Waitlist form */}
-            <WaitlistForm />
+            {/* CTA */}
+            <AuthButton className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-11 px-8 w-fit" />
           </div>
         </div>
       </div>

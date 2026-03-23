@@ -31,8 +31,11 @@
 
   /* Arquetipos HHP */
   --color-visionary: var(--visionary);
+  --color-visionary-foreground: var(--visionary-foreground);
   --color-strategist: var(--strategist);
+  --color-strategist-foreground: var(--strategist-foreground);
   --color-builder-archetype: var(--builder-archetype);
+  --color-builder-foreground: var(--builder-foreground);
 
   /* Sidebar */
   --color-sidebar: var(--sidebar);
@@ -90,9 +93,12 @@
   --destructive: oklch(0.577 0.245 27.325);
 
   /* Arquetipos */
-  --visionary: oklch(0.52 0.24 333);         /* magenta — levemente más luminoso */
-  --strategist: oklch(0.68 0.14 279);        /* lavender — más legible */
-  --builder-archetype: oklch(0.84 0.15 140); /* green — sin cambio, ya era correcto */
+  --visionary: oklch(0.52 0.24 333);              /* magenta */
+  --visionary-foreground: oklch(0.96 0.01 277);   /* blanco — contraste ~6:1 sobre magenta L=52 */
+  --strategist: oklch(0.68 0.14 279);             /* lavender */
+  --strategist-foreground: oklch(0.09 0.04 277);  /* oscuro — contraste ~8:1 sobre lavender L=68 */
+  --builder-archetype: oklch(0.84 0.15 140);      /* green */
+  --builder-foreground: oklch(0.09 0.04 277);     /* oscuro — contraste ~10:1 sobre green L=84 */
 
   /* Base radius = 8px */
   --radius: 0.5rem;

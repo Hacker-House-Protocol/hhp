@@ -2,8 +2,10 @@
 
 import { useState } from "react"
 import { ARCHETYPES, SKILLS_BY_ARCHETYPE, ALL_SKILLS, type ArchetypeId } from "@/lib/onboarding"
-import { Button } from "@/components/ui/button"
+import { Button, type buttonVariants } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
+import type { VariantProps } from "class-variance-authority"
 
 interface StepSkillsProps {
   archetype: ArchetypeId
@@ -12,12 +14,29 @@ interface StepSkillsProps {
   loading: boolean
 }
 
+type ButtonVariant = VariantProps<typeof buttonVariants>["variant"]
+
+// Maps archetype id → filled / outline Button variants
+const ARCHETYPE_VARIANT: Record<ArchetypeId, { filled: ButtonVariant; outline: ButtonVariant }> = {
+  visionary:  { filled: "visionary",  outline: "visionary-outline" },
+  strategist: { filled: "strategist", outline: "strategist-outline" },
+  builder:    { filled: "builder",    outline: "builder-outline" },
+}
+
+// Maps archetype id → Tailwind text class
+const ARCHETYPE_TEXT: Record<ArchetypeId, string> = {
+  visionary:  "text-visionary",
+  strategist: "text-strategist",
+  builder:    "text-builder-archetype",
+}
+
 export function StepSkills({ archetype, onNext, onBack, loading }: StepSkillsProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const archetypeData = ARCHETYPES.find((a) => a.id === archetype)!
   const suggestedSkills = SKILLS_BY_ARCHETYPE[archetype]
   const otherSkills = ALL_SKILLS.filter((s) => !suggestedSkills.includes(s))
+  const variants = ARCHETYPE_VARIANT[archetype]
 
   function toggle(skill: string) {
     setSelected((prev) => {
@@ -32,104 +51,95 @@ export function StepSkills({ archetype, onNext, onBack, loading }: StepSkillsPro
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="font-display font-bold text-foreground text-3xl sm:text-4xl">
+    <div className="flex flex-col gap-10 w-full">
+      {/* Step header */}
+      <div className="flex flex-col gap-3">
+        <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-[0.15em]">
+          02 — Skills
+        </p>
+        <h1 className="font-display font-bold text-foreground text-4xl leading-tight">
           What are your skills?
         </h1>
-        <p className="text-muted-foreground text-lg">
-          Select all that apply. Your{" "}
-          <span style={{ color: `var(${archetypeData.colorVar})` }}>
+        <p className="text-muted-foreground text-base leading-relaxed max-w-md">
+          Select all that apply.{" "}
+          <span className={cn("font-medium", ARCHETYPE_TEXT[archetype])}>
             {archetypeData.name}
           </span>{" "}
-          skills are highlighted.
+          skills are highlighted below.
         </p>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {/* Suggested skills */}
+      {/* Skills sections */}
+      <div className="flex flex-col gap-8">
+        {/* Suggested — archetype color */}
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-            Suggested for {archetypeData.name}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-[0.15em] shrink-0">
+              Suggested
+            </p>
+            <div className="flex-1 h-px bg-border" />
+          </div>
           <div className="flex flex-wrap gap-2">
-            {suggestedSkills.map((skill) => (
-              <SkillPill
-                key={skill}
-                skill={skill}
-                selected={selected.has(skill)}
-                colorVar={archetypeData.colorVar}
-                onToggle={toggle}
-              />
-            ))}
+            {suggestedSkills.map((skill) => {
+              const isSelected = selected.has(skill)
+              return (
+                <Button
+                  key={skill}
+                  type="button"
+                  size="sm"
+                  variant={isSelected ? variants.filled : variants.outline}
+                  onClick={() => toggle(skill)}
+                  className="rounded-md font-mono"
+                >
+                  {isSelected ? "✓ " : ""}{skill}
+                </Button>
+              )
+            })}
           </div>
         </div>
 
-        {/* Other skills */}
+        {/* Other — primary color */}
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-            Other skills
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-[0.15em] shrink-0">
+              Other skills
+            </p>
+            <div className="flex-1 h-px bg-border" />
+          </div>
           <div className="flex flex-wrap gap-2">
-            {otherSkills.map((skill) => (
-              <SkillPill
-                key={skill}
-                skill={skill}
-                selected={selected.has(skill)}
-                colorVar="--muted-foreground"
-                onToggle={toggle}
-              />
-            ))}
+            {otherSkills.map((skill) => {
+              const isSelected = selected.has(skill)
+              return (
+                <Button
+                  key={skill}
+                  type="button"
+                  size="sm"
+                  variant={isSelected ? "default" : "outline"}
+                  onClick={() => toggle(skill)}
+                  className="rounded-md font-mono"
+                >
+                  {isSelected ? "✓ " : ""}{skill}
+                </Button>
+              )
+            })}
           </div>
         </div>
       </div>
 
+      {/* Actions */}
       <div className="flex items-center justify-between pt-2">
-        <Button variant="ghost" onClick={onBack} disabled={loading}>
+        <Button variant="outline" size="lg" onClick={onBack} disabled={loading} className="rounded-xl font-mono">
           ← Back
         </Button>
         <Button
+          size="lg"
           onClick={() => onNext(Array.from(selected))}
           disabled={selected.size === 0 || loading}
-          className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
+          className="rounded-xl font-mono font-semibold px-6"
         >
-          {loading ? "Saving..." : "Continue →"}
+          {loading ? <><Spinner className="mr-2" /> Saving...</> : "Continue →"}
         </Button>
       </div>
     </div>
-  )
-}
-
-interface SkillPillProps {
-  skill: string
-  selected: boolean
-  colorVar: string
-  onToggle: (skill: string) => void
-}
-
-function SkillPill({ skill, selected, colorVar, onToggle }: SkillPillProps) {
-  return (
-    <button
-      onClick={() => onToggle(skill)}
-      className={cn(
-        "text-sm px-3 py-1.5 rounded-sm border font-mono transition-all duration-150",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-      )}
-      style={
-        selected
-          ? {
-              borderColor: `var(${colorVar})`,
-              color: `var(${colorVar})`,
-              backgroundColor: `color-mix(in oklch, var(${colorVar}) 15%, transparent)`,
-            }
-          : {
-              borderColor: "var(--border)",
-              color: "var(--muted-foreground)",
-              backgroundColor: "transparent",
-            }
-      }
-    >
-      {selected ? "✓ " : ""}{skill}
-    </button>
   )
 }

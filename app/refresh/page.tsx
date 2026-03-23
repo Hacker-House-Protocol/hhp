@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { usePrivy } from "@privy-io/react-auth";
+import { LoadingScreen } from "@/components/loading-screen";
 
 function RefreshContent() {
   const { ready, authenticated } = usePrivy();
@@ -20,12 +21,12 @@ function RefreshContent() {
     }
   }, [ready, authenticated, redirect, router]);
 
-  return null;
+  return <LoadingScreen message="Connecting" />;
 }
 
 export default function RefreshPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<LoadingScreen message="Connecting" />}>
       <RefreshContent />
     </Suspense>
   );

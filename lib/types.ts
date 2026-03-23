@@ -1,3 +1,10 @@
+export interface POAP {
+  id: string
+  name: string
+  image_url: string
+  event_date: string
+}
+
 export interface UserProfile {
   id: string
   privy_id: string
@@ -8,6 +15,20 @@ export interface UserProfile {
   wallet_address: string | null
   email: string | null
   onboarding_step: string | null
+  avatar_url: string | null
+  languages: string[] | null
+  timezone: string | null
+  region: string | null
+  country: string | null
+  city: string | null
+  github_url: string | null
+  twitter_url: string | null
+  farcaster_url: string | null
+  website_url: string | null
+  is_verified: boolean
+  talent_protocol_score: number | null
+  poaps: POAP[]
+  onchain_since: string | null
   created_at: string
   updated_at: string
 }

@@ -5,9 +5,13 @@ import { z } from "zod"
 const serverEnvSchema = z.object({
   PRIVY_APP_SECRET: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  POAP_APIKEY: z.string().min(1),
+  TALENT_PROTOCOL_APIKEY: z.string().min(1),
 })
 
 export const serverEnv = serverEnvSchema.parse({
   PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  POAP_APIKEY: process.env.POAP_APIKEY,
+  TALENT_PROTOCOL_APIKEY: process.env.TALENT_PROTOCOL_APIKEY,
 })

@@ -19,6 +19,20 @@ const badgeVariants = cva(
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // Archetype variants — filled
+        visionary:
+          "bg-visionary text-visionary-foreground [a]:hover:bg-visionary/80",
+        strategist:
+          "bg-strategist text-strategist-foreground [a]:hover:bg-strategist/80",
+        builder:
+          "bg-builder-archetype text-builder-foreground [a]:hover:bg-builder-archetype/80",
+        // Archetype variants — outline
+        "visionary-outline":
+          "border-visionary text-visionary bg-transparent [a]:hover:bg-visionary/10",
+        "strategist-outline":
+          "border-strategist text-strategist bg-transparent [a]:hover:bg-strategist/10",
+        "builder-outline":
+          "border-builder-archetype text-builder-archetype bg-transparent [a]:hover:bg-builder-archetype/10",
       },
     },
     defaultVariants: {

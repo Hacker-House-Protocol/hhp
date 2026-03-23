@@ -1,16 +1,24 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useProfile, usePatchProfile } from "@/services/api/profile"
+import { useImportTalentScore, useImportPoaps } from "@/services/api/integrations"
 import { StepArchetype } from "./step-archetype"
 import { StepSkills } from "./step-skills"
-import { StepIdentity } from "./step-identity"
-import type { ArchetypeId } from "@/lib/onboarding"
+import { StepAvatar } from "./step-avatar"
+import { StepProfile, type ProfileExtras } from "./step-profile"
+import { VISIBLE_STEPS } from "@/lib/onboarding"
+import type { ArchetypeId, OnboardingStep } from "@/lib/onboarding"
+import { useState } from "react"
 
-const STEPS = ["archetype", "skills", "identity"] as const
-type WizardStep = (typeof STEPS)[number]
+type WizardStep = Exclude<OnboardingStep, "complete">
+
+function resolveStep(step: string | null): WizardStep {
+  const valid: WizardStep[] = ["archetype", "skills", "avatar", "profile"]
+  return valid.includes(step as WizardStep) ? (step as WizardStep) : "archetype"
+}
 
 export function OnboardingWizard() {
   const { isAuthenticated, isLoading } = useAuth()
@@ -21,7 +29,22 @@ export function OnboardingWizard() {
   })
 
   const patchProfile = usePatchProfile()
-  const [identityError, setIdentityError] = useState<string | null>(null)
+  const importTalentScore = useImportTalentScore()
+  const importPoaps = useImportPoaps()
+  const [profileError, setProfileError] = useState<string | null>(null)
+
+  // Auto-import integrations once when wallet is available
+  const importedRef = useRef(false)
+  useEffect(() => {
+    if (importedRef.current) return
+    if (!profile?.wallet_address) return
+    if (profile.talent_protocol_score !== null && (profile.poaps?.length ?? 0) > 0) return
+
+    importedRef.current = true
+    importTalentScore.mutate(undefined)
+    importPoaps.mutate(undefined)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.wallet_address])
 
   useEffect(() => {
     if (isLoading) return
@@ -32,36 +55,36 @@ export function OnboardingWizard() {
     if (profile?.onboarding_step === "complete") router.replace("/dashboard")
   }, [profile, router])
 
-  // Derived — no setState needed
-  const currentStep: WizardStep =
-    profile?.onboarding_step === "identity"
-      ? "identity"
-      : profile?.onboarding_step === "skills"
-        ? "skills"
-        : "archetype"
-
+  const currentStep = resolveStep(profile?.onboarding_step ?? null)
   const archetype = (profile?.archetype ?? null) as ArchetypeId | null
-  const currentIndex = STEPS.indexOf(currentStep)
+  const currentIndex = VISIBLE_STEPS.indexOf(currentStep)
 
   async function handleArchetypeSelect(selected: ArchetypeId) {
     await patchProfile.mutateAsync({ archetype: selected, onboarding_step: "skills" })
   }
 
   async function handleSkillsNext(skills: string[]) {
-    await patchProfile.mutateAsync({ skills, onboarding_step: "identity" })
+    await patchProfile.mutateAsync({ skills, onboarding_step: "avatar" })
   }
 
-  async function handleIdentityNext(handle: string, bio: string) {
-    setIdentityError(null)
+  async function handleProfileNext(handle: string, bio: string, extras: ProfileExtras) {
+    setProfileError(null)
     try {
       await patchProfile.mutateAsync({
         handle,
         bio: bio || undefined,
+        languages: extras.languages.length > 0 ? extras.languages : undefined,
+        region: extras.region || undefined,
+        country: extras.country || undefined,
+        city: extras.city || undefined,
+        timezone: extras.timezone || undefined,
+        github_url: extras.github_url || undefined,
+        twitter_url: extras.twitter_url || undefined,
         onboarding_step: "complete",
       })
-      router.replace("/dashboard")
+      router.push("/home")
     } catch (err) {
-      setIdentityError(err instanceof Error ? err.message : "Something went wrong")
+      setProfileError(err instanceof Error ? err.message : "Something went wrong")
     }
   }
 
@@ -81,14 +104,14 @@ export function OnboardingWizard() {
       <div className="fixed top-0 left-0 right-0 h-1 bg-border z-50">
         <div
           className="h-full bg-primary transition-all duration-500 ease-out"
-          style={{ width: `${((currentIndex + 1) / STEPS.length) * 100}%` }}
+          style={{ width: `${((currentIndex + 1) / VISIBLE_STEPS.length) * 100}%` }}
         />
       </div>
 
       {/* Step counter */}
       <div className="pt-8 pb-2 px-6 max-w-5xl mx-auto w-full">
         <p className="text-xs font-mono text-muted-foreground">
-          Step {currentIndex + 1} / {STEPS.length}
+          Step {currentIndex + 1} / {VISIBLE_STEPS.length}
         </p>
       </div>
 
@@ -109,12 +132,17 @@ export function OnboardingWizard() {
               loading={patchProfile.isPending}
             />
           )}
-          {currentStep === "identity" && (
-            <StepIdentity
-              onNext={handleIdentityNext}
+          {currentStep === "avatar" && (
+            <StepAvatar
               onBack={() => patchProfile.mutate({ onboarding_step: "skills" })}
+            />
+          )}
+          {currentStep === "profile" && (
+            <StepProfile
+              onNext={handleProfileNext}
+              onBack={() => patchProfile.mutate({ onboarding_step: "avatar" })}
               loading={patchProfile.isPending}
-              error={identityError}
+              error={profileError}
             />
           )}
         </div>

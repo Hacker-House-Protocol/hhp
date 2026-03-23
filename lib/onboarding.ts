@@ -59,14 +59,33 @@ export const SKILLS_BY_ARCHETYPE: Record<ArchetypeId, string[]> = {
 
 export const ALL_SKILLS = Object.values(SKILLS_BY_ARCHETYPE).flat()
 
-export type OnboardingStep = "archetype" | "skills" | "identity" | "complete"
+export const CYPHER_KITTENS = [
+  { id: "cat-red", src: "/cypher-kitten/cat-red.gif", label: "Red Kitten" },
+  { id: "cat-yellow", src: "/cypher-kitten/cat-yellow.gif", label: "Yellow Kitten" },
+] as const
+
+// Re-exported from constants for backward compat
+export { LANGUAGES } from "@/lib/constants/languages"
+export { REGIONS } from "@/lib/constants/location"
+export { TIMEZONES } from "@/lib/constants/timezones"
+
+export type OnboardingStep =
+  | "archetype"
+  | "skills"
+  | "avatar"
+  | "profile"
+  | "complete"
 
 export const STEP_ORDER: OnboardingStep[] = [
   "archetype",
   "skills",
-  "identity",
+  "avatar",
+  "profile",
   "complete",
 ]
+
+// Visible steps (excluding "complete" which is not a real step)
+export const VISIBLE_STEPS = STEP_ORDER.filter((s) => s !== "complete")
 
 export function getStepIndex(step: OnboardingStep | null): number {
   if (!step) return 0

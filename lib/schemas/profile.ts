@@ -12,8 +12,26 @@ export const patchProfileSchema = z.object({
     )
     .optional(),
   bio: z.string().max(160).optional(),
+  avatar_url: z.string().optional(),
+  languages: z.array(z.string()).optional(),
+  timezone: z.string().optional(),
+  region: z.string().optional(),
+  country: z.string().optional(),
+  city: z.string().optional(),
+  github_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  twitter_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  farcaster_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  website_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  is_verified: z.boolean().optional(),
+  talent_protocol_score: z.number().int().optional(),
+  poaps: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    image_url: z.string(),
+    event_date: z.string(),
+  })).optional(),
   onboarding_step: z
-    .enum(["archetype", "skills", "identity", "complete"])
+    .enum(["archetype", "skills", "avatar", "profile", "complete"])
     .optional(),
 })
 

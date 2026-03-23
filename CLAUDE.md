@@ -48,6 +48,48 @@ pnpm lint       # Run ESLint
 - **Tailwind CSS v4** — configured via `@import "tailwindcss"` in `globals.css`, theme tokens defined with `@theme` inline syntax.
 - **shadcn/ui** — components live in `components/ui/`. Add new ones with `pnpm dlx shadcn@latest add <component>`. **Before building a custom UI element, check `components/ui/` first — the component likely already exists.**
 
+### UI Component usage rules — ALWAYS use these, never raw `<button>` or `<div>` equivalents
+
+| Need | Component | Import | Notes |
+|---|---|---|---|
+| Any button | `Button` | `@/components/ui/button` | Use `variant` + `size` props. Never write raw `<button>` with manual Tailwind styles. |
+| Status tag / label / chip | `Badge` | `@/components/ui/badge` | Use for archetype labels, skill chips, status tags. Never write raw `<span>` with manual styles. |
+| Loading spinner | `Spinner` | `@/components/ui/spinner` | Use inside buttons or standalone. Never write a manual `animate-spin` div. |
+| Text input | `Input` | `@/components/ui/input` | Always with `Field` + `FieldLabel` wrapper. |
+| Textarea | `Textarea` | `@/components/ui/textarea` | Same. |
+| Select dropdown | `Select`, `SelectTrigger`, `SelectContent`, `SelectItem` | `@/components/ui/select` | Never use native `<select>`. |
+| Form field wrapper | `Field`, `FieldLabel`, `FieldError`, `FieldDescription` | `@/components/ui/field` | Wrap every form control. |
+
+**Button variant reference:**
+- `variant="default"` — filled primary CTA (`bg-primary`)
+- `variant="outline"` — neutral bordered button (Back, secondary actions)
+- `variant="ghost"` — no border (Skip, tertiary actions)
+- `variant="destructive"` — destructive actions
+- `variant="visionary"` — filled magenta (archetype Visionary context)
+- `variant="visionary-outline"` — magenta border + text on transparent
+- `variant="strategist"` — filled lavender (archetype Strategist context)
+- `variant="strategist-outline"` — lavender border + text on transparent
+- `variant="builder"` — filled green (archetype Builder context)
+- `variant="builder-outline"` — green border + text on transparent
+
+**When to use archetype variants:** any interactive element (button, badge, chip, tag) that belongs to or filters by a specific archetype. The archetype is read from `profile.archetype` or the item's `archetype` field — map it to the variant: `visionary` → `variant="visionary"`, etc.
+
+**Badge variant reference** (same archetype logic applies):
+- `variant="default"` — filled primary
+- `variant="secondary"` — neutral muted chip
+- `variant="outline"` — neutral bordered
+- `variant="visionary"` / `variant="visionary-outline"` — magenta
+- `variant="strategist"` / `variant="strategist-outline"` — lavender
+- `variant="builder"` / `variant="builder-outline"` — green
+- `variant="destructive"` — error/warning state
+
+**Button size reference:**
+- `size="lg"` — `h-10`, use for main action buttons in pages/forms
+- `size="default"` — `h-9`, standard inline buttons
+- `size="sm"` — `h-8`, compact contexts
+
+Add `className="rounded-xl font-mono"` when the design requires pill-style or monospace buttons.
+
 ### Custom components in `components/ui/`
 
 These are project-specific components built on top of shadcn primitives. **Always use these instead of raw `<input type="date">` or similar natives:**

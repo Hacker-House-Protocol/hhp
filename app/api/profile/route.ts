@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server"
 import { privy } from "@/lib/privy"
 import { supabaseServer } from "@/lib/supabase-server"
 import { patchProfileSchema } from "@/lib/schemas/profile"
-import type { ArchetypeId, OnboardingStep } from "@/lib/onboarding"
 
 async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -49,10 +48,7 @@ export async function PATCH(req: NextRequest) {
     )
   }
 
-  const updates: Record<
-    string,
-    ArchetypeId | string | string[] | OnboardingStep
-  > = {
+  const updates = {
     ...parsed.data,
     updated_at: new Date().toISOString(),
   }

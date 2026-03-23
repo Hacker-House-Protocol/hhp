@@ -1,7 +1,7 @@
 # Landing Page Brief — Hacker House Protocol
 
 ## Objetivo
-Capturar emails para el **waitlist** antes del lanzamiento del MVP. No hay acceso directo al producto todavía.
+Convertir visitantes en usuarios del MVP. El producto está live — el CTA principal lleva al flujo de auth/onboarding directamente.
 
 ## Assets disponibles
 - `/public/assets/hacker-house-protocol-logo.svg` — ícono/logo mark
@@ -11,25 +11,25 @@ Capturar emails para el **waitlist** antes del lanzamiento del MVP. No hay acces
 
 ## Specs generales
 - **Idioma**: inglés
-- **CTA principal**: join waitlist (captura de email)
+- **CTA principal**: `AuthButton` — conecta wallet o email vía Privy, redirige al onboarding/dashboard
 - **Precio**: 100% free — comunicarlo claramente
 - **Audiencia**: global, ecosistema crypto/Web3
-- **Sin Privy API keys todavía** — el botón de waitlist guarda el email de forma simple (sin auth real)
-- **Sin email del proyecto todavía** — el formulario puede ser un placeholder funcional por ahora
+- **Sin waitlist** — acceso directo al MVP
 
 ## Estructura de secciones (en orden)
 
 ### 1. Navbar
 - Logo (ícono + texto) alineado a la izquierda
-- CTA derecha: "Join Waitlist" (pill primario, `--primary`)
+- CTA derecha: `AuthButton` — muestra "Connect" si no está autenticado, dirección/email si sí lo está, "Dashboard →" si ya tiene sesión
 - Fondo transparente con blur al hacer scroll
 
 ### 2. Hero
+- **Background**: `MatrixBackground` — canvas animado con lluvia de caracteres (solo cubre la sección hero, no el resto de la página)
+- **Badges**: "Open Beta · Free to use · Web3-native"
 - **Headline**: "Find your Builder. Build together. Live the protocol."
-- **Subheadline**: propuesta de valor en 1-2 líneas — qué es HHP, para quién es, qué resuelve
-- **CTA primario**: "Join the Waitlist" + campo de email inline
+- **Subheadline**: propuesta de valor en 3 líneas
+- **CTA primario**: `AuthButton` + copy "Free forever. Connect your wallet or sign up with email."
 - **Visual**: logo animado o Cypher Kitten (placeholder hasta que lleguen los GIFs)
-- Badge: "Coming soon · Free to use · Web3-native"
 
 ### 3. What is HHP — Las dos dimensiones
 Dos bloques en paralelo explicando las features core:
@@ -54,13 +54,14 @@ Flujo simplificado en 3 pasos:
 Banner o card destacada:
 - "We'll be at ETH Global Cannes 2026"
 - Texto corto: "Find us there or use HHP to form your team before the event."
-- CTA: "Join the Waitlist"
+- CTA: `AuthButton`
 
-### 7. Waitlist CTA — sección final
+### 7. Final CTA — sección final
 Repetición del CTA principal antes del footer:
-- Headline secundario tipo "The builder OS is almost ready."
-- Campo de email + botón
-- Copy de soporte: "Be among the first builders on the protocol."
+- Headline: "The builder OS is live."
+- Subheadline: "Join the protocol. Find your team. Ship."
+- CTA: `AuthButton`
+- Copy de soporte: "No credit card. Connect your wallet or sign up with email."
 
 ### 8. Footer
 - Logo
@@ -68,7 +69,8 @@ Repetición del CTA principal antes del footer:
 - "hackerhouse.app · © 2026 Hacker House Protocol"
 
 ## Notas de implementación
-- La ruta `/` es esta landing. La app empieza en `/home` (post-login).
-- El formulario de waitlist guarda emails en Supabase (tabla `waitlist`) o en un servicio simple — a definir cuando haya credenciales.
+- La ruta `/` es esta landing. La app empieza en `/dashboard` (post-login).
+- Sin waitlist — `waitlist-form.tsx` ya no se usa en ninguna sección.
 - Sin toggle de dark/light mode — la app es siempre dark.
 - Mobile-first, pero debe verse bien en desktop.
+- `MatrixBackground` usa `position: absolute` (no `fixed`) para no afectar secciones fuera del hero.

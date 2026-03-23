@@ -1,9 +1,9 @@
-import { WaitlistForm } from "./waitlist-form"
+import { AuthButton } from "@/components/auth/auth-button"
 
 export function FinalCta() {
   return (
     <section
-      id="waitlist"
+      id="get-started"
       className="py-32 border-t border-border"
       style={{
         background:
@@ -14,30 +14,31 @@ export function FinalCta() {
         {/* Headline */}
         <div className="flex flex-col gap-4">
           <h2 className="font-display font-bold text-foreground text-3xl sm:text-5xl leading-tight">
-            The builder OS is almost ready.
+            The builder OS is live.
           </h2>
           <p className="text-muted-foreground text-lg">
-            Be among the first builders on the protocol.
+            Join the protocol. Find your team. Ship.
           </p>
         </div>
 
         {/* Supporting copy */}
         <div className="flex flex-col gap-1">
           <p className="text-muted-foreground leading-relaxed">
-            Early builders get first access to Hack Spaces, priority matching,
-            and the chance to shape the protocol from day one.
+            Browse Hack Spaces, post your project, match with co-founders by
+            archetype, and coordinate IRL at Hacker Houses near you.
           </p>
           <p className="text-foreground font-display font-bold text-lg mt-2">
             Free. Always.
           </p>
         </div>
 
-        {/* Form — full width */}
-        <WaitlistForm className="w-full max-w-lg" />
-
-        <p className="text-xs text-muted-foreground">
-          No credit card. No spam. Just early access to the protocol.
-        </p>
+        {/* CTA */}
+        <div className="flex flex-col items-center gap-3">
+          <AuthButton className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-12 px-10 text-base" />
+          <p className="text-xs text-muted-foreground">
+            No credit card. Connect your wallet or sign up with email.
+          </p>
+        </div>
       </div>
     </section>
   )

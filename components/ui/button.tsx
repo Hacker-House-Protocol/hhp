@@ -19,6 +19,20 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Archetype variants — filled
+        visionary:
+          "bg-visionary text-visionary-foreground hover:bg-visionary/80 focus-visible:ring-visionary/40",
+        strategist:
+          "bg-strategist text-strategist-foreground hover:bg-strategist/80 focus-visible:ring-strategist/40",
+        builder:
+          "bg-builder-archetype text-builder-foreground hover:bg-builder-archetype/80 focus-visible:ring-builder-archetype/40",
+        // Archetype variants — outline
+        "visionary-outline":
+          "border border-visionary text-visionary bg-transparent hover:bg-visionary/10 focus-visible:ring-visionary/40",
+        "strategist-outline":
+          "border border-strategist text-strategist bg-transparent hover:bg-strategist/10 focus-visible:ring-strategist/40",
+        "builder-outline":
+          "border border-builder-archetype text-builder-archetype bg-transparent hover:bg-builder-archetype/10 focus-visible:ring-builder-archetype/40",
       },
       size: {
         default:
