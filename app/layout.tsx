@@ -35,6 +35,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn(
+        "dark",
         inter.variable,
         spaceGrotesk.variable,
         jetbrainsMono.variable
