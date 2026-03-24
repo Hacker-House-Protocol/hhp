@@ -49,7 +49,7 @@ Inmediatamente después del auth, la plataforma importa el historial on-chain de
 
 **UX:** Se muestra una pantalla transitoria breve *"Scanning your on-chain history..."* mientras la importación corre en background. Avanza automáticamente sin esperar el resultado — nunca bloquea el flujo. El objetivo es hacer visible que el historial on-chain del builder es parte de su identidad en el protocolo.
 
-> **Estado actual:** La importación ocurre en background via `useImportTalentScore` y `useImportPoaps` en `OnboardingWizard`, pero **la pantalla transitoria no está implementada** — está pendiente.
+> **Estado actual:** Implementado. La pantalla transitoria (`StepScanning`) muestra 5 ítems de scan con animación escalonada y una barra de progreso de 2.4s. Avanza automáticamente a los 2.5s. Solo se muestra si el builder tiene una wallet externa con imports pendientes (`walletClientType !== "privy"` y sin score/POAPs aún importados).
 
 **Condición importante:** Ambas APIs (Talent Protocol y POAP) buscan historial usando la `wallet_address` del usuario. Esto solo es útil si el builder entró con una **wallet externa existente** (MetaMask, etc.) que ya tiene actividad on-chain. Si entró con email, Privy le crea una embedded wallet nueva — sin historial — y ambas APIs devolverán vacío. La pantalla transitoria solo debería mostrarse si `wallet_address` corresponde a una wallet externa, no a una embedded.
 
@@ -142,8 +142,8 @@ Se actualiza la fila en `profiles` de Supabase con:
 
 | Item | Prioridad |
 |---|---|
-| Pantalla transitoria "Scanning your on-chain history..." entre auth y Step 1 | Media |
-| Sugerencia de variante en error de handle duplicado (ej: "Try `vitalik_2`") | Baja |
+| ~~Pantalla transitoria "Scanning your on-chain history..." entre auth y Step 1~~ | ✅ Implementado |
+| ~~Sugerencia de variante en error de handle duplicado (ej: "Try `vitalik_2`")~~ | ✅ Implementado |
 | Fase 2: paso de verificación on-chain con resumen de POAPs + Builder Score | Fase 2 |
 
 ---

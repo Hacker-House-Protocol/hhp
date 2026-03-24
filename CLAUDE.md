@@ -16,6 +16,7 @@ All product and design documentation lives in `docs/`. **Always read the relevan
 | [`docs/data-models.md`](./docs/data-models.md) | TypeScript types de todas las entidades |
 | [`docs/landing-page.md`](./docs/landing-page.md) | Brief completo de la landing page |
 | [`docs/features/onboarding.md`](./docs/features/onboarding.md) | Flujo de registro, Cypher Identity, edge cases |
+| [`docs/features/profile.md`](./docs/features/profile.md) | Perfil propio y público, edit mode, on-chain, POAPs, activity |
 | [`docs/features/hack-spaces.md`](./docs/features/hack-spaces.md) | Feature principal — formularios, estados, UI card |
 | [`docs/features/hacker-houses.md`](./docs/features/hacker-houses.md) | Hacker Houses — modalidades, flujo, UI card |
 | [`docs/features/matching-and-feed.md`](./docs/features/matching-and-feed.md) | Algoritmo de matching, feed, Builder card, Cypher Identity |
@@ -190,6 +191,18 @@ Do NOT upgrade resolvers to v5 or Zod to v4 — they are version-locked intentio
 7. **`isSubmitting` from `formState`** replaces manual loading state for submit buttons.
 
 8. **Server errors** (e.g. "handle already taken") go into local `useState`, not react-hook-form — display them near the relevant field or at the bottom of the form.
+
+9. **Use `useWatch` to observe field values — never `watch()` from `useForm`**:
+   ```tsx
+   // ❌ wrong
+   const { control, watch } = useForm<MyInput>({ ... })
+   const value = watch("fieldName")
+
+   // ✅ correct
+   import { useWatch } from "react-hook-form"
+   const { control } = useForm<MyInput>({ ... })
+   const value = useWatch({ control, name: "fieldName" })
+   ```
 
 ## Data Fetching — Service Module Pattern
 

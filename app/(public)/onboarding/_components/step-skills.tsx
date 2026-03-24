@@ -55,7 +55,7 @@ export function StepSkills({ archetype, onNext, onBack, loading }: StepSkillsPro
       {/* Step header */}
       <div className="flex flex-col gap-3">
         <p className="text-[11px] font-mono text-muted-foreground uppercase tracking-[0.15em]">
-          02 — Skills
+          03 — Skills
         </p>
         <h1 className="font-display font-bold text-foreground text-4xl leading-tight">
           What are your skills?

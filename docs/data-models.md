@@ -11,7 +11,7 @@ type Archetype = 'visionary' | 'strategist' | 'builder'
 
 type Profile = {
   id: string
-  username: string                // alias público, oculta wallet real
+  handle: string                  // alias público, oculta wallet real
   bio?: string
   archetype: Archetype
   avatar_url: string              // GIF del Cypher Kitten seleccionado
@@ -221,7 +221,7 @@ type Notification = {
 
 | Tabla | Descripción |
 |---|---|
-| `profiles` | Datos del builder: username, bio, habilidades, arquetipo, wallet, links, avatar |
+| `users` | Datos del builder: handle, bio, habilidades, arquetipo, wallet, links, avatar |
 | `hack_spaces` | Proyectos virtuales con filtros, estados y evento vinculado |
 | `hacker_houses` | Espacios físicos: ciudad, fechas, modalidad de pago, evento vinculado |
 | `applications` | Solicitudes de ingreso a hack spaces y hacker houses |

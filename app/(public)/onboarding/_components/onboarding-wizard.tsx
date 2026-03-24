@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useProfile, usePatchProfile } from "@/services/api/profile"
@@ -9,6 +9,7 @@ import { StepArchetype } from "./step-archetype"
 import { StepIdentity } from "./step-identity"
 import { StepSkills } from "./step-skills"
 import { StepContext, type ContextExtras } from "./step-context"
+import { StepScanning } from "./step-scanning"
 import { VISIBLE_STEPS } from "@/lib/onboarding"
 import type { ArchetypeId, OnboardingStep } from "@/lib/onboarding"
 
@@ -20,7 +21,7 @@ function resolveStep(step: string | null): WizardStep {
 }
 
 export function OnboardingWizard() {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, user } = useAuth()
   const router = useRouter()
 
   const { data: profile, isLoading: profileLoading } = useProfile({
@@ -32,19 +33,32 @@ export function OnboardingWizard() {
   const importPoaps = useImportPoaps()
   const [identityError, setIdentityError] = useState<string | null>(null)
   const [contextError, setContextError] = useState<string | null>(null)
+  const [phase, setPhase] = useState<"scanning" | "steps">("steps")
 
-  // Auto-import integrations once when wallet is available
-  const importedRef = useRef(false)
+  // Determine once whether to show scanning screen (only for external wallets with no imports yet)
+  const phaseSetRef = useRef(false)
   useEffect(() => {
-    if (importedRef.current) return
-    if (!profile?.wallet_address) return
-    if (profile.talent_protocol_score !== null && (profile.poaps?.length ?? 0) > 0) return
+    if (phaseSetRef.current) return
+    if (!profile || !user) return
 
-    importedRef.current = true
-    importTalentScore.mutate(undefined)
-    importPoaps.mutate(undefined)
+    phaseSetRef.current = true
+
+    const hasExternalWallet =
+      !!profile.wallet_address &&
+      (user.linkedAccounts ?? []).some(
+        (a) => a.type === "wallet" && a.walletClientType !== "privy",
+      )
+
+    const importsNotDone =
+      profile.talent_protocol_score === null && (profile.poaps?.length ?? 0) === 0
+
+    if (hasExternalWallet && importsNotDone) {
+      setPhase("scanning")
+      importTalentScore.mutate(undefined)
+      importPoaps.mutate(undefined)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.wallet_address])
+  }, [profile?.wallet_address, user])
 
   useEffect(() => {
     if (isLoading) return
@@ -101,6 +115,8 @@ export function OnboardingWizard() {
     }
   }
 
+  const handleScanningComplete = useCallback(() => setPhase("steps"), [])
+
   async function handleContextSkip() {
     await patchProfile.mutateAsync({ onboarding_step: "complete" })
     router.push("/dashboard")
@@ -114,6 +130,10 @@ export function OnboardingWizard() {
         </p>
       </div>
     )
+  }
+
+  if (phase === "scanning") {
+    return <StepScanning onComplete={handleScanningComplete} />
   }
 
   return (

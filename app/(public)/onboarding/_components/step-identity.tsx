@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm, Controller, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { handleSchema, type HandleInput } from "@/lib/schemas/onboarding"
 import { CYPHER_KITTENS } from "@/lib/onboarding"
@@ -21,10 +21,12 @@ interface StepIdentityProps {
 export function StepIdentity({ onNext, onBack, loading, error }: StepIdentityProps) {
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null)
 
-  const { control, handleSubmit, formState } = useForm<HandleInput>({
+  const { control, handleSubmit, formState, setValue } = useForm<HandleInput>({
     resolver: zodResolver(handleSchema),
     defaultValues: { handle: "" },
   })
+
+  const currentHandle = useWatch({ control, name: "handle" })
 
   function onSubmit(values: HandleInput) {
     if (!selectedAvatar) return
@@ -162,9 +164,24 @@ export function StepIdentity({ onNext, onBack, loading, error }: StepIdentityPro
         </div>
 
         {error && (
-          <p className="text-sm font-mono text-destructive border border-destructive/30 rounded-lg px-4 py-2.5 bg-destructive/5">
-            {error}
-          </p>
+          <div className="flex flex-col gap-1.5">
+            <p className="text-sm font-mono text-destructive border border-destructive/30 rounded-lg px-4 py-2.5 bg-destructive/5">
+              {error}
+            </p>
+            {(error.toLowerCase().includes("taken") || error.toLowerCase().includes("already")) &&
+              currentHandle && (
+                <p className="text-xs font-mono text-muted-foreground px-1">
+                  Try{" "}
+                  <button
+                    type="button"
+                    className="text-primary underline underline-offset-2 cursor-pointer"
+                    onClick={() => setValue("handle", `${currentHandle}_2`)}
+                  >
+                    @{currentHandle}_2
+                  </button>
+                </p>
+              )}
+          </div>
         )}
 
         {/* Actions */}
