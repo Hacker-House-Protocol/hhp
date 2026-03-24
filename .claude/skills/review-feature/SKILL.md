@@ -49,16 +49,23 @@ Report only actual violations — skip items that pass.
 ### Service layer
 - [ ] `genericAuthRequest` used — no raw `fetch` or imported axios in components
 - [ ] `useAppQuery` / `useAppMutation` used — no raw `useQuery`/`useMutation`
+- [ ] Paginated lists use `useInfiniteQuery` directly (not `useAppQuery`)
 - [ ] GET params passed as object, never interpolated in URL string
 - [ ] `setQueryData` for single-entity mutations, `invalidateQueries` for list mutations
+- [ ] Mutations that affect multiple caches invalidate all affected query keys
+- [ ] List and single-entity query keys are separate (`hackSpaces` vs `hackSpace`)
 
 ### UI / Design system
 - [ ] No hardcoded hex/rgb — only CSS variable tokens (`var(--primary)`, etc.)
+- [ ] `color-mix(in oklch, var(--token) 10%, transparent)` used for transparent tints — never rgba
 - [ ] No light mode classes
-- [ ] Archetypes render only `name` — no `.emoji` access
+- [ ] Archetypes: `.label` for short badges/chips, `.name` for full display — no `.emoji` access
+- [ ] `Skeleton` used for loading states — never manual `animate-pulse` divs
 - [ ] `Card` used instead of manual `<div className="bg-card border...rounded-xl">`
 - [ ] `Separator` used instead of manual `h-px` dividers
 - [ ] `Badge` used instead of manual `<span>` chips
+- [ ] Dynamic route pages use `use(params)` — never `await params` in Client Components
+- [ ] Filter pages use `nuqs` `useQueryStates` — never `useState` alone for URL-synced filters
 
 ### Security
 - [ ] No SQL injection — all DB queries use Supabase parameterized methods

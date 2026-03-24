@@ -53,7 +53,8 @@ const STATUS_CONFIG = {
   },
   full: {
     label: "Team full",
-    badgeCls: "border-builder-archetype text-builder-archetype bg-builder-archetype/10",
+    badgeCls:
+      "border-builder-archetype text-builder-archetype bg-builder-archetype/10",
     textCls: "text-builder-archetype",
     dotCls: "bg-builder-archetype",
     iconBgCls: "bg-builder-archetype/10",
@@ -203,125 +204,119 @@ export default function HackSpaceDetailPage({
         <div className="flex flex-col gap-6">
           {/* Hero header */}
           <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col gap-0">
-            {hackSpace.image_url && (
-              <div className="aspect-21/9 overflow-hidden">
+            <div className="relative h-60 w-full overflow-hidden">
+              {hackSpace.image_url ? (
                 <img
                   src={hackSpace.image_url}
                   alt={hackSpace.title}
                   className="w-full h-full object-cover"
                 />
-              </div>
-            )}
-            <div className="p-6 flex flex-col gap-4">
-            <div className="flex items-start gap-4">
-              {/* Track icon */}
-              <div
-                className={cn(
-                  "size-12 rounded-lg flex items-center justify-center text-2xl shrink-0 bg-muted",
-                  statusCfg.iconBgCls,
-                )}
-              >
-                {trackEmoji}
-              </div>
-
-              {/* Title + meta */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-3">
-                  <h1 className="font-display font-bold text-foreground text-2xl leading-snug">
-                    {hackSpace.title}
-                  </h1>
-                  <span
-                    className={cn(
-                      "shrink-0 text-xs px-2.5 py-1 rounded-sm border font-mono whitespace-nowrap mt-1",
-                      statusCfg.badgeCls,
-                    )}
-                  >
-                    {statusCfg.label}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 flex-wrap text-sm font-mono mt-1.5">
-                  <span className="text-muted-foreground">by</span>
-                  <Link
-                    href={`/dashboard/builders/${hackSpace.creator.handle}`}
-                    className="text-foreground font-medium hover:text-primary transition-colors"
-                  >
-                    @{hackSpace.creator.handle ?? "anon"}
-                  </Link>
-                  {creatorArchetype && (
-                    <span
-                      className={
-                        ARCHETYPE_TEXT_CLS[creatorArchetype.id] ??
-                        "text-muted-foreground"
-                      }
-                    >
-                      · {creatorArchetype.name}
-                    </span>
-                  )}
-                </div>
-              </div>
+              ) : (
+                <div className="w-full h-full bg-linear-to-br from-primary/20 via-muted to-card" />
+              )}
+              <div className="absolute inset-0 bg-linear-to-t from-card to-transparent" />
             </div>
 
-            {/* Event badge */}
-            {hackSpace.event_name && (
-              <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-                <CalendarDays className="size-4 text-primary shrink-0" />
-                <span className="text-sm font-mono text-primary">
-                  For {hackSpace.event_name}
-                  {hackSpace.event_timing &&
-                    ` · ${hackSpace.event_timing} the event`}
-                </span>
-                {hackSpace.event_url && (
-                  <a
-                    href={hackSpace.event_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto text-muted-foreground hover:text-primary transition-colors"
-                  >
-                    <ExternalLink className="size-3.5" />
-                  </a>
-                )}
-              </div>
-            )}
+            <div className="p-6 flex flex-col gap-4">
+              <div className="flex items-start gap-4">
+                {/* Title + meta */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <h1 className="font-display font-bold text-foreground text-2xl leading-snug">
+                      {hackSpace.title}
+                    </h1>
+                    <span
+                      className={cn(
+                        "shrink-0 text-xs px-2.5 py-1 rounded-sm border font-mono whitespace-nowrap mt-1",
+                        statusCfg.badgeCls,
+                      )}
+                    >
+                      {statusCfg.label}
+                    </span>
+                  </div>
 
-            {/* Owner actions */}
-            {isOwner && (
-              <div className="flex items-center gap-2 pt-2 border-t border-border">
-                <Link href={`/dashboard/hack-spaces/${id}/edit`}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-mono text-xs gap-1.5"
-                  >
-                    <PenLine className="size-3.5" />
-                    Edit
-                  </Button>
-                </Link>
-                {hackSpace.status === "open" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-mono text-xs gap-1.5"
-                    onClick={() => handleStatusChange("in_progress")}
-                    disabled={updateHackSpace.isPending}
-                  >
-                    <Sparkles className="size-3.5" />
-                    Start building
-                  </Button>
-                )}
-                {hackSpace.status === "in_progress" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="font-mono text-xs gap-1.5"
-                    onClick={() => handleStatusChange("finished")}
-                    disabled={updateHackSpace.isPending}
-                  >
-                    Mark as finished
-                  </Button>
-                )}
+                  <div className="flex items-center gap-2 flex-wrap text-sm font-mono mt-1.5">
+                    <span className="text-muted-foreground">by</span>
+                    <Link
+                      href={`/dashboard/builders/${hackSpace.creator.handle}`}
+                      className="text-foreground font-medium hover:text-primary transition-colors"
+                    >
+                      @{hackSpace.creator.handle ?? "anon"}
+                    </Link>
+                    {creatorArchetype && (
+                      <span
+                        className={
+                          ARCHETYPE_TEXT_CLS[creatorArchetype.id] ??
+                          "text-muted-foreground"
+                        }
+                      >
+                        · {creatorArchetype.label}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+
+              {/* Event badge */}
+              {hackSpace.event_name && (
+                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+                  <CalendarDays className="size-4 text-primary shrink-0" />
+                  <span className="text-sm font-mono text-primary">
+                    For {hackSpace.event_name}
+                    {hackSpace.event_timing &&
+                      ` · ${hackSpace.event_timing} the event`}
+                  </span>
+                  {hackSpace.event_url && (
+                    <a
+                      href={hackSpace.event_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <ExternalLink className="size-3.5" />
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Owner actions */}
+              {isOwner && (
+                <div className="flex items-center gap-2 pt-2 border-t border-border">
+                  <Link href={`/dashboard/hack-spaces/${id}/edit`}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs gap-1.5"
+                    >
+                      <PenLine className="size-3.5" />
+                      Edit
+                    </Button>
+                  </Link>
+                  {hackSpace.status === "open" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs gap-1.5"
+                      onClick={() => handleStatusChange("in_progress")}
+                      disabled={updateHackSpace.isPending}
+                    >
+                      <Sparkles className="size-3.5" />
+                      Start building
+                    </Button>
+                  )}
+                  {hackSpace.status === "in_progress" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="font-mono text-xs gap-1.5"
+                      onClick={() => handleStatusChange("finished")}
+                      disabled={updateHackSpace.isPending}
+                    >
+                      Mark as finished
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -362,10 +357,12 @@ export default function HackSpaceDetailPage({
                   return (
                     <Badge
                       key={archetypeId}
-                      variant={ARCHETYPE_BADGE_VARIANT[archetypeId] ?? "outline"}
+                      variant={
+                        ARCHETYPE_BADGE_VARIANT[archetypeId] ?? "outline"
+                      }
                       className="font-mono rounded-sm text-sm px-3 py-1"
                     >
-                      {a.name}
+                      {a.label}
                     </Badge>
                   )
                 })}
@@ -468,7 +465,10 @@ export default function HackSpaceDetailPage({
                 {hackSpace.language}
               </DetailRow>
               {(hackSpace.city || hackSpace.country || hackSpace.region) && (
-                <DetailRow icon={<MapPin className="size-3.5" />} label="Location">
+                <DetailRow
+                  icon={<MapPin className="size-3.5" />}
+                  label="Location"
+                >
                   {[hackSpace.city, hackSpace.country, hackSpace.region]
                     .filter(Boolean)
                     .join(", ")}
@@ -500,7 +500,12 @@ export default function HackSpaceDetailPage({
             <div className="p-5 flex flex-col gap-3">
               <div className="flex items-center gap-2">
                 <Users className="size-4 text-muted-foreground" />
-                <span className={cn("font-mono text-sm font-medium", statusCfg.textCls)}>
+                <span
+                  className={cn(
+                    "font-mono text-sm font-medium",
+                    statusCfg.textCls,
+                  )}
+                >
                   {memberCount}/{hackSpace.max_team_size} members
                 </span>
               </div>

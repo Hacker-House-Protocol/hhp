@@ -53,6 +53,17 @@ Skip layers that genuinely don't apply. Never skip DB or types if data is involv
 - Creator-only operations must check `creator_id === user.id`
 - Never reference `process.env` in client code — use `env.ts`
 
+**Key patterns from Hack Spaces (apply to all similar features):**
+- Filterable list pages → `useInfiniteQuery` + `nuqs` `useQueryStates` for URL-synced filters + debounced search
+- Detail pages → `use(params)` to unwrap the `Promise<{ id }>` param (Next.js 16)
+- Query keys → two per domain: list key (`hackSpaces`) and single key (`hackSpace`)
+- Paginated list API response shape: `{ items: T[], total: number, offset: number }`
+- Status visual config → `STATUS_CONFIG` object mapping status → `{ label, badgeCls, textCls, dotCls, colorVar }`
+- Archetype backgrounds → `color-mix(in oklch, var(--token) 10%, transparent)`
+- Sub-resource routes → `/api/domain/${id}/apply`, `/api/domain/${id}/sub-resources/${subId}`
+- Auth helper in API routes → local `getPrivyUserId(req)` that returns `null` on failure
+- Multi-cache invalidation when sub-resource mutations affect the parent entity
+
 ## Step 4 — Verify
 
 Run `pnpm build` and fix all TypeScript and lint errors before finishing.

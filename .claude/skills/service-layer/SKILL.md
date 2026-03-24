@@ -70,29 +70,134 @@ genericAuthRequest("get", "/api/things", { creator_id: id })
 
 ## Query keys
 
-Plain strings in `lib/query-keys.ts`. Always add a key for every new domain:
+Plain strings in `lib/query-keys.ts`. Always add a key for every new domain.
+
+For entities with both list and single views, add **two keys** — one for the list, one for the single entity:
 
 ```ts
 export const queryKeys = {
   profile: "profile",
-  hackSpaces: "hack-spaces",
-  myNewDomain: "my-new-domain",  // ← add here
+  hackSpaces: "hack-spaces",    // list
+  hackSpace: "hack-space",      // single entity
+  myDomains: "my-domains",      // list
+  myDomain: "my-domain",        // single entity
 }
 ```
 
 Array wrapper goes at the call site: `queryKey: [queryKeys.things]` — never `queryKeys.things.all()`.
+
+## Paginated lists — useInfiniteQuery
+
+For filterable list pages with "load more", use `useInfiniteQuery` directly (NOT wrapped in `useAppQuery`):
+
+```ts
+import { useInfiniteQuery } from "@tanstack/react-query"
+
+const PAGE_SIZE = 12
+
+export const useFilteredItems = (filters: ItemListParams) => {
+  return useInfiniteQuery<ItemListResponse, Error>({
+    queryKey: [queryKeys.items, "filtered", filters],
+    queryFn: async ({ pageParam }) => {
+      const offset = typeof pageParam === "number" ? pageParam : 0
+      return genericAuthRequest<ItemListResponse>("get", "/api/items", {
+        ...filters,
+        limit: PAGE_SIZE,
+        offset,
+      })
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const fetched = lastPage.offset + lastPage.items.length
+      return fetched < lastPage.total ? fetched : undefined
+    },
+  })
+}
+```
+
+API response shape for paginated lists:
+
+```ts
+// GET /api/items response
+{ items: Item[], total: number, offset: number }
+```
+
+In the component:
+
+```tsx
+const items = data?.pages.flatMap((p) => p.items) ?? []
+const total = data?.pages[0]?.total ?? 0
+```
 
 ## onSuccess: setQueryData vs invalidateQueries
 
 - **`setQueryData`** — when the mutation returns the updated entity (avoids refetch): patch profile, update single item.
 - **`invalidateQueries`** — when the mutation changes a list (triggers refetch): create/delete item.
 
+When a mutation affects multiple caches (e.g. accepting an application changes the application list AND the parent entity's member count), invalidate all affected query keys:
+
+```ts
+onSuccess: () => {
+  queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaceApplications, hackSpaceId] })
+  queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpace, hackSpaceId] })
+  queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaces] })
+}
+```
+
+## File upload via FormData
+
+For endpoints that accept file uploads, pass `FormData` directly to `genericAuthRequest`:
+
+```ts
+export const useUploadImage = () => {
+  return useAppMutation<File, { image_url: string }>({
+    fetcher: async (file: File) => {
+      const formData = new FormData()
+      formData.append("file", file)
+      return genericAuthRequest<{ image_url: string }>("post", "/api/domain/upload-image", formData)
+    },
+  })
+}
+```
+
+## Nested sub-resource routes
+
+For sub-resources (apply, applications), use nested URL segments:
+
+```ts
+// Apply to an entity
+POST /api/hack-spaces/${id}/apply
+
+// List sub-resources
+GET /api/hack-spaces/${id}/applications
+
+// Update a sub-resource
+PATCH /api/hack-spaces/${hackSpaceId}/applications/${appId}
+```
+
+## Auth helper — reusable in API routes
+
+Extract Privy auth to a local helper in each route file:
+
+```ts
+async function getPrivyUserId(req: NextRequest): Promise<string | null> {
+  const token = req.headers.get("authorization")?.replace("Bearer ", "")
+  if (!token) return null
+  try {
+    const claims = await privy.utils().auth().verifyAccessToken(token)
+    return claims.user_id
+  } catch {
+    return null
+  }
+}
+```
+
 ## Rules
 
 1. One file per domain — never split or merge domains across files.
 2. Never use raw `fetch` or import axios directly in components.
 3. Never create standalone hook files (`hooks/queries/`, `hooks/mutations/`) — hooks live in their service file.
-4. Never call `useQuery`/`useMutation` directly — always use `useAppQuery`/`useAppMutation`.
+4. Never call `useQuery`/`useMutation` directly — always use `useAppQuery`/`useAppMutation` (except `useInfiniteQuery` for paginated lists).
 
 ## API route conventions (`app/api/<domain>/route.ts`)
 

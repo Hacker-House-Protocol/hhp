@@ -271,26 +271,50 @@ export default function HackSpacesPage() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4"
+              className="bg-card border border-border rounded-xl overflow-hidden flex flex-col"
             >
-              <div className="flex items-start gap-3">
-                <Skeleton className="size-11 rounded-lg" />
-                <div className="flex-1 flex flex-col gap-2">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-3 w-32" />
+              {/* Image placeholder */}
+              <Skeleton className="h-48 w-full rounded-none" />
+              {/* Body */}
+              <div className="p-5 flex flex-col gap-4 h-[260px]">
+                {/* Title + status */}
+                <div className="flex items-start justify-between gap-2">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-5 w-20 rounded-sm" />
                 </div>
-              </div>
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-              <div className="flex gap-1.5">
-                {[1, 2, 3].map((j) => (
-                  <Skeleton key={j} className="h-5 w-16 rounded-sm" />
-                ))}
-              </div>
-              <div className="flex-1" />
-              <div className="flex items-center justify-between pt-3 border-t border-border">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-8 w-20 rounded-lg" />
+                {/* Creator */}
+                <Skeleton className="h-3 w-36" />
+                {/* Description */}
+                <div className="flex flex-col gap-1.5">
+                  <Skeleton className="h-3.5 w-full" />
+                  <Skeleton className="h-3.5 w-4/5" />
+                </div>
+                {/* Pills */}
+                <div className="flex flex-col gap-1.5 min-h-[44px]">
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3].map((j) => (
+                      <Skeleton key={j} className="h-5 w-16 rounded-full" />
+                    ))}
+                  </div>
+                  <div className="flex gap-1.5">
+                    {[1, 2].map((j) => (
+                      <Skeleton key={j} className="h-5 w-20 rounded-full" />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex-1" />
+                {/* Footer */}
+                <div className="flex items-center justify-between pt-3 border-t border-border">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4].map((j) => (
+                        <Skeleton key={j} className="size-2 rounded-full" />
+                      ))}
+                    </div>
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                  <Skeleton className="h-8 w-20 rounded-lg" />
+                </div>
               </div>
             </div>
           ))}
