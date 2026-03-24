@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useHackSpaces } from "@/services/api/hack-spaces"
 import { HackSpaceCard } from "./hack-space-card"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const PREVIEW_LIMIT = 3
 
@@ -53,7 +54,17 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
       {isLoading ? (
         <div className="flex flex-col gap-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-lg p-5 h-40 animate-pulse" />
+            <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div className="flex items-start gap-3">
+                <Skeleton className="size-11 rounded-lg" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
           ))}
         </div>
       ) : hackSpaces.length === 0 ? (

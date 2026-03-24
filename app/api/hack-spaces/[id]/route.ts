@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { privy } from "@/lib/privy"
 import { supabaseServer } from "@/lib/supabase-server"
+import { updateHackSpaceSchema } from "@/lib/schemas/hack-space"
 
 async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -76,21 +77,43 @@ export async function PATCH(
     return NextResponse.json({ message: "Forbidden" }, { status: 403 })
   }
 
-  const body = await req.json() as { status?: string }
-  const validStatuses = ["open", "full", "in_progress", "finished"]
-  if (body.status && !validStatuses.includes(body.status)) {
-    return NextResponse.json({ message: "Invalid status" }, { status: 400 })
+  const body = await req.json()
+  const parsed = updateHackSpaceSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: parsed.error.errors[0]?.message ?? "Invalid input" },
+      { status: 400 },
+    )
   }
+
+  const { has_event, ...updates } = parsed.data
+
+  // Convert empty strings to null for optional DB columns
+  const cleaned: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(updates)) {
+    cleaned[key] = value === "" ? null : value
+  }
+
+  // Clean event fields if event is toggled off
+  if (has_event === false) {
+    cleaned.event_name = null
+    cleaned.event_url = null
+    cleaned.event_date = null
+    cleaned.event_timing = null
+  }
+
+  cleaned.updated_at = new Date().toISOString()
 
   const { data, error } = await supabaseServer
     .from("hack_spaces")
-    .update({ status: body.status, updated_at: new Date().toISOString() })
+    .update(cleaned)
     .eq("id", id)
     .select(`*, creator:users(id, handle, archetype)`)
     .single()
 
   if (error) {
-    return NextResponse.json({ message: "Database error" }, { status: 500 })
+    console.error("[PATCH /api/hack-spaces/:id]", error)
+    return NextResponse.json({ message: error.message }, { status: 500 })
   }
 
   return NextResponse.json({ hack_space: data })

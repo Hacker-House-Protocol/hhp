@@ -1,12 +1,22 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useCreateHackSpace } from "@/services/api/hack-spaces"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { PageContainer } from "../../_components/page-container"
-import { CreateHackSpaceForm } from "./_components/create-hack-space-form"
+import { HackSpaceForm } from "./_components/create-hack-space-form"
+import type { CreateHackSpaceInput } from "@/lib/schemas/hack-space"
 
 export default function CreateHackSpacePage() {
   const router = useRouter()
+  const createHackSpace = useCreateHackSpace()
+
+  async function handleSubmit(values: CreateHackSpaceInput) {
+    const hs = await createHackSpace.mutateAsync(values)
+    toast.success("Hack Space created")
+    router.push(`/dashboard/hack-spaces/${hs.id}`)
+  }
 
   return (
     <PageContainer>
@@ -27,7 +37,11 @@ export default function CreateHackSpacePage() {
           </h1>
         </div>
 
-        <CreateHackSpaceForm />
+        <HackSpaceForm
+          onFormSubmit={handleSubmit}
+          submitLabel="Launch Space →"
+          submittingLabel="Creating..."
+        />
       </div>
     </PageContainer>
   )

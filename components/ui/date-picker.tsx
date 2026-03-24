@@ -14,7 +14,8 @@ interface DatePickerProps {
   placeholder?: string
   className?: string
   disabled?: boolean
-  fromDate?: Date
+  /** Disable dates before this date */
+  disableBefore?: Date
   startMonth?: Date
   endMonth?: Date
 }
@@ -25,7 +26,7 @@ export function DatePicker({
   placeholder = "Pick a date",
   className,
   disabled,
-  fromDate,
+  disableBefore,
   startMonth,
   endMonth,
 }: DatePickerProps) {
@@ -48,7 +49,7 @@ export function DatePicker({
             className
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
           {date ? format(date, "PPP") : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
@@ -58,10 +59,10 @@ export function DatePicker({
           captionLayout="dropdown"
           selected={date}
           onSelect={handleSelect}
-          fromDate={fromDate}
+          disabled={disableBefore ? { before: disableBefore } : undefined}
           startMonth={startMonth ?? new Date(1900, 0)}
           endMonth={endMonth ?? new Date(new Date().getFullYear() + 5, 11)}
-          initialFocus
+          autoFocus
         />
       </PopoverContent>
     </Popover>

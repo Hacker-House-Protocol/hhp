@@ -8,6 +8,7 @@ import { useProfile } from "@/services/api/profile"
 import { Button } from "@/components/ui/button"
 import { PageContainer } from "../_components/page-container"
 import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { HackSpaceTrack, HackSpaceStatus } from "@/lib/types"
 
 const TRACKS = ["DeFi", "DAO tools", "AI", "Social", "Gaming", "NFTs", "Infrastructure", "Other"] as const
@@ -124,7 +125,27 @@ export default function HackSpacesPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-xl h-56 animate-pulse" />
+            <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+              <div className="flex items-start gap-3">
+                <Skeleton className="size-11 rounded-lg" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <div className="flex gap-1.5">
+                {[1, 2, 3].map((j) => (
+                  <Skeleton key={j} className="h-5 w-16 rounded-sm" />
+                ))}
+              </div>
+              <div className="flex-1" />
+              <div className="flex items-center justify-between pt-3 border-t border-border">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-8 w-20 rounded-lg" />
+              </div>
+            </div>
           ))}
         </div>
       ) : filtered.length === 0 ? (

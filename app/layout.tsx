@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { AppPrivyProvider } from "@/components/providers/privy-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
         <AppPrivyProvider>
           <QueryProvider>
             <TooltipProvider>{children}</TooltipProvider>
+            <Toaster position="bottom-right" />
           </QueryProvider>
         </AppPrivyProvider>
       </body>

@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useMyHackSpaces } from "@/services/api/hack-spaces"
 import { HackSpaceCard } from "../../_components/hack-space-card"
 import type { UserProfile } from "@/lib/types"
@@ -39,7 +40,17 @@ export function ProfileActivity({ profile, isOwner }: ProfileActivityProps) {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {[1, 2].map((i) => (
-              <div key={i} className="bg-card border border-border rounded-lg h-36 animate-pulse" />
+              <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+                <div className="flex items-start gap-3">
+                  <Skeleton className="size-11 rounded-lg" />
+                  <div className="flex-1 flex flex-col gap-2">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
             ))}
           </div>
         ) : hackSpaces.length > 0 ? (

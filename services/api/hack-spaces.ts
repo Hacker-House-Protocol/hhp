@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types"
 import type {
   CreateHackSpaceInput,
+  UpdateHackSpaceInput,
   ApplyToHackSpaceInput,
   ReviewApplicationInput,
 } from "@/lib/schemas/hack-space"
@@ -65,6 +66,24 @@ export const useCreateHackSpace = () => {
     },
     options: {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaces] })
+      },
+    },
+  })
+}
+
+export const useUpdateHackSpace = (hackSpaceId: string) => {
+  const queryClient = useQueryClient()
+  return useAppMutation<UpdateHackSpaceInput, HackSpace>({
+    fetcher: async (input) => {
+      const { hack_space } = await genericAuthRequest<{
+        hack_space: HackSpace
+      }>("patch", `/api/hack-spaces/${hackSpaceId}`, input)
+      return hack_space
+    },
+    options: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpace, hackSpaceId] })
         queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaces] })
       },
     },

@@ -4,7 +4,7 @@ import { Fragment, useState } from "react"
 import { useForm, useWatch, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { useCreateHackSpace } from "@/services/api/hack-spaces"
+import { toast } from "sonner"
 import { ARCHETYPES, ALL_SKILLS } from "@/lib/onboarding"
 import {
   createHackSpaceSchema,
@@ -16,6 +16,7 @@ import {
   EVENT_TIMINGS,
 } from "@/lib/schemas/hack-space"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/date-picker"
@@ -144,9 +145,20 @@ function TogglePill({
   )
 }
 
-export function CreateHackSpaceForm() {
+interface HackSpaceFormProps {
+  defaultValues?: Partial<CreateHackSpaceInput>
+  onFormSubmit: (values: CreateHackSpaceInput) => Promise<void>
+  submitLabel: string
+  submittingLabel: string
+}
+
+export function HackSpaceForm({
+  defaultValues,
+  onFormSubmit,
+  submitLabel,
+  submittingLabel,
+}: HackSpaceFormProps) {
   const router = useRouter()
-  const createHackSpace = useCreateHackSpace()
   const [step, setStep] = useState<Step>("Project")
   const [serverError, setServerError] = useState<string | null>(null)
 
@@ -179,6 +191,7 @@ export function CreateHackSpaceForm() {
       event_url: "",
       event_date: "",
       event_timing: undefined,
+      ...defaultValues,
     },
   })
 
@@ -200,10 +213,10 @@ export function CreateHackSpaceForm() {
   async function onSubmit(values: CreateHackSpaceInput) {
     setServerError(null)
     try {
-      const hs = await createHackSpace.mutateAsync(values)
-      router.push(`/dashboard/hack-spaces/${hs.id}`)
+      await onFormSubmit(values)
     } catch (e) {
       const message = e instanceof Error ? e.message : "Something went wrong"
+      toast.error(message)
       const matchedField = (
         Object.keys(FIELD_TO_STEP) as (keyof CreateHackSpaceInput)[]
       ).find((field) => message.toLowerCase().includes(field.toLowerCase()))
@@ -773,7 +786,7 @@ export function CreateHackSpaceForm() {
                     value={field.value}
                     onChange={(v) => field.onChange(v ?? "")}
                     placeholder="Pick a deadline"
-                    fromDate={new Date()}
+                    disableBefore={new Date()}
                     className="w-full"
                   />
                 </Field>
@@ -784,7 +797,9 @@ export function CreateHackSpaceForm() {
 
         {/* Server error */}
         {serverError && (
-          <p className="text-sm text-destructive px-1">{serverError}</p>
+          <p className="text-sm font-mono text-destructive border border-destructive/30 rounded-lg px-4 py-2.5 bg-destructive/5">
+            {serverError}
+          </p>
         )}
 
         {/* Navigation */}
@@ -807,7 +822,13 @@ export function CreateHackSpaceForm() {
               disabled={isSubmitting}
               className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
             >
-              {isSubmitting ? "Creating..." : "Launch Space →"}
+              {isSubmitting ? (
+                <>
+                  <Spinner className="mr-2" /> {submittingLabel}
+                </>
+              ) : (
+                submitLabel
+              )}
             </Button>
           ) : (
             <Button

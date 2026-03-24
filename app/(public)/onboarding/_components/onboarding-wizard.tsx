@@ -12,6 +12,7 @@ import { StepContext, type ContextExtras } from "./step-context"
 import { StepScanning } from "./step-scanning"
 import { VISIBLE_STEPS } from "@/lib/onboarding"
 import type { ArchetypeId, OnboardingStep } from "@/lib/onboarding"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type WizardStep = Exclude<OnboardingStep, "complete">
 
@@ -124,10 +125,27 @@ export function OnboardingWizard() {
 
   if (isLoading || profileLoading || !profile || profile.onboarding_step === "complete") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground font-mono text-sm animate-pulse">
-          Loading...
-        </p>
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Progress bar placeholder */}
+        <div className="fixed top-0 left-0 right-0 h-1 bg-border z-50" />
+
+        {/* Step counter */}
+        <div className="pt-8 pb-2 px-6 max-w-5xl mx-auto w-full">
+          <Skeleton className="h-3 w-20" />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 flex items-start justify-center px-6 py-10">
+          <div className="w-full max-w-5xl flex flex-col gap-6">
+            <Skeleton className="h-8 w-72" />
+            <Skeleton className="h-4 w-96 max-w-full" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-44 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

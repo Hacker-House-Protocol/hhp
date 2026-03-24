@@ -8,7 +8,7 @@ import {
   type DropdownProps,
   type Locale,
 } from "react-day-picker"
-
+import { enUS } from "react-day-picker/locale"
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react"
@@ -19,7 +19,7 @@ function Calendar({
   showOutsideDays = true,
   captionLayout = "label",
   buttonVariant = "ghost",
-  locale,
+  locale = enUS,
   formatters,
   components,
   ...props

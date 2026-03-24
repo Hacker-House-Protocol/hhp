@@ -34,6 +34,12 @@ export const createHackSpaceSchema = z.object({
 
 export type CreateHackSpaceInput = z.infer<typeof createHackSpaceSchema>
 
+export const updateHackSpaceSchema = createHackSpaceSchema.partial().extend({
+  status: z.enum(["open", "full", "in_progress", "finished"]).optional(),
+})
+
+export type UpdateHackSpaceInput = z.infer<typeof updateHackSpaceSchema>
+
 export const applyToHackSpaceSchema = z.object({
   message: z.string().max(300).optional(),
 })
