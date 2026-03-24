@@ -1,28 +1,31 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
+import { PageContainer } from "../../_components/page-container"
 import { CreateHackSpaceForm } from "./_components/create-hack-space-form"
 
 export default function CreateHackSpacePage() {
   const router = useRouter()
 
   return (
-    <>
-      <header className="flex h-14 items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur-md z-50">
-        <SidebarTrigger />
-        <button
-          onClick={() => router.back()}
-          className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"
-        >
-          ← Back
-        </button>
-        <span className="text-border">|</span>
-        <h1 className="font-display font-bold text-foreground text-sm">Create Hack Space</h1>
-      </header>
-      <main className="max-w-3xl mx-auto px-6 py-10">
+    <PageContainer className="py-10 max-w-3xl">
+      <div className="flex flex-col gap-8">
+        <div className="flex items-center gap-3">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => router.back()}
+            className="font-mono text-xs h-7 px-2 text-muted-foreground"
+          >
+            ← Back
+          </Button>
+          <span className="text-border">|</span>
+          <h1 className="font-display font-bold text-foreground text-sm">Create Hack Space</h1>
+        </div>
         <CreateHackSpaceForm />
-      </main>
-    </>
+      </div>
+    </PageContainer>
   )
 }

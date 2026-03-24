@@ -39,7 +39,7 @@ export function CypherIdentityCard({ profile }: CypherIdentityCardProps) {
               backgroundColor: `color-mix(in oklch, var(${archetypeData.colorVar}) 10%, transparent)`,
             }}
           >
-            {archetypeData.name}
+            {archetypeData.label}
           </div>
         )}
       </div>

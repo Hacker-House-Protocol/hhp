@@ -14,8 +14,11 @@ async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   }
 }
 
-export async function GET() {
-  const { data, error } = await supabaseServer
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const creatorId = searchParams.get("creator_id")
+
+  let query = supabaseServer
     .from("hack_spaces")
     .select(`
       *,
@@ -24,6 +27,12 @@ export async function GET() {
     `)
     .in("status", ["open", "full", "in_progress"])
     .order("created_at", { ascending: false })
+
+  if (creatorId) {
+    query = query.eq("creator_id", creatorId)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     return NextResponse.json({ message: "Database error" }, { status: 500 })

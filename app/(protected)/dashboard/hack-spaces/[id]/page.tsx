@@ -3,8 +3,8 @@
 import { use, useState } from "react"
 import Link from "next/link"
 import { useHackSpace, useApplyToHackSpace } from "@/services/api/hack-spaces"
-import { SidebarTrigger } from "@/components/ui/sidebar"
 import { useProfile } from "@/services/api/profile"
+import { PageContainer } from "../../_components/page-container"
 import { ARCHETYPES } from "@/lib/onboarding"
 import { ApplicationManager } from "./_components/application-manager"
 import { LoadingScreen } from "@/components/loading-screen"
@@ -70,18 +70,16 @@ export default function HackSpaceDetailPage({
   const canApply = !isOwner && hackSpace.status === "open"
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="flex h-14 items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur-md z-50">
-        <SidebarTrigger />
+    <PageContainer className="py-10">
+      <div className="mb-6">
         <Link
           href="/dashboard/hack-spaces"
           className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"
         >
           ← Hack Spaces
         </Link>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-6 py-10">
+      </div>
+      <div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
 
           {/* Main content */}
@@ -320,7 +318,7 @@ export default function HackSpaceDetailPage({
             </div>
           </aside>
         </div>
-      </main>
-    </div>
+      </div>
+    </PageContainer>
   )
 }

@@ -24,6 +24,20 @@ export const useProfile = ({ enabled = true }: { enabled?: boolean } = {}) => {
   })
 }
 
+export const useBuilderProfile = (username: string) => {
+  return useAppQuery<UserProfile>({
+    fetcher: async () => {
+      const { user } = await genericAuthRequest<{ user: UserProfile }>(
+        "get",
+        `/api/builders/${username}`,
+      )
+      return user
+    },
+    queryKey: [queryKeys.builderProfile, username],
+    enabled: !!username,
+  })
+}
+
 export const usePatchProfile = () => {
   const queryClient = useQueryClient()
   return useAppMutation<PatchProfileInput, UserProfile>({

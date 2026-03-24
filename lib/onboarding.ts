@@ -5,6 +5,7 @@ export const ARCHETYPES = [
   {
     id: "visionary" as const,
     name: "The Visionary",
+    label: "Visionary",
     tagline: "You have the idea. The vision is clear — the team isn't.",
     body: "You define direction, generate narrative, and attract talent. You need builders who can execute on what you see.",
     colorVar: "--visionary",
@@ -12,6 +13,7 @@ export const ARCHETYPES = [
   {
     id: "strategist" as const,
     name: "The Strategist",
+    label: "Strategist",
     tagline: "You see the whole board. You connect the pieces.",
     body: "GTM, ops, partnerships, execution. You turn chaos into roadmap. You need a Visionary's idea and a Builder's hands.",
     colorVar: "--strategist",
@@ -19,6 +21,7 @@ export const ARCHETYPES = [
   {
     id: "builder" as const,
     name: "The Builder",
+    label: "Builder",
     tagline: "You ship. That's it. That's the whole bio.",
     body: "Frontend, backend, smart contracts, design — you make the thing real. The most wanted archetype on the protocol.",
     colorVar: "--builder-archetype",

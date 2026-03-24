@@ -4,29 +4,50 @@ import { useQueryClient } from "@tanstack/react-query"
 import { genericAuthRequest } from "@/lib/api-client"
 import { useAppQuery, useAppMutation } from "@/lib/query-hooks"
 import { queryKeys } from "@/lib/query-keys"
-import type { HackSpace, Application, ApplicationWithApplicant } from "@/lib/types"
-import type { CreateHackSpaceInput, ApplyToHackSpaceInput, ReviewApplicationInput } from "@/lib/schemas/hack-space"
+import type {
+  HackSpace,
+  Application,
+  ApplicationWithApplicant,
+} from "@/lib/types"
+import type {
+  CreateHackSpaceInput,
+  ApplyToHackSpaceInput,
+  ReviewApplicationInput,
+} from "@/lib/schemas/hack-space"
 
 export const useHackSpaces = () => {
   return useAppQuery<HackSpace[]>({
     fetcher: async () => {
-      const { hack_spaces } = await genericAuthRequest<{ hack_spaces: HackSpace[] }>(
-        "get",
-        "/api/hack-spaces",
-      )
+      const { hack_spaces } = await genericAuthRequest<{
+        hack_spaces: HackSpace[]
+      }>("get", "/api/hack-spaces")
       return hack_spaces ?? []
     },
     queryKey: [queryKeys.hackSpaces],
   })
 }
 
+export const useMyHackSpaces = (creatorId: string) => {
+  return useAppQuery<HackSpace[]>({
+    fetcher: async () => {
+      const { hack_spaces } = await genericAuthRequest<{
+        hack_spaces: HackSpace[]
+      }>("get", `/api/hack-spaces`, {
+        creator_id: creatorId,
+      })
+      return hack_spaces ?? []
+    },
+    queryKey: [queryKeys.hackSpaces, creatorId],
+    enabled: !!creatorId,
+  })
+}
+
 export const useHackSpace = (id: string) => {
   return useAppQuery<HackSpace>({
     fetcher: async () => {
-      const { hack_space } = await genericAuthRequest<{ hack_space: HackSpace }>(
-        "get",
-        `/api/hack-spaces/${id}`,
-      )
+      const { hack_space } = await genericAuthRequest<{
+        hack_space: HackSpace
+      }>("get", `/api/hack-spaces/${id}`)
       return hack_space
     },
     queryKey: [queryKeys.hackSpace, id],
@@ -37,11 +58,9 @@ export const useCreateHackSpace = () => {
   const queryClient = useQueryClient()
   return useAppMutation<CreateHackSpaceInput, HackSpace>({
     fetcher: async (input) => {
-      const { hack_space } = await genericAuthRequest<{ hack_space: HackSpace }>(
-        "post",
-        "/api/hack-spaces",
-        input,
-      )
+      const { hack_space } = await genericAuthRequest<{
+        hack_space: HackSpace
+      }>("post", "/api/hack-spaces", input)
       return hack_space
     },
     options: {
@@ -56,17 +75,17 @@ export const useApplyToHackSpace = (hackSpaceId: string) => {
   const queryClient = useQueryClient()
   return useAppMutation<ApplyToHackSpaceInput, Application>({
     fetcher: async (input) => {
-      const { application } = await genericAuthRequest<{ application: Application }>(
-        "post",
-        `/api/hack-spaces/${hackSpaceId}/apply`,
-        input,
-      )
+      const { application } = await genericAuthRequest<{
+        application: Application
+      }>("post", `/api/hack-spaces/${hackSpaceId}/apply`, input)
       return application
     },
     options: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaces] })
-        queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpace, hackSpaceId] })
+        queryClient.invalidateQueries({
+          queryKey: [queryKeys.hackSpace, hackSpaceId],
+        })
       },
     },
   })
@@ -75,10 +94,9 @@ export const useApplyToHackSpace = (hackSpaceId: string) => {
 export const useHackSpaceApplications = (hackSpaceId: string) => {
   return useAppQuery<ApplicationWithApplicant[]>({
     fetcher: async () => {
-      const { applications } = await genericAuthRequest<{ applications: ApplicationWithApplicant[] }>(
-        "get",
-        `/api/hack-spaces/${hackSpaceId}/applications`,
-      )
+      const { applications } = await genericAuthRequest<{
+        applications: ApplicationWithApplicant[]
+      }>("get", `/api/hack-spaces/${hackSpaceId}/applications`)
       return applications ?? []
     },
     queryKey: [queryKeys.hackSpaceApplications, hackSpaceId],
@@ -87,9 +105,14 @@ export const useHackSpaceApplications = (hackSpaceId: string) => {
 
 export const useReviewApplication = (hackSpaceId: string) => {
   const queryClient = useQueryClient()
-  return useAppMutation<ReviewApplicationInput & { appId: string }, Application>({
+  return useAppMutation<
+    ReviewApplicationInput & { appId: string },
+    Application
+  >({
     fetcher: async ({ appId, ...input }) => {
-      const { application } = await genericAuthRequest<{ application: Application }>(
+      const { application } = await genericAuthRequest<{
+        application: Application
+      }>(
         "patch",
         `/api/hack-spaces/${hackSpaceId}/applications/${appId}`,
         input,
@@ -98,8 +121,12 @@ export const useReviewApplication = (hackSpaceId: string) => {
     },
     options: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaceApplications, hackSpaceId] })
-        queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpace, hackSpaceId] })
+        queryClient.invalidateQueries({
+          queryKey: [queryKeys.hackSpaceApplications, hackSpaceId],
+        })
+        queryClient.invalidateQueries({
+          queryKey: [queryKeys.hackSpace, hackSpaceId],
+        })
         queryClient.invalidateQueries({ queryKey: [queryKeys.hackSpaces] })
       },
     },

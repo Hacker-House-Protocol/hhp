@@ -60,7 +60,7 @@ export function ApplicationManager({ hackSpaceId }: ApplicationManagerProps) {
                             backgroundColor: `color-mix(in oklch, var(${archetype.colorVar}) 10%, transparent)`,
                           }}
                         >
-                          {archetype.name}
+                          {archetype.label}
                         </span>
                       )}
                     </div>
@@ -132,7 +132,7 @@ export function ApplicationManager({ hackSpaceId }: ApplicationManagerProps) {
                         backgroundColor: `color-mix(in oklch, var(${archetype.colorVar}) 10%, transparent)`,
                       }}
                     >
-                      {archetype.name}
+                      {archetype.label}
                     </span>
                   )}
                 </div>

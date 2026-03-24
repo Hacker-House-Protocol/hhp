@@ -32,6 +32,10 @@ export async function genericAuthRequest<T = unknown>(
   url: string,
   data?: unknown,
 ): Promise<T> {
-  const res = await apiClient({ method, url, data })
+  const res = await apiClient(
+    method === "get"
+      ? { method, url, params: data }
+      : { method, url, data },
+  )
   return res.data as T
 }
