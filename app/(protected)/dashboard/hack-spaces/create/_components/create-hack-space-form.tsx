@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useState } from "react"
+import { Fragment, useRef, useState } from "react"
 import { useForm, useWatch, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
@@ -15,6 +15,12 @@ import {
   APPLICATION_TYPES,
   EVENT_TIMINGS,
 } from "@/lib/schemas/hack-space"
+import {
+  REGIONS,
+  getCountriesForRegion,
+  getCitiesForCountry,
+} from "@/lib/constants/location"
+import { useUploadHackSpaceImage } from "@/services/api/hack-spaces"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Input } from "@/components/ui/input"
@@ -26,9 +32,18 @@ import {
   FieldDescription,
   FieldError,
 } from "@/components/ui/field"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
+import { Upload } from "lucide-react"
 
 const TRACK_EMOJIS: Record<string, string> = {
   DeFi: "💰",
@@ -94,12 +109,15 @@ const FIELD_TO_STEP: Partial<Record<keyof CreateHackSpaceInput, Step>> = {
   track: "Project",
   stage: "Project",
   repo_url: "Project",
+  image_url: "Project",
   looking_for: "Team",
   skills_needed: "Team",
   max_team_size: "Team",
   experience_level: "Team",
   language: "Team",
-  timezone_region: "Team",
+  region: "Team",
+  country: "Team",
+  city: "Team",
   has_event: "Event",
   event_name: "Event",
   event_url: "Event",
@@ -161,6 +179,9 @@ export function HackSpaceForm({
   const router = useRouter()
   const [step, setStep] = useState<Step>("Project")
   const [serverError, setServerError] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadImage = useUploadHackSpaceImage()
 
   const stepIndex = STEPS.indexOf(step)
 
@@ -169,6 +190,7 @@ export function HackSpaceForm({
     handleSubmit,
     trigger,
     setError,
+    setValue,
     formState: { isSubmitting },
   } = useForm<CreateHackSpaceInput>({
     resolver: zodResolver(createHackSpaceSchema),
@@ -178,12 +200,15 @@ export function HackSpaceForm({
       track: undefined,
       stage: undefined,
       repo_url: "",
+      image_url: "",
       looking_for: [],
       skills_needed: [],
       max_team_size: 5,
       experience_level: "intermediate",
       language: "English",
-      timezone_region: "",
+      region: "",
+      country: "",
+      city: "",
       application_type: "open",
       application_deadline: "",
       has_event: false,
@@ -196,6 +221,43 @@ export function HackSpaceForm({
   })
 
   const hasEvent = useWatch({ control, name: "has_event" })
+  const watchedRegion = useWatch({ control, name: "region" })
+  const watchedCountry = useWatch({ control, name: "country" })
+  const currentImageUrl = useWatch({ control, name: "image_url" })
+
+  const availableCountries = watchedRegion
+    ? getCountriesForRegion(watchedRegion)
+    : []
+  const availableCities =
+    watchedRegion && watchedCountry
+      ? getCitiesForCountry(watchedRegion, watchedCountry)
+      : []
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if (!ALLOWED.includes(file.type)) {
+      toast.error("Invalid file type. Use JPEG, PNG, WebP or GIF")
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File too large. Maximum 5MB")
+      return
+    }
+
+    setImagePreview(URL.createObjectURL(file))
+    try {
+      const result = await uploadImage.mutateAsync(file)
+      setValue("image_url", result.image_url)
+    } catch {
+      toast.error("Upload failed. Please try again.")
+      setImagePreview(null)
+    }
+    // reset so the same file can be re-selected if needed
+    e.target.value = ""
+  }
 
   const STEP_FIELDS: Record<Step, (keyof CreateHackSpaceInput)[]> = {
     Project: ["title", "description", "track", "stage"],
@@ -288,6 +350,76 @@ export function HackSpaceForm({
                 What are you building?
               </p>
             </div>
+
+            {/* Cover image upload */}
+            <Field>
+              <FieldLabel>
+                Cover image{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </FieldLabel>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className={cn(
+                  "relative w-full aspect-video rounded-lg border-2 border-dashed overflow-hidden transition-all cursor-pointer",
+                  imagePreview || currentImageUrl
+                    ? "border-primary/40"
+                    : "border-border hover:border-primary/40",
+                )}
+              >
+                {imagePreview || currentImageUrl ? (
+                  <>
+                    <img
+                      src={imagePreview ?? currentImageUrl ?? ""}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      {uploadImage.isPending ? (
+                        <Spinner className="text-white" />
+                      ) : (
+                        <span className="text-white text-sm font-mono font-medium">
+                          Change
+                        </span>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-2 h-full py-8">
+                    {uploadImage.isPending ? (
+                      <Spinner />
+                    ) : (
+                      <>
+                        <Upload className="size-6 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground font-mono">
+                          Upload cover image
+                        </span>
+                        <span className="text-xs text-muted-foreground/60 font-mono px-2 py-0.5 rounded border border-border">
+                          Optional
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              {/* Hidden controller to store the uploaded URL in form state */}
+              <Controller
+                name="image_url"
+                control={control}
+                render={({ field }) => (
+                  <input type="hidden" {...field} value={field.value ?? ""} />
+                )}
+              />
+            </Field>
 
             <Controller
               name="title"
@@ -556,51 +688,151 @@ export function HackSpaceForm({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <Controller
-                name="language"
-                control={control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>Working language *</FieldLabel>
-                    <div className="flex flex-wrap gap-2">
-                      {LANGUAGES.map((lang) => (
-                        <TogglePill
-                          key={lang}
-                          selected={field.value === lang}
-                          onClick={() => field.onChange(lang)}
-                        >
-                          {lang}
-                        </TogglePill>
-                      ))}
-                    </div>
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]} />
-                    )}
-                  </Field>
-                )}
-              />
+            <Controller
+              name="language"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Working language *</FieldLabel>
+                  <div className="flex flex-wrap gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <TogglePill
+                        key={lang}
+                        selected={field.value === lang}
+                        onClick={() => field.onChange(lang)}
+                      >
+                        {lang}
+                      </TogglePill>
+                    ))}
+                  </div>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
+            <Controller
+              name="region"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>
+                    Region{" "}
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
+                  </FieldLabel>
+                  <Combobox
+                    items={REGIONS}
+                    value={field.value ?? ""}
+                    onValueChange={(val) => {
+                      field.onChange(val)
+                      setValue("country", "")
+                      setValue("city", "")
+                    }}
+                  >
+                    <ComboboxInput placeholder="Search region..." showClear />
+                    <ComboboxContent>
+                      <ComboboxEmpty>No region found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(r: string) => (
+                          <ComboboxItem
+                            key={r}
+                            value={r}
+                            className="font-mono text-sm"
+                          >
+                            {r}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </Field>
+              )}
+            />
+
+            {watchedRegion && availableCountries.length > 0 && (
               <Controller
-                name="timezone_region"
+                name="country"
                 control={control}
                 render={({ field }) => (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      Region{" "}
+                    <FieldLabel>
+                      Country{" "}
                       <span className="text-muted-foreground font-normal">
                         (optional)
                       </span>
                     </FieldLabel>
-                    <Input
-                      {...field}
-                      id={field.name}
-                      placeholder="e.g. LATAM, Europe, GMT-5"
-                    />
+                    <Combobox
+                      items={availableCountries.map((c) => c.name)}
+                      value={field.value ?? ""}
+                      onValueChange={(val) => {
+                        field.onChange(val)
+                        setValue("city", "")
+                      }}
+                    >
+                      <ComboboxInput
+                        placeholder="Search country..."
+                        showClear
+                      />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No country found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(name: string) => (
+                            <ComboboxItem
+                              key={name}
+                              value={name}
+                              className="font-mono text-sm"
+                            >
+                              {name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
                   </Field>
                 )}
               />
-            </div>
+            )}
+
+            {watchedCountry && availableCities.length > 0 && (
+              <Controller
+                name="city"
+                control={control}
+                render={({ field }) => (
+                  <Field>
+                    <FieldLabel>
+                      City{" "}
+                      <span className="text-muted-foreground font-normal">
+                        (optional)
+                      </span>
+                    </FieldLabel>
+                    <Combobox
+                      items={availableCities.map((c) => c.name)}
+                      value={field.value ?? ""}
+                      onValueChange={(val) => field.onChange(val)}
+                    >
+                      <ComboboxInput placeholder="Search city..." showClear />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No city found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(name: string) => (
+                            <ComboboxItem
+                              key={name}
+                              value={name}
+                              className="font-mono text-sm"
+                            >
+                              {name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                  </Field>
+                )}
+              />
+            )}
           </SectionCard>
         )}
 

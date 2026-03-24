@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useHackSpaces } from "@/services/api/hack-spaces"
+import { useFilteredHackSpaces } from "@/services/api/hack-spaces"
 import { HackSpaceCard } from "./hack-space-card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,9 +13,11 @@ interface HackSpacesFeedProps {
 }
 
 export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
-  const { data: hackSpaces = [], isLoading } = useHackSpaces()
+  const { data, isLoading } = useFilteredHackSpaces({})
+  const hackSpaces = data?.pages.flatMap((p) => p.hack_spaces) ?? []
+  const total = data?.pages[0]?.total ?? 0
   const preview = hackSpaces.slice(0, PREVIEW_LIMIT)
-  const hasMore = hackSpaces.length > PREVIEW_LIMIT
+  const hasMore = total > PREVIEW_LIMIT
 
   return (
     <div className="flex flex-col gap-4">
@@ -24,9 +26,9 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="font-display font-bold text-foreground text-lg">Hack Spaces</h2>
-          {!isLoading && hackSpaces.length > 0 && (
+          {!isLoading && total > 0 && (
             <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-sm">
-              {hackSpaces.length}
+              {total}
             </span>
           )}
         </div>
@@ -97,7 +99,7 @@ export function HackSpacesFeed({ currentUserId }: HackSpacesFeedProps) {
             <Link href="/dashboard/hack-spaces">
               <div className="border border-dashed border-border rounded-lg px-5 py-4 flex items-center justify-between hover:border-primary/40 hover:bg-accent/30 transition-all group">
                 <span className="text-sm font-mono text-muted-foreground group-hover:text-foreground transition-colors">
-                  +{hackSpaces.length - PREVIEW_LIMIT} more Hack Spaces
+                  +{total - PREVIEW_LIMIT} more Hack Spaces
                 </span>
                 <span className="text-xs font-mono text-primary">
                   Browse all →

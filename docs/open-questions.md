@@ -48,4 +48,4 @@ Registro de decisiones confirmadas. Ver `product-overview.md` para el contexto c
 |---|---|
 | 20 | `/` es la landing page. `/home` es la app post-login |
 | 21 | Privy API keys — pendientes |
-| 22 | Email del proyecto — pendiente. El formulario de waitlist es un placeholder por ahora |
+| 22 | Sin waitlist — acceso directo al MVP. El formulario de waitlist fue eliminado. |

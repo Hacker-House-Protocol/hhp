@@ -22,12 +22,12 @@ import {
   GitBranch,
   Users,
   Globe,
-  Clock,
   Layers,
   Shield,
   CalendarDays,
   ExternalLink,
   Sparkles,
+  MapPin,
 } from "lucide-react"
 
 type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
@@ -202,7 +202,17 @@ export default function HackSpaceDetailPage({
         {/* ── Main content ── */}
         <div className="flex flex-col gap-6">
           {/* Hero header */}
-          <div className="bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
+          <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col gap-0">
+            {hackSpace.image_url && (
+              <div className="aspect-21/9 overflow-hidden">
+                <img
+                  src={hackSpace.image_url}
+                  alt={hackSpace.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            <div className="p-6 flex flex-col gap-4">
             <div className="flex items-start gap-4">
               {/* Track icon */}
               <div
@@ -312,6 +322,7 @@ export default function HackSpaceDetailPage({
                 )}
               </div>
             )}
+            </div>
           </div>
 
           {/* Description */}
@@ -456,9 +467,11 @@ export default function HackSpaceDetailPage({
               <DetailRow icon={<Globe className="size-3.5" />} label="Language">
                 {hackSpace.language}
               </DetailRow>
-              {hackSpace.timezone_region && (
-                <DetailRow icon={<Clock className="size-3.5" />} label="Region">
-                  {hackSpace.timezone_region}
+              {(hackSpace.city || hackSpace.country || hackSpace.region) && (
+                <DetailRow icon={<MapPin className="size-3.5" />} label="Location">
+                  {[hackSpace.city, hackSpace.country, hackSpace.region]
+                    .filter(Boolean)
+                    .join(", ")}
                 </DetailRow>
               )}
               <DetailRow icon={<Shield className="size-3.5" />} label="Access">

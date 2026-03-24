@@ -5,21 +5,14 @@
       "Bash(git fetch:*)",
       "Bash(echo \"Exit code: $?\")",
       "Bash(git push:*)",
-      "Bash(pnpm add:*)"
-    ]
-  },
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cd \"D:/dev/hack-house-protocol\" && pnpm build 2>&1 | tail -5",
-            "timeout": 120,
-            "statusMessage": "Validating build..."
-          }
-        ]
-      }
+      "Bash(pnpm add:*)",
+      "mcp__claude_ai_Supabase__list_tables",
+      "Bash(find /d/dev/hack-house-protocol -name *.sql)",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(pnpm build:*)",
+      "Bash(ls -la /d/dev/hack-house-protocol/app/\\\\\\(public\\\\\\)/)",
+      "Bash(ls -la /d/dev/hack-house-protocol/app/\\\\\\(public\\\\\\)/onboarding/_components/)",
+      "Bash(grep -E \"\\\\.tsx$\")"
     ]
   }
 }

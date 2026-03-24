@@ -18,17 +18,6 @@ const ARCHETYPE_BADGE_VARIANT: Record<string, BadgeVariant> = {
   builder: "builder-outline",
 }
 
-const TRACK_EMOJIS: Record<string, string> = {
-  DeFi: "💰",
-  "DAO tools": "🏛️",
-  AI: "🤖",
-  Social: "🌐",
-  Gaming: "🎮",
-  NFTs: "🖼️",
-  Infrastructure: "⚙️",
-  Other: "🔗",
-}
-
 const STATUS_CONFIG = {
   open: { label: "Looking for members", colorVar: "--primary" },
   full: { label: "Team full", colorVar: "--builder-archetype" },
@@ -54,7 +43,6 @@ export function HackSpaceCard({
     (a) => a.id === hackSpace.creator.archetype,
   )
   const statusCfg = STATUS_CONFIG[hackSpace.status] ?? STATUS_CONFIG.open
-  const trackEmoji = TRACK_EMOJIS[hackSpace.track] ?? "🔗"
 
   const visibleSkills = hackSpace.skills_needed.slice(0, 3)
   const extraSkills = hackSpace.skills_needed.length - 3
@@ -71,25 +59,23 @@ export function HackSpaceCard({
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/30 transition-all duration-200">
-      {/* Status accent stripe */}
-      <div
-        className="h-0.75 w-full shrink-0"
-        style={{ background: `var(${statusCfg.colorVar})` }}
-      />
+      {/* Cover image */}
+      <div className="relative h-48 w-full overflow-hidden">
+        {hackSpace.image_url ? (
+          <img
+            src={hackSpace.image_url}
+            alt={hackSpace.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-linear-to-br from-primary/20 via-muted to-card" />
+        )}
+        <div className="absolute inset-0 bg-linear-to-t from-card to-transparent" />
+      </div>
 
-      <div className="p-5 flex flex-col gap-4 flex-1">
+      <div className="p-5 flex flex-col gap-4 h-65">
         {/* Header */}
         <div className="flex items-start gap-3">
-          {/* Track icon box */}
-          <div
-            className="size-11 rounded-lg flex items-center justify-center text-xl shrink-0"
-            style={{
-              background: `color-mix(in oklch, var(${statusCfg.colorVar}) 12%, var(--muted))`,
-            }}
-          >
-            {trackEmoji}
-          </div>
-
           {/* Title + status */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
@@ -118,7 +104,7 @@ export function HackSpaceCard({
               {creatorArchetype && (
                 <span style={{ color: `var(${creatorArchetype.colorVar})` }}>
                   {" "}
-                  · {creatorArchetype.name}
+                  · {creatorArchetype.label}
                 </span>
               )}
             </p>
@@ -130,39 +116,47 @@ export function HackSpaceCard({
           {hackSpace.description}
         </p>
 
-        {/* Pills: skills + archetypes */}
-        {(hackSpace.skills_needed.length > 0 ||
-          hackSpace.looking_for.length > 0) && (
-          <div className="flex flex-wrap gap-1.5">
-            {visibleSkills.map((skill) => (
-              <Badge
-                key={skill}
-                variant="outline"
-                className="border-primary/30 text-primary bg-primary/5 font-mono rounded-sm"
-              >
-                {skill}
-              </Badge>
-            ))}
-            {extraSkills > 0 && (
-              <Badge variant="outline" className="font-mono rounded-sm text-muted-foreground">
-                +{extraSkills}
-              </Badge>
-            )}
-            {hackSpace.looking_for.map((archetypeId) => {
-              const a = ARCHETYPES.find((x) => x.id === archetypeId)
-              if (!a) return null
-              return (
+        {/* Pills: skills + archetypes — fixed area so footer stays anchored */}
+        <div className="flex flex-col gap-1.5 min-h-11">
+          {hackSpace.skills_needed.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {visibleSkills.map((skill) => (
                 <Badge
-                  key={archetypeId}
-                  variant={ARCHETYPE_BADGE_VARIANT[archetypeId] ?? "outline"}
-                  className="font-mono rounded-sm"
+                  key={skill}
+                  variant="outline"
+                  className="border-primary/30 text-primary bg-primary/5 font-mono rounded-sm"
                 >
-                  {a.name}
+                  {skill}
                 </Badge>
-              )
-            })}
-          </div>
-        )}
+              ))}
+              {extraSkills > 0 && (
+                <Badge
+                  variant="outline"
+                  className="font-mono rounded-sm text-muted-foreground"
+                >
+                  +{extraSkills}
+                </Badge>
+              )}
+            </div>
+          )}
+          {hackSpace.looking_for.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {hackSpace.looking_for.map((archetypeId) => {
+                const a = ARCHETYPES.find((x) => x.id === archetypeId)
+                if (!a) return null
+                return (
+                  <Badge
+                    key={archetypeId}
+                    variant={ARCHETYPE_BADGE_VARIANT[archetypeId] ?? "outline"}
+                    className="font-mono rounded-sm"
+                  >
+                    {a.label}
+                  </Badge>
+                )
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Spacer */}
         <div className="flex-1" />
@@ -175,8 +169,16 @@ export function HackSpaceCard({
               {slots.map((_, i) => (
                 <div
                   key={i}
-                  className={i < memberCount ? "size-2 rounded-full transition-colors" : "size-2 rounded-full transition-colors bg-border"}
-                  style={i < memberCount ? { background: `var(${statusCfg.colorVar})` } : undefined}
+                  className={
+                    i < memberCount
+                      ? "size-2 rounded-full transition-colors"
+                      : "size-2 rounded-full transition-colors bg-border"
+                  }
+                  style={
+                    i < memberCount
+                      ? { background: `var(${statusCfg.colorVar})` }
+                      : undefined
+                  }
                 />
               ))}
               {hackSpace.max_team_size > 6 && (
@@ -190,6 +192,14 @@ export function HackSpaceCard({
             </div>
             <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
               <span>{hackSpace.language}</span>
+              {(hackSpace.city || hackSpace.country || hackSpace.region) && (
+                <>
+                  <span>·</span>
+                  <span className="truncate">
+                    {hackSpace.city ?? hackSpace.country ?? hackSpace.region}
+                  </span>
+                </>
+              )}
               {hackSpace.event_name && (
                 <>
                   <span>·</span>

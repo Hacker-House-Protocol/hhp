@@ -60,7 +60,10 @@ export interface HackSpace {
   max_team_size: number
   experience_level: ExperienceLevel
   language: string
-  timezone_region: string | null
+  region: string | null
+  country: string | null
+  city: string | null
+  image_url: string | null
   application_type: ApplicationType
   application_deadline: string | null
   // Event (optional)
@@ -75,6 +78,22 @@ export interface HackSpace {
     archetype: string | null
   }
   member_count?: number
+}
+
+export interface HackSpaceListParams {
+  track?: HackSpaceTrack
+  status?: HackSpaceStatus
+  looking_for?: string
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+export interface HackSpaceListResponse {
+  hack_spaces: HackSpace[]
+  total: number
+  offset: number
+  limit: number
 }
 
 export interface Application {

@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { AppPrivyProvider } from "@/components/providers/privy-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -45,7 +46,9 @@ export default function RootLayout({
       <body className="antialiased">
         <AppPrivyProvider>
           <QueryProvider>
-            <TooltipProvider>{children}</TooltipProvider>
+            <TooltipProvider>
+              <NuqsAdapter>{children}</NuqsAdapter>
+            </TooltipProvider>
             <Toaster position="bottom-right" />
           </QueryProvider>
         </AppPrivyProvider>

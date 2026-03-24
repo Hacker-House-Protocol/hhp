@@ -58,12 +58,11 @@ Landing → Waitlist
 
 ## Features IN scope — MVP
 
-### 1. Landing + Waitlist
+### 1. Landing
 - Página de marketing en `/`
-- Captura de emails en Supabase (tabla `waitlist`)
-- Sin auth real todavía
+- Sin waitlist — acceso directo al MVP (ver `docs/landing-page.md`)
 
-**Criterio de aceptación**: un visitante puede dejar su email y recibe confirmación visual.
+**Criterio de aceptación**: un visitante entiende la propuesta y puede hacer login directo.
 
 ---
 

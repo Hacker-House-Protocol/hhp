@@ -20,7 +20,10 @@ export const createHackSpaceSchema = z.object({
   max_team_size: z.number().int().min(2).max(20),
   experience_level: z.enum(EXPERIENCE_LEVELS),
   language: z.string().min(1, "Select a language"),
-  timezone_region: z.string().optional(),
+  region: z.string().optional(),
+  country: z.string().optional(),
+  city: z.string().optional(),
+  image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   // Access
   application_type: z.enum(APPLICATION_TYPES),
   application_deadline: z.string().optional(),

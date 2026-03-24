@@ -1,11 +1,13 @@
 "use client"
 
-import { useQueryClient } from "@tanstack/react-query"
+import { useQueryClient, useInfiniteQuery } from "@tanstack/react-query"
 import { genericAuthRequest } from "@/lib/api-client"
 import { useAppQuery, useAppMutation } from "@/lib/query-hooks"
 import { queryKeys } from "@/lib/query-keys"
 import type {
   HackSpace,
+  HackSpaceListParams,
+  HackSpaceListResponse,
   Application,
   ApplicationWithApplicant,
 } from "@/lib/types"
@@ -16,15 +18,24 @@ import type {
   ReviewApplicationInput,
 } from "@/lib/schemas/hack-space"
 
-export const useHackSpaces = () => {
-  return useAppQuery<HackSpace[]>({
-    fetcher: async () => {
-      const { hack_spaces } = await genericAuthRequest<{
-        hack_spaces: HackSpace[]
-      }>("get", "/api/hack-spaces")
-      return hack_spaces ?? []
+const PAGE_SIZE = 12
+
+export const useFilteredHackSpaces = (filters: HackSpaceListParams) => {
+  return useInfiniteQuery<HackSpaceListResponse, Error>({
+    queryKey: [queryKeys.hackSpaces, "filtered", filters],
+    queryFn: async ({ pageParam }) => {
+      const offset = typeof pageParam === "number" ? pageParam : 0
+      return genericAuthRequest<HackSpaceListResponse>("get", "/api/hack-spaces", {
+        ...filters,
+        limit: PAGE_SIZE,
+        offset,
+      })
     },
-    queryKey: [queryKeys.hackSpaces],
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const fetched = lastPage.offset + lastPage.hack_spaces.length
+      return fetched < lastPage.total ? fetched : undefined
+    },
   })
 }
 
@@ -119,6 +130,20 @@ export const useHackSpaceApplications = (hackSpaceId: string) => {
       return applications ?? []
     },
     queryKey: [queryKeys.hackSpaceApplications, hackSpaceId],
+  })
+}
+
+export const useUploadHackSpaceImage = () => {
+  return useAppMutation<File, { image_url: string }>({
+    fetcher: async (file: File) => {
+      const formData = new FormData()
+      formData.append("file", file)
+      return genericAuthRequest<{ image_url: string }>(
+        "post",
+        "/api/hack-spaces/upload-image",
+        formData,
+      )
+    },
   })
 }
 

@@ -2,16 +2,34 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useHackSpaces } from "@/services/api/hack-spaces"
+import { useQueryStates, parseAsString } from "nuqs"
+import { Search, X } from "lucide-react"
+import { useFilteredHackSpaces } from "@/services/api/hack-spaces"
+import { useDebounce } from "@/hooks/use-debounce"
 import { HackSpaceCard } from "../_components/hack-space-card"
 import { useProfile } from "@/services/api/profile"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { PageContainer } from "../_components/page-container"
-import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
-import type { HackSpaceTrack, HackSpaceStatus } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import { ARCHETYPES } from "@/lib/onboarding"
+import type {
+  HackSpaceTrack,
+  HackSpaceStatus,
+  HackSpaceListParams,
+} from "@/lib/types"
 
-const TRACKS = ["DeFi", "DAO tools", "AI", "Social", "Gaming", "NFTs", "Infrastructure", "Other"] as const
+const TRACKS = [
+  "DeFi",
+  "DAO tools",
+  "AI",
+  "Social",
+  "Gaming",
+  "NFTs",
+  "Infrastructure",
+  "Other",
+] as const
 const TRACK_EMOJIS: Record<string, string> = {
   DeFi: "💰",
   "DAO tools": "🏛️",
@@ -23,33 +41,62 @@ const TRACK_EMOJIS: Record<string, string> = {
   Other: "🔗",
 }
 
-const STATUS_OPTIONS: { value: HackSpaceStatus; label: string; colorVar: string }[] = [
+const STATUS_OPTIONS: {
+  value: HackSpaceStatus
+  label: string
+  colorVar: string
+}[] = [
   { value: "open", label: "Open", colorVar: "--primary" },
   { value: "full", label: "Full", colorVar: "--builder-archetype" },
   { value: "in_progress", label: "In progress", colorVar: "--strategist" },
 ]
 
 export default function HackSpacesPage() {
-  const { data: hackSpaces = [], isLoading } = useHackSpaces()
-  const { data: profile } = useProfile({ enabled: true })
-  const [selectedTrack, setSelectedTrack] = useState<HackSpaceTrack | null>(null)
-  const [selectedStatus, setSelectedStatus] = useState<HackSpaceStatus | null>(null)
-
-  const filtered = hackSpaces.filter((hs) => {
-    if (selectedTrack && hs.track !== selectedTrack) return false
-    if (selectedStatus && hs.status !== selectedStatus) return false
-    return true
+  const [filters, setFilters] = useQueryStates({
+    track: parseAsString.withDefault(""),
+    status: parseAsString.withDefault(""),
+    looking_for: parseAsString.withDefault(""),
+    q: parseAsString.withDefault(""),
   })
+
+  const [searchInput, setSearchInput] = useState(filters.q)
+  const debouncedSearch = useDebounce(searchInput)
+
+  // Build activeFilters stripping empty strings
+  const activeFilters: HackSpaceListParams = {}
+  if (filters.track) activeFilters.track = filters.track as HackSpaceTrack
+  if (filters.status) activeFilters.status = filters.status as HackSpaceStatus
+  if (filters.looking_for) activeFilters.looking_for = filters.looking_for
+  if (debouncedSearch) activeFilters.q = debouncedSearch
+
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useFilteredHackSpaces(activeFilters)
+
+  const { data: profile } = useProfile({ enabled: true })
+
+  const hackSpaces = data?.pages.flatMap((p) => p.hack_spaces) ?? []
+  const total = data?.pages[0]?.total ?? 0
+
+  const hasActiveFilters =
+    !!filters.track || !!filters.status || !!filters.looking_for || !!filters.q
+
+  function handleClearFilters() {
+    void setFilters({ track: "", status: "", looking_for: "", q: "" })
+    setSearchInput("")
+  }
 
   return (
     <PageContainer className="flex flex-col gap-8">
-
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="font-display font-bold text-foreground text-2xl">Hack Spaces</h1>
+          <h1 className="font-display font-bold text-foreground text-2xl">
+            Hack Spaces
+          </h1>
           <p className="text-sm text-muted-foreground">
-            {isLoading ? "Loading..." : `${filtered.length} space${filtered.length !== 1 ? "s" : ""} available`}
+            {isLoading
+              ? "Loading..."
+              : `Showing ${hackSpaces.length} of ${total} space${total !== 1 ? "s" : ""}`}
           </p>
         </div>
         <Link href="/dashboard/hack-spaces/create">
@@ -61,63 +108,160 @@ export default function HackSpacesPage() {
 
       {/* Filters */}
       <div className="flex flex-col gap-3">
-        {/* Track filters */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          <button
-            onClick={() => setSelectedTrack(null)}
-            className={cn(
-              "text-xs px-3 py-1.5 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap shrink-0",
-              selectedTrack === null
-                ? "border-primary text-primary bg-primary/10"
-                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-            )}
-          >
-            All tracks
-          </button>
-          {TRACKS.map((t) => (
+        {/* Search row */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+          <Input
+            type="text"
+            placeholder="Search spaces..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-9 pr-8 font-mono text-sm"
+          />
+          {searchInput && (
             <button
-              key={t}
-              onClick={() => setSelectedTrack(selectedTrack === t ? null : t)}
-              className={cn(
-                "text-xs px-3 py-1.5 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap shrink-0",
-                selectedTrack === t
-                  ? "border-primary text-primary bg-primary/10"
-                  : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
-              )}
+              type="button"
+              onClick={() => setSearchInput("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
-              {TRACK_EMOJIS[t]} {t}
+              <X className="size-3.5" />
             </button>
-          ))}
+          )}
         </div>
 
-        {/* Status filters */}
-        <div className="flex gap-2">
-          {STATUS_OPTIONS.map(({ value, label, colorVar }) => (
+        {/* Track row */}
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
+            Track
+          </span>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
             <button
-              key={value}
-              onClick={() => setSelectedStatus(selectedStatus === value ? null : value)}
+              type="button"
+              onClick={() => void setFilters({ track: "" })}
               className={cn(
-                "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap",
-                selectedStatus === value
-                  ? "border-current"
-                  : "border-border text-muted-foreground hover:text-foreground hover:border-border/80"
+                "text-xs px-3 py-1 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap shrink-0",
+                filters.track === ""
+                  ? "border-primary text-primary bg-primary/10"
+                  : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
-              style={
-                selectedStatus === value
-                  ? {
-                      color: `var(${colorVar})`,
-                      backgroundColor: `color-mix(in oklch, var(${colorVar}) 10%, transparent)`,
-                    }
-                  : undefined
-              }
             >
-              <span
-                className="size-1.5 rounded-full shrink-0"
-                style={{ background: `var(${colorVar})` }}
-              />
-              {label}
+              All
             </button>
-          ))}
+            {TRACKS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() =>
+                  void setFilters({ track: filters.track === t ? "" : t })
+                }
+                className={cn(
+                  "text-xs px-3 py-1 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap shrink-0",
+                  filters.track === t
+                    ? "border-primary text-primary bg-primary/10"
+                    : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                )}
+              >
+                {TRACK_EMOJIS[t]} {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Looking for row */}
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
+            Looking for
+          </span>
+          <div className="flex gap-2">
+            {ARCHETYPES.map((a) => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() =>
+                  void setFilters({
+                    looking_for: filters.looking_for === a.id ? "" : a.id,
+                  })
+                }
+                className={cn(
+                  "text-xs px-3 py-1 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap",
+                  filters.looking_for === a.id
+                    ? "border-current"
+                    : "border-border text-muted-foreground hover:border-border/80",
+                )}
+                style={
+                  filters.looking_for === a.id
+                    ? {
+                        color: `var(${a.colorVar})`,
+                        borderColor: `var(${a.colorVar})`,
+                        backgroundColor: `color-mix(in oklch, var(${a.colorVar}) 10%, transparent)`,
+                      }
+                    : undefined
+                }
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Status row + clear */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest shrink-0">
+              Status
+            </span>
+            <div className="flex gap-2">
+              {STATUS_OPTIONS.map(({ value, label, colorVar }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() =>
+                    void setFilters({
+                      status: filters.status === value ? "" : value,
+                    })
+                  }
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs px-3 py-1 rounded-full border font-mono transition-all cursor-pointer whitespace-nowrap",
+                    filters.status === value
+                      ? "border-current"
+                      : "border-border hover:border-border/80",
+                  )}
+                  style={{
+                    color:
+                      filters.status === value ? `var(${colorVar})` : undefined,
+                    backgroundColor:
+                      filters.status === value
+                        ? `color-mix(in oklch, var(${colorVar}) 10%, transparent)`
+                        : undefined,
+                  }}
+                >
+                  <span
+                    className="size-1.5 rounded-full shrink-0"
+                    style={{ background: `var(${colorVar})` }}
+                  />
+                  <span
+                    className={
+                      filters.status === value
+                        ? undefined
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="text-[11px] font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer shrink-0"
+            >
+              Clear filters ×
+            </button>
+          )}
         </div>
       </div>
 
@@ -125,7 +269,10 @@ export default function HackSpacesPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4">
+            <div
+              key={i}
+              className="bg-card border border-border rounded-xl p-5 flex flex-col gap-4"
+            >
               <div className="flex items-start gap-3">
                 <Skeleton className="size-11 rounded-lg" />
                 <div className="flex-1 flex flex-col gap-2">
@@ -148,16 +295,20 @@ export default function HackSpacesPage() {
             </div>
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : hackSpaces.length === 0 ? (
         <div className="bg-card border border-dashed border-border rounded-xl p-16 flex flex-col items-center gap-4 text-center">
           <span className="text-4xl">🔗</span>
           <div className="flex flex-col gap-1">
-            <p className="font-display font-semibold text-foreground">No Hack Spaces found.</p>
+            <p className="font-display font-semibold text-foreground">
+              No Hack Spaces found.
+            </p>
             <p className="text-muted-foreground text-sm">
-              {selectedTrack || selectedStatus ? "Try clearing filters." : "Be the first to create one."}
+              {hasActiveFilters
+                ? "Try clearing filters."
+                : "Be the first to create one."}
             </p>
           </div>
-          {!selectedTrack && !selectedStatus && (
+          {!hasActiveFilters && (
             <Link href="/dashboard/hack-spaces/create">
               <Button className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-5 mt-2">
                 Create the first Space →
@@ -167,7 +318,7 @@ export default function HackSpacesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filtered.map((hs) => (
+          {hackSpaces.map((hs) => (
             <HackSpaceCard
               key={hs.id}
               hackSpace={hs}
@@ -175,6 +326,26 @@ export default function HackSpacesPage() {
             />
           ))}
         </div>
+      )}
+
+      {/* Load more / end indicator */}
+      {hasNextPage && (
+        <div className="flex justify-center pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full font-mono text-sm px-6"
+            onClick={() => void fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? "Loading..." : "Load more"}
+          </Button>
+        </div>
+      )}
+      {!hasNextPage && hackSpaces.length > 0 && !isLoading && (
+        <p className="text-center text-xs font-mono text-muted-foreground pt-2">
+          All {total} space{total !== 1 ? "s" : ""} loaded
+        </p>
       )}
     </PageContainer>
   )

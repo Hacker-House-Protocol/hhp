@@ -17,33 +17,72 @@ async function getPrivyUserId(req: NextRequest): Promise<string | null> {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const creatorId = searchParams.get("creator_id")
-
-  let query = supabaseServer
-    .from("hack_spaces")
-    .select(`
-      *,
-      creator:users(id, handle, archetype),
-      member_count:applications(count)
-    `)
-    .in("status", ["open", "full", "in_progress"])
-    .order("created_at", { ascending: false })
+  const track = searchParams.get("track")
+  const status = searchParams.get("status")
+  const lookingFor = searchParams.get("looking_for")
+  const q = searchParams.get("q")
+  const limit = parseInt(searchParams.get("limit") ?? "12", 10)
+  const offset = parseInt(searchParams.get("offset") ?? "0", 10)
 
   if (creatorId) {
-    query = query.eq("creator_id", creatorId)
+    // Creator-specific query — keep existing behavior, no pagination
+    const { data, error } = await supabaseServer
+      .from("hack_spaces")
+      .select(`*, creator:users(id, handle, archetype), member_count:applications(count)`)
+      .eq("creator_id", creatorId)
+      .in("status", ["open", "full", "in_progress"])
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      return NextResponse.json({ message: "Database error" }, { status: 500 })
+    }
+
+    const hackSpaces = data.map((hs) => ({
+      ...hs,
+      member_count: (hs.member_count as unknown as { count: number }[])?.[0]?.count ?? 0,
+    }))
+
+    return NextResponse.json({ hack_spaces: hackSpaces })
   }
 
-  const { data, error } = await query
+  // Public list with filtering + pagination
+  let query = supabaseServer
+    .from("hack_spaces")
+    .select(`*, creator:users(id, handle, archetype), member_count:applications(count)`, { count: "exact" })
+    .order("created_at", { ascending: false })
+
+  if (status) {
+    query = query.eq("status", status)
+  } else {
+    query = query.in("status", ["open", "full", "in_progress"])
+  }
+
+  if (track) {
+    query = query.eq("track", track)
+  }
+
+  if (lookingFor) {
+    query = query.contains("looking_for", [lookingFor])
+  }
+
+  if (q) {
+    query = query.ilike("title", `%${q}%`)
+  }
+
+  query = query.range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
 
   if (error) {
     return NextResponse.json({ message: "Database error" }, { status: 500 })
   }
 
-  const hackSpaces = data.map((hs) => ({
+  const hackSpaces = (data ?? []).map((hs) => ({
     ...hs,
     member_count: (hs.member_count as unknown as { count: number }[])?.[0]?.count ?? 0,
   }))
 
-  return NextResponse.json({ hack_spaces: hackSpaces })
+  return NextResponse.json({ hack_spaces: hackSpaces, total: count ?? 0, offset, limit })
 }
 
 export async function POST(req: NextRequest) {
@@ -85,7 +124,10 @@ export async function POST(req: NextRequest) {
     max_team_size: fields.max_team_size,
     experience_level: fields.experience_level,
     language: fields.language,
-    timezone_region: fields.timezone_region || null,
+    region: fields.region || null,
+    country: fields.country || null,
+    city: fields.city || null,
+    image_url: fields.image_url || null,
     application_type: fields.application_type,
     application_deadline: fields.application_deadline || null,
     event_name: has_event ? (fields.event_name || null) : null,
