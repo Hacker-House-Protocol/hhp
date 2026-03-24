@@ -12,7 +12,9 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 
 ---
 
-## Formulario de Creación (`/hacker-houses/crear`)
+> **Estado actual (marzo 2026):** ❌ No implementado. Página placeholder "Coming soon" en `/dashboard/hacker-houses`. Pendiente para Fase 1 post-MVP core.
+
+## Formulario de Creación (`/dashboard/hacker-houses/create`)
 
 ### Sobre la Casa
 - Nombre de la Hacker House

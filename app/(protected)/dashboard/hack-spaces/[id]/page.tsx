@@ -22,10 +22,10 @@ const TRACK_EMOJIS: Record<string, string> = {
 }
 
 const STATUS_CONFIG = {
-  open: { label: "Buscando miembros", colorVar: "--primary" },
-  full: { label: "Equipo completo", colorVar: "--builder-archetype" },
-  in_progress: { label: "En progreso", colorVar: "--strategist" },
-  finished: { label: "Finalizado", colorVar: "--muted-foreground" },
+  open: { label: "Looking for members", colorVar: "--primary" },
+  full: { label: "Team full", colorVar: "--builder-archetype" },
+  in_progress: { label: "In progress", colorVar: "--strategist" },
+  finished: { label: "Finished", colorVar: "--muted-foreground" },
 } as const
 
 const STAGE_LABELS: Record<string, string> = {
@@ -119,7 +119,7 @@ export default function HackSpaceDetailPage({
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-sm">📅</span>
                   <span className="text-sm font-mono text-primary">
-                    Para {hackSpace.event_name}
+                    For {hackSpace.event_name}
                     {hackSpace.event_timing && ` · ${hackSpace.event_timing} the event`}
                   </span>
                   {hackSpace.event_url && (
@@ -233,7 +233,7 @@ export default function HackSpaceDetailPage({
                     onClick={() => setShowApplyForm(true)}
                     className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 w-fit"
                   >
-                    Aplicar al Hack Space →
+                    Apply to Hack Space →
                   </Button>
                 )}
               </div>

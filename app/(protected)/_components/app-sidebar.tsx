@@ -1,18 +1,5 @@
 "use client"
 
-import React from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { usePathname } from "next/navigation"
-import {
-  Home,
-  Zap,
-  Building2,
-  Users,
-  Map,
-  Bell,
-  User,
-} from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -23,21 +10,25 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
-import { AuthButton } from "@/components/auth/auth-button"
+import { Bell, Building2, Home, Map, Users, Zap } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import React from "react"
+import { SidebarUserCard } from "./sidebar-user-card"
 
-const NAV_MAIN: { href: string; label: string; icon: React.ElementType; exact?: boolean }[] = [
+const NAV_MAIN: {
+  href: string
+  label: string
+  icon: React.ElementType
+  exact?: boolean
+}[] = [
   { href: "/dashboard", label: "Home", icon: Home, exact: true },
   { href: "/dashboard/hack-spaces", label: "Hack Spaces", icon: Zap },
   { href: "/dashboard/hacker-houses", label: "Hacker Houses", icon: Building2 },
   { href: "/dashboard/builders", label: "Builders", icon: Users },
   { href: "/dashboard/map", label: "Map", icon: Map },
-]
-
-const NAV_BOTTOM: { href: string; label: string; icon: React.ElementType }[] = [
-  { href: "/dashboard/notificaciones", label: "Notificaciones", icon: Bell },
-  { href: "/dashboard/perfil", label: "Mi Perfil", icon: User },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
 ]
 
 export function AppSidebar() {
@@ -52,19 +43,18 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+          <SidebarMenuItem className="flex justify-center">
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="w-fit rounded-full size-32 hover:bg-transparent active:bg-transparent"
+            >
               <Link href="/dashboard">
-                <Image
+                <img
                   src="/assets/hacker-house-protocol-logo.svg"
                   alt="HHP"
-                  width={24}
-                  height={22}
-                  className="shrink-0"
+                  className="shrink-0 w-full h-full animate-float"
                 />
-                <span className="font-display font-bold text-foreground text-sm tracking-tight">
-                  Hacker House Protocol
-                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -72,19 +62,21 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
+        <SidebarGroup className="py-4">
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               {NAV_MAIN.map(({ href, label, icon: Icon, exact }) => (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton
                     asChild
+                    size="lg"
                     isActive={isActive(href, exact)}
                     tooltip={label}
+                    className="h-12 text-base font-medium [&_svg]:size-5 px-6"
                   >
                     <Link href={href}>
                       <Icon />
-                      <span>{label}</span>
+                      <span className="ml-2">{label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -95,26 +87,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarSeparator />
-        <SidebarMenu>
-          {NAV_BOTTOM.map(({ href, label, icon: Icon }) => (
-            <SidebarMenuItem key={href}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(href)}
-                tooltip={label}
-              >
-                <Link href={href}>
-                  <Icon />
-                  <span>{label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-        <div className="p-1">
-          <AuthButton />
-        </div>
+        <SidebarUserCard />
       </SidebarFooter>
     </Sidebar>
   )

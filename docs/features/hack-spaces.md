@@ -4,9 +4,11 @@
 
 Un Hack Space es un proyecto online donde un builder convoca a otros con habilidades específicas para construir algo juntos. No es un job board — es una convocatoria activa donde el creador tiene skin in the game.
 
+> **Estado actual (marzo 2026):** ✅ Implementado. Crear, listar, ver detalle, aplicar y gestionar aplicaciones están completos. Ver rutas en `docs/navigation.md`.
+
 ---
 
-## Formulario de Creación (`/hack-spaces/crear`)
+## Formulario de Creación (`/dashboard/hack-spaces/create`)
 
 ### Sobre el Proyecto
 - Nombre del Hack Space
@@ -25,11 +27,12 @@ Un Hack Space es un proyecto online donde un builder convoca a otros con habilid
 > Si está vinculado a un evento, aparece destacado en el mapa en la ciudad del evento. Cuando el equipo se forma, el shortcut para crear una Hacker House ya viene preconfigurado con fechas y ciudad.
 
 ### Sobre el Equipo
-- Habilidades deseadas (roles que faltan)
-- Tamaño máximo del equipo
-- Nivel de experiencia: `Principiante / Intermedio / Avanzado`
+- Arquetipos buscados (`looking_for`): Visionary / Strategist / Builder — al menos 1 requerido
+- Habilidades deseadas (`skills_needed`): skills específicas — opcional
+- Tamaño máximo del equipo (`max_team_size`): 2–20
+- Nivel de experiencia: `beginner / intermediate / advanced`
 - Idioma de trabajo
-- Zona horaria o región preferida
+- Zona horaria o región preferida (opcional)
 
 ### Filtros de Acceso
 - Aplicación: `abierta / por invitación / curada`

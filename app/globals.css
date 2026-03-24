@@ -4,6 +4,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@utility animate-float {
+  animation: float 3.5s ease-in-out infinite;
+}
+
 @theme inline {
   /* Surfaces */
   --color-background: var(--background);

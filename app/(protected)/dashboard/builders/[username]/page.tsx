@@ -4,7 +4,7 @@ import { use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useBuilderProfile } from "@/services/api/profile"
-import { ProfileView } from "../../perfil/_components/profile-view"
+import { ProfileView } from "../../profile/_components/profile-view"
 import { PageContainer } from "../../_components/page-container"
 
 interface BuilderProfilePageProps {

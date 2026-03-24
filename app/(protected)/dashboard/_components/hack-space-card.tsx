@@ -19,10 +19,10 @@ const TRACK_EMOJIS: Record<string, string> = {
 }
 
 const STATUS_CONFIG = {
-  open: { label: "Buscando miembros", colorVar: "--primary" },
-  full: { label: "Equipo completo", colorVar: "--builder-archetype" },
-  in_progress: { label: "En progreso", colorVar: "--strategist" },
-  finished: { label: "Finalizado", colorVar: "--muted-foreground" },
+  open: { label: "Looking for members", colorVar: "--primary" },
+  full: { label: "Team full", colorVar: "--builder-archetype" },
+  in_progress: { label: "In progress", colorVar: "--strategist" },
+  finished: { label: "Finished", colorVar: "--muted-foreground" },
 } as const
 
 interface HackSpaceCardProps {
@@ -167,7 +167,7 @@ export function HackSpaceCard({ hackSpace, currentUserId }: HackSpaceCardProps) 
         ) : hackSpace.status === "full" || hackSpace.status === "finished" ? (
           <Link href={`/dashboard/hack-spaces/${hackSpace.id}`}>
             <Button size="sm" variant="outline" className="text-xs font-mono">
-              Ver equipo →
+              View team →
             </Button>
           </Link>
         ) : apply.isSuccess ? (
@@ -211,7 +211,7 @@ export function HackSpaceCard({ hackSpace, currentUserId }: HackSpaceCardProps) 
             onClick={() => setShowApplyForm(true)}
             className="text-xs font-mono"
           >
-            Aplicar →
+            Apply →
           </Button>
         )}
       </div>

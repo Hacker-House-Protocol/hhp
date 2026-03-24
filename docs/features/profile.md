@@ -175,9 +175,9 @@ Mismo layout y secciones que el perfil propio, con estas diferencias:
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| `GET` | `/api/profile` | Perfil del usuario autenticado — ya existe |
-| `PATCH` | `/api/profile` | Actualizar perfil — ya existe |
-| `GET` | `/api/builders/[username]` | Perfil público por handle — **nuevo** |
+| `GET` | `/api/profile` | Perfil del usuario autenticado |
+| `PATCH` | `/api/profile` | Actualizar perfil |
+| `GET` | `/api/builders/[username]` | Perfil público por handle — ✅ implementado |
 
 `GET /api/builders/[username]`:
 - No requiere auth (perfil público).
@@ -188,7 +188,7 @@ Mismo layout y secciones que el perfil propio, con estas diferencias:
 
 ## Schemas
 
-`lib/schemas/profile.ts` ya tiene `patchProfileSchema` con todos los campos editables. No se necesita schema nuevo.
+`lib/schemas/profile.ts` ya tiene `patchProfileSchema` con todos los campos editables.
 
 Para edit mode, usar `patchProfileSchema` como base pero **solo los campos editables desde perfil**:
 - `bio`, `archetype`, `avatar_url`, `skills`, `languages`, `region`, `country`, `city`, `timezone`, `github_url`, `twitter_url`, `farcaster_url`
@@ -198,7 +198,7 @@ Para edit mode, usar `patchProfileSchema` como base pero **solo los campos edita
 
 ## Servicio
 
-Agregar a `services/api/profile.ts`:
+`services/api/profile.ts` — ✅ ya implementado:
 
 ```ts
 // Perfil público por handle
@@ -212,11 +212,12 @@ export const useBuilderProfile = (username: string) => {
       return user
     },
     queryKey: [queryKeys.builderProfile, username],
+    enabled: !!username,
   })
 }
 ```
 
-Agregar `builderProfile: "builder-profile"` a `lib/query-keys.ts`.
+`lib/query-keys.ts` ya incluye `builderProfile: "builder-profile"`.
 
 ---
 

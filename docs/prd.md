@@ -137,13 +137,32 @@ Estas features están diseñadas pero **no se implementan en MVP**. Cualquier tr
 
 ---
 
+## Estado de implementación (marzo 2026)
+
+| Feature | Estado |
+|---|---|
+| Landing + Waitlist | ✅ Implementado |
+| Onboarding + Cypher Identity | ✅ Implementado |
+| Hack Spaces (crear, listar, aplicar, gestionar) | ✅ Implementado |
+| Perfiles de builders (propio + público) | ✅ Implementado |
+| Hacker Houses | ❌ Pendiente |
+| Builder Feed (algoritmo + carruseles) | 🟡 Parcial — feed básico con Hack Spaces |
+| Mapa interactivo | ❌ Pendiente |
+| Notificaciones | ❌ Pendiente |
+
+---
+
 ## Criterios de lanzamiento (Definition of Done)
 
 El MVP está listo para beta pública cuando:
 
-- [ ] El flujo core completo funciona sin errores críticos (onboarding → hack spaces → hacker houses)
+- [x] Auth con Privy operativo (API keys configuradas)
+- [x] Onboarding completo sin errores (4 pasos + scanning)
+- [x] Hack Spaces: crear, listar, aplicar, aceptar/rechazar — sin errores críticos
+- [x] Perfil de builder (propio + público) — sin errores críticos
+- [ ] Hacker Houses: crear, listar, aplicar, aceptar/rechazar
+- [ ] El flujo core completo funciona (onboarding → hack spaces → hacker houses)
 - [ ] Funciona en mobile y desktop
-- [ ] Auth con Privy operativo (API keys configuradas)
 - [ ] Waitlist conectada a Supabase
 - [ ] Deploy en Vercel estable
 - [ ] Al menos 2 rondas de dogfooding interno sin bugs bloqueantes

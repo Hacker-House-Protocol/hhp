@@ -60,9 +60,15 @@ app/
 | `/dashboard/perfil` | Mi Cypher Identity, settings, linked accounts |
 | `/dashboard/notificaciones` | Centro de notificaciones |
 
-## Pantalla: /home — Carruseles
+## Pantalla: /dashboard — Estado actual (marzo 2026)
 
-Orden de los carruseles (priorizados por relevancia):
+Layout actual implementado:
+- **Sidebar izquierdo**: `CypherIdentityCard` — muestra kitten, handle, arquetipo, skills, wallet del builder autenticado.
+- **Contenido principal**: `HackSpacesFeed` — muestra los primeros 3 Hack Spaces (open/full/in_progress) con link "View all →".
+
+### Carruseles planificados (pendientes)
+
+Orden de los carruseles cuando estén implementados (priorizados por relevancia):
 
 | # | Carrusel | Lógica |
 |---|---|---|

@@ -151,7 +151,7 @@ Se actualiza la fila en `profiles` de Supabase con:
 ## Relación con el resto del sistema
 
 - Auth state: **Privy** via `usePrivy` — ver `CLAUDE.md`
-- Mutaciones: `usePatchProfile` (`PATCH /api/profiles/me`) — nunca Supabase directo desde cliente
+- Mutaciones: `usePatchProfile` (`PATCH /api/profile`) — nunca Supabase directo desde cliente
 - Cache: TanStack Query con key `queryKeys.profile`
 - Schemas en `lib/schemas/onboarding.ts` — usar `handleSchema` (step 2) y `contextSchema` (step 4). Los schemas `profileSchema` e `identitySchema` son legacy.
 - Al completar cualquier paso: `onboarding_step` avanza en DB. Al completar step 4 o hacer skip: `router.push("/dashboard")`
