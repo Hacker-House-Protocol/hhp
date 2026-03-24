@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { Fragment, useState } from "react"
+import { useForm, useWatch, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useCreateHackSpace } from "@/services/api/hack-spaces"
@@ -19,7 +19,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/date-picker"
-import { Field, FieldLabel, FieldDescription, FieldError } from "@/components/ui/field"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+} from "@/components/ui/field"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { cn } from "@/lib/utils"
 
 const TRACK_EMOJIS: Record<string, string> = {
@@ -45,24 +52,41 @@ const EXPERIENCE_LABELS: Record<string, string> = {
   advanced: "Advanced",
 }
 
-const APPLICATION_TYPE_LABELS: Record<string, string> = {
-  open: "Open — anyone can apply",
-  invite_only: "Invite only",
-  curated: "Curated — you review each applicant",
+const APPLICATION_TYPE_LABELS: Record<
+  string,
+  { title: string; description: string }
+> = {
+  open: { title: "Open", description: "Anyone can apply" },
+  invite_only: {
+    title: "Invite only",
+    description: "You invite builders directly",
+  },
+  curated: {
+    title: "Curated",
+    description: "You review each applicant manually",
+  },
 }
 
 const EVENT_TIMING_LABELS: Record<string, string> = {
-  before: "Before the event",
-  during: "During the event",
-  after: "After the event",
+  before: "Before",
+  during: "During",
+  after: "After",
 }
 
-const LANGUAGES = ["English", "Spanish", "Portuguese", "French", "German", "Mandarin", "Japanese", "Other"]
+const LANGUAGES = [
+  "English",
+  "Spanish",
+  "Portuguese",
+  "French",
+  "German",
+  "Mandarin",
+  "Japanese",
+  "Other",
+]
 
 const STEPS = ["Project", "Team", "Event", "Access"] as const
-type Step = typeof STEPS[number]
+type Step = (typeof STEPS)[number]
 
-// Which step owns each field — used to navigate back on server-side field errors
 const FIELD_TO_STEP: Partial<Record<keyof CreateHackSpaceInput, Step>> = {
   title: "Project",
   description: "Project",
@@ -84,6 +108,42 @@ const FIELD_TO_STEP: Partial<Record<keyof CreateHackSpaceInput, Step>> = {
   application_deadline: "Access",
 }
 
+function SectionCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full bg-card border border-border rounded-xl p-6 flex flex-col gap-5">
+      {children}
+    </div>
+  )
+}
+
+function TogglePill({
+  selected,
+  onClick,
+  children,
+  className,
+}: {
+  selected: boolean
+  onClick: () => void
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "text-xs px-3 py-1.5 rounded-md border font-mono transition-all cursor-pointer",
+        selected
+          ? "border-primary text-primary bg-primary/10"
+          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
 export function CreateHackSpaceForm() {
   const router = useRouter()
   const createHackSpace = useCreateHackSpace()
@@ -95,7 +155,6 @@ export function CreateHackSpaceForm() {
   const {
     control,
     handleSubmit,
-    watch,
     trigger,
     setError,
     formState: { isSubmitting },
@@ -123,7 +182,7 @@ export function CreateHackSpaceForm() {
     },
   })
 
-  const hasEvent = watch("has_event")
+  const hasEvent = useWatch({ control, name: "has_event" })
 
   const STEP_FIELDS: Record<Step, (keyof CreateHackSpaceInput)[]> = {
     Project: ["title", "description", "track", "stage"],
@@ -145,10 +204,6 @@ export function CreateHackSpaceForm() {
       router.push(`/dashboard/hack-spaces/${hs.id}`)
     } catch (e) {
       const message = e instanceof Error ? e.message : "Something went wrong"
-
-      // Try to match the error to a specific field by name in the message.
-      // If matched: set a field-level error and navigate to the owning step.
-      // If not: fall back to a generic error shown at the current step.
       const matchedField = (
         Object.keys(FIELD_TO_STEP) as (keyof CreateHackSpaceInput)[]
       ).find((field) => message.toLowerCase().includes(field.toLowerCase()))
@@ -163,46 +218,62 @@ export function CreateHackSpaceForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col gap-8">
+    <div className="w-full flex flex-col gap-8">
       {/* Step indicator */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center w-full">
         {STEPS.map((s, i) => (
-          <div key={s} className="flex items-center gap-2">
-            <div
-              className={cn(
-                "w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold border transition-all",
-                i < stepIndex
-                  ? "bg-primary border-primary text-primary-foreground"
-                  : i === stepIndex
-                  ? "border-primary text-primary"
-                  : "border-border text-muted-foreground"
-              )}
-            >
-              {i < stepIndex ? "✓" : i + 1}
+          <Fragment key={s}>
+            <div key={s} className="flex items-center gap-2 shrink-0">
+              <div
+                className={cn(
+                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold border transition-all",
+                  i < stepIndex
+                    ? "bg-primary border-primary text-primary-foreground"
+                    : i === stepIndex
+                      ? "border-primary text-primary"
+                      : "border-border text-muted-foreground",
+                )}
+              >
+                {i < stepIndex ? "✓" : i + 1}
+              </div>
+              <span
+                className={cn(
+                  "text-xs font-mono hidden sm:block",
+                  i === stepIndex
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground",
+                )}
+              >
+                {s}
+              </span>
             </div>
-            <span
-              className={cn(
-                "text-xs font-mono hidden sm:block",
-                i === stepIndex ? "text-foreground" : "text-muted-foreground"
-              )}
-            >
-              {s}
-            </span>
             {i < STEPS.length - 1 && (
-              <div className={cn("h-px w-8 sm:w-12", i < stepIndex ? "bg-primary" : "bg-border")} />
+              <div
+                key={`connector-${i}`}
+                className={cn(
+                  "h-px flex-1 mx-2",
+                  i < stepIndex ? "bg-primary" : "bg-border",
+                )}
+              />
             )}
-          </div>
+          </Fragment>
         ))}
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6">
-
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full flex flex-col gap-4"
+      >
         {/* ── STEP 1: PROJECT ── */}
         {step === "Project" && (
-          <div className="flex flex-col gap-5">
+          <SectionCard>
             <div>
-              <h2 className="font-display font-bold text-foreground text-xl">About the project</h2>
-              <p className="text-muted-foreground text-sm mt-1">What are you building?</p>
+              <h2 className="font-display font-bold text-foreground text-xl">
+                About the project
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                What are you building?
+              </p>
             </div>
 
             <Controller
@@ -218,7 +289,9 @@ export function CreateHackSpaceForm() {
                     placeholder="e.g. ZK Identity Protocol"
                     maxLength={80}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -238,8 +311,12 @@ export function CreateHackSpaceForm() {
                     rows={4}
                     className="resize-none"
                   />
-                  <FieldDescription>{(field.value ?? "").length}/500</FieldDescription>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  <FieldDescription>
+                    {(field.value ?? "").length}/500
+                  </FieldDescription>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -252,22 +329,18 @@ export function CreateHackSpaceForm() {
                   <FieldLabel>Track *</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {TRACKS.map((t) => (
-                      <button
+                      <TogglePill
                         key={t}
-                        type="button"
+                        selected={field.value === t}
                         onClick={() => field.onChange(t)}
-                        className={cn(
-                          "text-xs px-3 py-1.5 rounded-sm border font-mono transition-all cursor-pointer",
-                          field.value === t
-                            ? "border-primary text-primary bg-primary/10"
-                            : "border-border text-muted-foreground hover:border-primary/40"
-                        )}
                       >
                         {TRACK_EMOJIS[t]} {t}
-                      </button>
+                      </TogglePill>
                     ))}
                   </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -278,24 +351,20 @@ export function CreateHackSpaceForm() {
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel>Stage *</FieldLabel>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {STAGES.map((s) => (
-                      <button
+                      <TogglePill
                         key={s}
-                        type="button"
+                        selected={field.value === s}
                         onClick={() => field.onChange(s)}
-                        className={cn(
-                          "text-xs px-3 py-1.5 rounded-sm border font-mono transition-all cursor-pointer",
-                          field.value === s
-                            ? "border-primary text-primary bg-primary/10"
-                            : "border-border text-muted-foreground hover:border-primary/40"
-                        )}
                       >
                         {STAGE_LABELS[s]}
-                      </button>
+                      </TogglePill>
                     ))}
                   </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -307,7 +376,9 @@ export function CreateHackSpaceForm() {
                 <Field data-invalid={fieldState.invalid}>
                   <FieldLabel htmlFor={field.name}>
                     Repo / links{" "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
                   </FieldLabel>
                   <Input
                     {...field}
@@ -315,19 +386,25 @@ export function CreateHackSpaceForm() {
                     aria-invalid={fieldState.invalid}
                     placeholder="https://github.com/..."
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
-          </div>
+          </SectionCard>
         )}
 
         {/* ── STEP 2: TEAM ── */}
         {step === "Team" && (
-          <div className="flex flex-col gap-5">
+          <SectionCard>
             <div>
-              <h2 className="font-display font-bold text-foreground text-xl">About the team</h2>
-              <p className="text-muted-foreground text-sm mt-1">Who are you looking for?</p>
+              <h2 className="font-display font-bold text-foreground text-xl">
+                About the team
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Who are you looking for?
+              </p>
             </div>
 
             <Controller
@@ -346,10 +423,16 @@ export function CreateHackSpaceForm() {
                           type="button"
                           onClick={() =>
                             field.onChange(
-                              selected ? value.filter((v) => v !== a.id) : [...value, a.id]
+                              selected
+                                ? value.filter((v) => v !== a.id)
+                                : [...value, a.id],
                             )
                           }
-                          className="text-xs px-3 py-1.5 rounded-sm border font-mono transition-all cursor-pointer"
+                          className={cn(
+                            "text-xs px-3 py-1.5 rounded-md border font-mono transition-all cursor-pointer",
+                            !selected &&
+                              "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                          )}
                           style={
                             selected
                               ? {
@@ -357,7 +440,7 @@ export function CreateHackSpaceForm() {
                                   color: `var(${a.colorVar})`,
                                   backgroundColor: `color-mix(in oklch, var(${a.colorVar}) 15%, transparent)`,
                                 }
-                              : { borderColor: "var(--border)", color: "var(--muted-foreground)" }
+                              : undefined
                           }
                         >
                           {a.name}
@@ -365,7 +448,9 @@ export function CreateHackSpaceForm() {
                       )
                     })}
                   </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -377,31 +462,29 @@ export function CreateHackSpaceForm() {
                 <Field>
                   <FieldLabel>
                     Skills needed{" "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
                   </FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {ALL_SKILLS.map((skill) => {
                       const value = field.value ?? []
                       const selected = value.includes(skill)
                       return (
-                        <button
+                        <TogglePill
                           key={skill}
-                          type="button"
+                          selected={selected}
                           onClick={() =>
                             field.onChange(
-                              selected ? value.filter((s) => s !== skill) : [...value, skill]
+                              selected
+                                ? value.filter((s) => s !== skill)
+                                : [...value, skill],
                             )
                           }
-                          className={cn(
-                            "text-xs px-2.5 py-1 rounded-sm border font-mono transition-all cursor-pointer",
-                            selected
-                              ? "border-primary text-primary bg-primary/10"
-                              : "border-border text-muted-foreground hover:border-primary/40"
-                          )}
                         >
                           {selected ? "✓ " : ""}
                           {skill}
-                        </button>
+                        </TogglePill>
                       )
                     })}
                   </div>
@@ -414,7 +497,7 @@ export function CreateHackSpaceForm() {
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Max team size *</FieldLabel>
+                  <FieldLabel>Max team size *</FieldLabel>
                   <div className="flex gap-2">
                     {[2, 3, 4, 5, 6, 8, 10].map((n) => (
                       <button
@@ -422,17 +505,19 @@ export function CreateHackSpaceForm() {
                         type="button"
                         onClick={() => field.onChange(n)}
                         className={cn(
-                          "w-10 h-9 rounded-sm border font-mono text-sm transition-all cursor-pointer",
+                          "w-10 h-9 rounded-md border font-mono text-sm transition-all cursor-pointer",
                           field.value === n
                             ? "border-primary text-primary bg-primary/10"
-                            : "border-border text-muted-foreground hover:border-primary/40"
+                            : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
                         )}
                       >
                         {n}
                       </button>
                     ))}
                   </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -443,21 +528,15 @@ export function CreateHackSpaceForm() {
               render={({ field }) => (
                 <Field>
                   <FieldLabel>Experience level *</FieldLabel>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     {EXPERIENCE_LEVELS.map((lvl) => (
-                      <button
+                      <TogglePill
                         key={lvl}
-                        type="button"
+                        selected={field.value === lvl}
                         onClick={() => field.onChange(lvl)}
-                        className={cn(
-                          "text-xs px-3 py-1.5 rounded-sm border font-mono transition-all cursor-pointer",
-                          field.value === lvl
-                            ? "border-primary text-primary bg-primary/10"
-                            : "border-border text-muted-foreground hover:border-primary/40"
-                        )}
                       >
                         {EXPERIENCE_LABELS[lvl]}
-                      </button>
+                      </TogglePill>
                     ))}
                   </div>
                 </Field>
@@ -473,22 +552,18 @@ export function CreateHackSpaceForm() {
                     <FieldLabel>Working language *</FieldLabel>
                     <div className="flex flex-wrap gap-2">
                       {LANGUAGES.map((lang) => (
-                        <button
+                        <TogglePill
                           key={lang}
-                          type="button"
+                          selected={field.value === lang}
                           onClick={() => field.onChange(lang)}
-                          className={cn(
-                            "text-xs px-2.5 py-1 rounded-sm border font-mono transition-all cursor-pointer",
-                            field.value === lang
-                              ? "border-primary text-primary bg-primary/10"
-                              : "border-border text-muted-foreground hover:border-primary/40"
-                          )}
                         >
                           {lang}
-                        </button>
+                        </TogglePill>
                       ))}
                     </div>
-                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
                   </Field>
                 )}
               />
@@ -500,7 +575,9 @@ export function CreateHackSpaceForm() {
                   <Field>
                     <FieldLabel htmlFor={field.name}>
                       Region{" "}
-                      <span className="text-muted-foreground font-normal">(optional)</span>
+                      <span className="text-muted-foreground font-normal">
+                        (optional)
+                      </span>
                     </FieldLabel>
                     <Input
                       {...field}
@@ -511,14 +588,16 @@ export function CreateHackSpaceForm() {
                 )}
               />
             </div>
-          </div>
+          </SectionCard>
         )}
 
         {/* ── STEP 3: EVENT ── */}
         {step === "Event" && (
-          <div className="flex flex-col gap-5">
+          <SectionCard>
             <div>
-              <h2 className="font-display font-bold text-foreground text-xl">Related event</h2>
+              <h2 className="font-display font-bold text-foreground text-xl">
+                Related event
+              </h2>
               <p className="text-muted-foreground text-sm mt-1">
                 Is this Hack Space tied to a hackathon or event?
               </p>
@@ -528,43 +607,45 @@ export function CreateHackSpaceForm() {
               name="has_event"
               control={control}
               render={({ field }) => (
-                <button
-                  type="button"
-                  onClick={() => field.onChange(!field.value)}
+                <label
                   className={cn(
-                    "flex items-center gap-3 p-4 rounded-lg border transition-all text-left",
+                    "w-full flex items-start gap-4 p-4 rounded-lg border transition-all cursor-pointer",
                     field.value
                       ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/40"
+                      : "border-border hover:border-primary/40",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0",
-                      field.value ? "border-primary bg-primary" : "border-border"
-                    )}
-                  >
-                    {field.value && <span className="text-primary-foreground text-xs font-bold">✓</span>}
-                  </div>
-                  <div>
-                    <p className="text-foreground text-sm font-medium">Yes, linked to an event</p>
+                  <Checkbox
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                    className="mt-0.5"
+                  />
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-foreground text-sm font-medium">
+                      Yes, linked to an event
+                    </p>
                     <p className="text-muted-foreground text-xs">
-                      Appears highlighted on the map. The Hacker House shortcut will come pre-configured.
+                      Appears highlighted on the map. The Hacker House shortcut
+                      will come pre-configured.
                     </p>
                   </div>
-                </button>
+                </label>
               )}
             />
 
             {hasEvent && (
-              <div className="flex flex-col gap-4 pl-2 border-l-2 border-primary/30">
+              <div className="flex flex-col gap-4 pl-3 border-l-2 border-primary/30">
                 <Controller
                   name="event_name"
                   control={control}
                   render={({ field }) => (
                     <Field>
                       <FieldLabel htmlFor={field.name}>Event name</FieldLabel>
-                      <Input {...field} id={field.name} placeholder="e.g. ETH Global Cannes 2026" />
+                      <Input
+                        {...field}
+                        id={field.name}
+                        placeholder="e.g. ETH Global Cannes 2026"
+                      />
                     </Field>
                   )}
                 />
@@ -575,8 +656,14 @@ export function CreateHackSpaceForm() {
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <FieldLabel htmlFor={field.name}>Event link</FieldLabel>
-                      <Input {...field} id={field.name} placeholder="https://lu.ma/..." />
-                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                      <Input
+                        {...field}
+                        id={field.name}
+                        placeholder="https://lu.ma/..."
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
                     </Field>
                   )}
                 />
@@ -605,19 +692,13 @@ export function CreateHackSpaceForm() {
                       <FieldLabel>This Hack Space is for</FieldLabel>
                       <div className="flex gap-2">
                         {EVENT_TIMINGS.map((t) => (
-                          <button
+                          <TogglePill
                             key={t}
-                            type="button"
+                            selected={field.value === t}
                             onClick={() => field.onChange(t)}
-                            className={cn(
-                              "text-xs px-3 py-1.5 rounded-sm border font-mono transition-all cursor-pointer",
-                              field.value === t
-                                ? "border-primary text-primary bg-primary/10"
-                                : "border-border text-muted-foreground hover:border-primary/40"
-                            )}
                           >
                             {EVENT_TIMING_LABELS[t]}
-                          </button>
+                          </TogglePill>
                         ))}
                       </div>
                     </Field>
@@ -625,15 +706,19 @@ export function CreateHackSpaceForm() {
                 />
               </div>
             )}
-          </div>
+          </SectionCard>
         )}
 
         {/* ── STEP 4: ACCESS ── */}
         {step === "Access" && (
-          <div className="flex flex-col gap-5">
+          <SectionCard>
             <div>
-              <h2 className="font-display font-bold text-foreground text-xl">Access & applications</h2>
-              <p className="text-muted-foreground text-sm mt-1">Who can apply and how?</p>
+              <h2 className="font-display font-bold text-foreground text-xl">
+                Access & applications
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Who can apply and how?
+              </p>
             </div>
 
             <Controller
@@ -642,31 +727,33 @@ export function CreateHackSpaceForm() {
               render={({ field }) => (
                 <Field>
                   <FieldLabel>Application type *</FieldLabel>
-                  <div className="flex flex-col gap-2">
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="gap-2"
+                  >
                     {APPLICATION_TYPES.map((t) => (
-                      <button
+                      <label
                         key={t}
-                        type="button"
-                        onClick={() => field.onChange(t)}
                         className={cn(
-                          "flex items-center gap-3 p-3 rounded-lg border transition-all text-left",
+                          "w-full flex items-center gap-4 p-4 rounded-lg border transition-all cursor-pointer",
                           field.value === t
                             ? "border-primary bg-primary/5"
-                            : "border-border hover:border-primary/40"
+                            : "border-border hover:border-primary/40",
                         )}
                       >
-                        <div
-                          className={cn(
-                            "w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all",
-                            field.value === t ? "border-primary bg-primary" : "border-border"
-                          )}
-                        />
-                        <span className="text-sm font-mono text-foreground">
-                          {APPLICATION_TYPE_LABELS[t]}
-                        </span>
-                      </button>
+                        <RadioGroupItem value={t} />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm font-medium text-foreground">
+                            {APPLICATION_TYPE_LABELS[t].title}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            {APPLICATION_TYPE_LABELS[t].description}
+                          </span>
+                        </div>
+                      </label>
                     ))}
-                  </div>
+                  </RadioGroup>
                 </Field>
               )}
             />
@@ -678,7 +765,9 @@ export function CreateHackSpaceForm() {
                 <Field>
                   <FieldLabel>
                     Application deadline{" "}
-                    <span className="text-muted-foreground font-normal">(optional)</span>
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
                   </FieldLabel>
                   <DatePicker
                     value={field.value}
@@ -690,21 +779,22 @@ export function CreateHackSpaceForm() {
                 </Field>
               )}
             />
-
-          </div>
+          </SectionCard>
         )}
 
-        {/* Server error — always visible, outside step blocks */}
+        {/* Server error */}
         {serverError && (
-          <p className="text-sm text-destructive">{serverError}</p>
+          <p className="text-sm text-destructive px-1">{serverError}</p>
         )}
 
         {/* Navigation */}
-        <div className="flex justify-between pt-2 border-t border-border">
+        <div className="flex justify-between pt-2">
           <Button
             type="button"
             variant="ghost"
-            onClick={() => stepIndex > 0 ? setStep(STEPS[stepIndex - 1]) : router.back()}
+            onClick={() =>
+              stepIndex > 0 ? setStep(STEPS[stepIndex - 1]) : router.back()
+            }
             className="font-mono text-sm"
           >
             ← {stepIndex === 0 ? "Cancel" : "Back"}

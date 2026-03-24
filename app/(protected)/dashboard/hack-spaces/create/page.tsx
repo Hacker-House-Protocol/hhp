@@ -9,8 +9,8 @@ export default function CreateHackSpacePage() {
   const router = useRouter()
 
   return (
-    <PageContainer className="py-10 max-w-3xl">
-      <div className="flex flex-col gap-8">
+    <PageContainer>
+      <div className="w-2xl max-w-full mx-auto flex flex-col gap-8">
         <div className="flex items-center gap-3">
           <Button
             type="button"
@@ -22,8 +22,11 @@ export default function CreateHackSpacePage() {
             ← Back
           </Button>
           <span className="text-border">|</span>
-          <h1 className="font-display font-bold text-foreground text-sm">Create Hack Space</h1>
+          <h1 className="font-display font-bold text-foreground text-xl">
+            Create Hack Space
+          </h1>
         </div>
+
         <CreateHackSpaceForm />
       </div>
     </PageContainer>

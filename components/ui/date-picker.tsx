@@ -15,6 +15,8 @@ interface DatePickerProps {
   className?: string
   disabled?: boolean
   fromDate?: Date
+  startMonth?: Date
+  endMonth?: Date
 }
 
 export function DatePicker({
@@ -24,6 +26,8 @@ export function DatePicker({
   className,
   disabled,
   fromDate,
+  startMonth,
+  endMonth,
 }: DatePickerProps) {
   const date = value ? parseISO(value) : undefined
 
@@ -51,9 +55,12 @@ export function DatePicker({
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
+          captionLayout="dropdown"
           selected={date}
           onSelect={handleSelect}
           fromDate={fromDate}
+          startMonth={startMonth ?? new Date(1900, 0)}
+          endMonth={endMonth ?? new Date(new Date().getFullYear() + 5, 11)}
           initialFocus
         />
       </PopoverContent>

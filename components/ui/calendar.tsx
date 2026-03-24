@@ -5,6 +5,7 @@ import {
   DayPicker,
   getDefaultClassNames,
   type DayButton,
+  type DropdownProps,
   type Locale,
 } from "react-day-picker"
 
@@ -73,18 +74,15 @@ function Calendar({
           defaultClassNames.dropdowns
         ),
         dropdown_root: cn(
-          "relative rounded-(--cell-radius)",
+          "relative",
           defaultClassNames.dropdown_root
         ),
-        dropdown: cn(
-          "absolute inset-0 bg-popover opacity-0",
-          defaultClassNames.dropdown
-        ),
+        dropdown: cn("hidden", defaultClassNames.dropdown),
         caption_label: cn(
           "font-medium select-none",
           captionLayout === "label"
             ? "text-sm"
-            : "flex items-center gap-1 rounded-(--cell-radius) text-sm [&>svg]:size-3.5 [&>svg]:text-muted-foreground",
+            : "text-sm [&>svg]:hidden",
           defaultClassNames.caption_label
         ),
         table: "w-full border-collapse",
@@ -161,6 +159,9 @@ function Calendar({
             <ChevronDownIcon className={cn("size-4", className)} {...props} />
           )
         },
+        Dropdown: (props: DropdownProps) => (
+          <CalendarDropdown {...props} />
+        ),
         DayButton: ({ ...props }) => (
           <CalendarDayButton locale={locale} {...props} />
         ),
@@ -177,6 +178,86 @@ function Calendar({
       }}
       {...props}
     />
+  )
+}
+
+function CalendarDropdown({
+  options,
+  value,
+  onChange,
+  "aria-label": ariaLabel,
+}: DropdownProps) {
+  const [open, setOpen] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  const selectedOption = options?.find((o) => o.value === value)
+
+  function handleSelect(newValue: number) {
+    if (onChange) {
+      const syntheticEvent = {
+        target: { value: String(newValue) },
+      } as React.ChangeEvent<HTMLSelectElement>
+      onChange(syntheticEvent)
+    }
+    setOpen(false)
+  }
+
+  // Close on click outside
+  React.useEffect(() => {
+    if (!open) return
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [open])
+
+  // Scroll selected item into view when opening
+  const listRef = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    if (open && listRef.current) {
+      const selected = listRef.current.querySelector("[data-selected=true]")
+      selected?.scrollIntoView({ block: "center" })
+    }
+  }, [open])
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        aria-label={ariaLabel}
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex h-7 items-center gap-1 rounded-md border border-border bg-input px-2 text-xs font-medium transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+      >
+        {selectedOption?.label}
+        <ChevronDownIcon className="size-3 text-muted-foreground" />
+      </button>
+
+      {open && (
+        <div
+          ref={listRef}
+          className="absolute top-full left-1/2 z-50 mt-1 max-h-56 -translate-x-1/2 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md"
+        >
+          {options?.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              data-selected={option.value === value}
+              disabled={option.disabled}
+              onClick={() => handleSelect(option.value)}
+              className={cn(
+                "flex w-full cursor-default items-center rounded-sm px-3 py-1.5 text-xs whitespace-nowrap outline-none hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+                option.value === value && "bg-accent text-accent-foreground font-medium"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 

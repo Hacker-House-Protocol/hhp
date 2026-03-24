@@ -13,6 +13,13 @@
   animation: float 3.5s ease-in-out infinite;
 }
 
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @theme inline {
   /* Surfaces */
   --color-background: var(--background);
@@ -71,6 +78,8 @@
 
 /* ─── HHP Design System — Always Dark ─── */
 :root {
+  color-scheme: dark;
+
   /* Backgrounds */
   --background: oklch(0.09 0.04 277);        /* deep navy — base canvas */
   --foreground: oklch(0.96 0.01 277);        /* near-white */
@@ -132,5 +141,6 @@
   }
   html {
     @apply font-sans;
+    scrollbar-gutter: stable;
   }
 }

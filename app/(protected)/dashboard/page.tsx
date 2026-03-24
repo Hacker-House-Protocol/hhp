@@ -22,7 +22,7 @@ export default function DashboardPage() {
         setSynced(true)
       })
       .catch(console.error)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const { data: profile } = useProfile({ enabled: synced })
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <PageContainer className="py-10">
+    <PageContainer>
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
         <aside>
           <CypherIdentityCard profile={profile} />
