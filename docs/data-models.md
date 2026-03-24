@@ -86,6 +86,7 @@ type HackSpace = {
 
 ```ts
 type HouseModality = 'free' | 'paid' | 'staking'
+// 'paid' and 'staking' are Fase 2 only. Fase 1 hardcodes modality = 'free'.
 type HouseStatus = 'open' | 'full' | 'active' | 'finished'
 
 type HackerHouse = {
@@ -96,42 +97,56 @@ type HackerHouse = {
   neighborhood?: string           // zona aproximada, sin dirección exacta
   start_date: string
   end_date: string
-  capacity: number
+  capacity: number                // total cupos incluyendo el creador
   modality: HouseModality
-  cost_per_person?: number        // en ETH, solo si paid o staking
-  cost_currency?: string          // 'ETH'
-  sponsored_by?: string           // org_id si es patrocinada
-  includes: {
-    private_room?: boolean
-    shared_room?: boolean
-    meals?: boolean
-    workspace?: boolean
-    internet?: boolean
-  }
-  profile_sought: string[]        // ['Builders', 'Founders', 'Designers', ...]
+  cost_per_person?: number        // en ETH, solo si paid o staking — Fase 2
+  cost_currency?: string          // 'ETH' — Fase 2
+  sponsored_by?: string           // org_id si es patrocinada — Fase 2
+  // Amenities — columnas booleanas individuales
+  includes_private_room: boolean
+  includes_shared_room: boolean
+  includes_meals: boolean
+  includes_workspace: boolean
+  includes_internet: boolean
+  // Imágenes — array de URLs, primera es la portada, máx 5
+  images: string[]
+  profile_sought: string[]        // arquetipos: ['visionary', 'strategist', 'builder']
   language: string
-  house_rules?: string
+  house_rules?: string            // texto libre, máx 500 chars
   status: HouseStatus
   creator_id: string
-  participants: Profile[]
+  // Participants — el creador cuenta como participante #1
+  // participants_count = accepted_applications + 1
+  participants_count: number
+  participants: {                 // hasta 6 en card, todos en detalle
+    id: string
+    handle: string | null
+    archetype: string | null
+    avatar_url: string | null
+  }[]
   application_type: ApplicationType
   application_deadline?: string
-  // Filtros on-chain
+  // Filtros on-chain — Fase 2
   required_poaps?: string[]
   required_nfts?: string[]
   min_talent_score?: number
-  staking_amount?: number         // en ETH
-  // Contrato
+  staking_amount?: number
+  // Contrato — Fase 2
   contract_address?: string
   funds_raised?: number
   target_funds?: number
   // Evento relacionado (opcional)
-  event_id?: string
   event_name?: string
   event_url?: string
   event_date?: string
   event_timing?: 'before' | 'during' | 'after'
   created_at: string
+  creator: {
+    id: string
+    handle: string | null
+    archetype: string | null
+    avatar_url: string | null
+  }
 }
 ```
 
@@ -141,12 +156,18 @@ type HackerHouse = {
 
 ```ts
 type ApplicationStatus = 'pending' | 'accepted' | 'rejected'
+type ApplicationTargetType = 'hack_space' | 'hacker_house'
 
+// Tabla unificada con dos FKs nullable (una por entidad).
+// Exactamente una de hack_space_id / hacker_house_id es non-null (CHECK constraint en DB).
+// Se usa target_type como discriminador de conveniencia.
 type Application = {
   id: string
   applicant_id: string
-  target_type: 'hack_space' | 'hacker_house'
-  target_id: string
+  target_type: ApplicationTargetType
+  hack_space_id: string | null      // FK → hack_spaces.id
+  hacker_house_id: string | null    // FK → hacker_houses.id
+  message: string | null
   status: ApplicationStatus
   created_at: string
 }

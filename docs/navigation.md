@@ -36,8 +36,8 @@ app/
       hacker-houses/page.tsx      → /dashboard/hacker-houses
       map/page.tsx                → /dashboard/map
       builders/page.tsx           → /dashboard/builders
-      perfil/page.tsx             → /dashboard/perfil
-      notificaciones/page.tsx     → /dashboard/notificaciones
+      profile/page.tsx            → /dashboard/profile
+      notifications/page.tsx      → /dashboard/notifications
 ```
 
 ## Todas las Rutas del MVP
@@ -53,12 +53,13 @@ app/
 | `/dashboard/hack-spaces/create` | Formulario de creación multi-paso |
 | `/dashboard/hacker-houses` | Listado de Hacker Houses con filtros |
 | `/dashboard/hacker-houses/[id]` | Detalle, aplicar, ver participantes, ver evento vinculado |
-| `/dashboard/hacker-houses/[id]/pago` | Pago grupal, split, estado del contrato |
-| `/dashboard/hacker-houses/[id]/confirmacion` | Confirmación de pago con countdown |
+| `/dashboard/hacker-houses/create` | Formulario de creación multi-paso |
+| `/dashboard/hacker-houses/[id]/edit` | Editar Hacker House (solo creador) |
+| `/dashboard/hacker-houses/[id]/payment` | Pago grupal, split, estado del contrato — Fase 2 |
 | `/dashboard/builders` | Explorar builders, matching, sugerencias |
 | `/dashboard/builders/[username]` | Perfil público de un builder |
-| `/dashboard/perfil` | Mi Cypher Identity, settings, linked accounts |
-| `/dashboard/notificaciones` | Centro de notificaciones |
+| `/dashboard/profile` | Mi Cypher Identity, settings, linked accounts |
+| `/dashboard/notifications` | Centro de notificaciones |
 
 ## Pantalla: /dashboard — Estado actual (marzo 2026)
 
