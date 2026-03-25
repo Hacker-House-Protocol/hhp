@@ -29,6 +29,7 @@ import {
   Sparkles,
   MapPin,
 } from "lucide-react"
+import { BackButton } from "../../../_components/back-button"
 
 type BadgeVariant = VariantProps<typeof badgeVariants>["variant"]
 
@@ -189,8 +190,11 @@ export default function HackSpaceDetailPage({
 
   return (
     <PageContainer>
-      {/* Navigation */}
-      <div className="mb-6">
+      {/* Mobile back button */}
+      <BackButton href="/dashboard/hack-spaces" />
+
+      {/* Navigation (desktop) */}
+      <div className="hidden md:block mb-6">
         <Link
           href="/dashboard/hack-spaces"
           className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "./_components/app-sidebar"
+import { BottomNav } from "./_components/bottom-nav"
 import { LoadingScreen } from "@/components/loading-screen"
 
 export default function ProtectedLayout({
@@ -28,7 +29,10 @@ export default function ProtectedLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="pb-16 md:pb-0">
+        {children}
+      </SidebarInset>
+      <BottomNav />
     </SidebarProvider>
   )
 }

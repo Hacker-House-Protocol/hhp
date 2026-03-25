@@ -25,6 +25,7 @@ import {
   Sparkles,
   Home,
 } from "lucide-react"
+import { BackButton } from "../../../_components/back-button"
 
 const STATUS_CONFIG = {
   open: {
@@ -166,8 +167,11 @@ export default function HackerHouseDetailPage({
 
   return (
     <PageContainer>
-      {/* Navigation */}
-      <div className="mb-6">
+      {/* Mobile back button */}
+      <BackButton href="/dashboard/hacker-houses" />
+
+      {/* Navigation (desktop) */}
+      <div className="hidden md:block mb-6">
         <Link
           href="/dashboard/hacker-houses"
           className="text-muted-foreground hover:text-foreground transition-colors font-mono text-sm"

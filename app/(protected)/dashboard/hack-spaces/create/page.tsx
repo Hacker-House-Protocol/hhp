@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { PageContainer } from "../../_components/page-container"
 import { HackSpaceForm } from "./_components/create-hack-space-form"
+import { BackButton } from "../../../_components/back-button"
 import type { CreateHackSpaceInput } from "@/lib/schemas/hack-space"
 
 export default function CreateHackSpacePage() {
@@ -21,6 +22,7 @@ export default function CreateHackSpacePage() {
   return (
     <PageContainer>
       <div className="w-2xl max-w-full mx-auto flex flex-col gap-8">
+        <BackButton href="/dashboard/hack-spaces" />
         <div className="flex items-center gap-3">
           <Button
             type="button"

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useQueryClient } from "@tanstack/react-query"
+import { Bell } from "lucide-react"
 import { useProfile, syncAndGetProfile } from "@/services/api/profile"
 import { queryKeys } from "@/lib/query-keys"
 import { LoadingScreen } from "@/components/loading-screen"
@@ -38,6 +40,22 @@ export default function DashboardPage() {
 
   return (
     <PageContainer>
+      {/* Mobile-only top bar: logo centered, bell top-right */}
+      <div className="md:hidden relative flex items-center justify-center mb-6 h-10">
+        <img
+          src="/assets/hacker-house-protocol-logo.svg"
+          alt="Hacker House Protocol"
+          className="h-8 w-8"
+        />
+        <Link
+          href="/dashboard/notifications"
+          aria-label="Notifications"
+          className="absolute right-0 flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Bell className="size-5" />
+        </Link>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
         <aside>
           <CypherIdentityCard profile={profile} />
