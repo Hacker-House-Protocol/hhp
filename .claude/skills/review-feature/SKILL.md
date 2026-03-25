@@ -41,6 +41,7 @@ Report only actual violations — skip items that pass.
 - [ ] `useWatch` used — never `watch()` from `useForm`
 - [ ] Numeric range fields use `− N +` stepper — never a hardcoded array of discrete values
 - [ ] Image upload uses local preview (`URL.createObjectURL`) + upload on submit — never uploads on file select
+- [ ] `FieldLabel` uses `optional` prop for optional fields — never `*` suffix on required, never manual `<span>(optional)</span>`
 
 ### API routes
 - [ ] Every write route (POST, PATCH, DELETE) verifies Privy token before DB access

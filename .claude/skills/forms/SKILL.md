@@ -110,6 +110,13 @@ const { control, handleSubmit, formState } = useForm<MyInput>({
 
 ## Field pattern — always use Controller + Field wrapper
 
+**Label convention:** never use `*` for required fields. Only mark optional fields using the `optional` prop on `FieldLabel`:
+
+```tsx
+<FieldLabel>City</FieldLabel>              // required — no marker
+<FieldLabel optional>Neighborhood</FieldLabel>  // optional — shows "(optional)"
+```
+
 ```tsx
 <Controller
   name="fieldName"
