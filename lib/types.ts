@@ -84,6 +84,7 @@ export interface HackSpace {
     id: string
     handle: string | null
     archetype: string | null
+    avatar_url: string | null
   }
   member_count?: number
   participants?: HackSpaceParticipant[]
@@ -158,7 +159,7 @@ export interface HackerHouse {
   house_rules: string | null
   status: HouseStatus
   application_type: ApplicationType
-  application_deadline: string | null
+  application_deadline: string
   event_name: string | null
   event_url: string | null
   event_start_date: string | null

@@ -23,7 +23,7 @@ export const createHackerHouseSchema = z.object({
   language: z.array(z.string()).min(1, "Select at least one language"),
   house_rules: z.string().max(500).optional(),
   application_type: z.enum(APPLICATION_TYPES),
-  application_deadline: z.string().optional(),
+  application_deadline: z.string().min(1, "Select an application deadline"),
   has_event: z.boolean().optional(),
   event_name: z.string().optional(),
   event_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),

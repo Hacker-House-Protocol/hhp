@@ -70,7 +70,7 @@ const STEP_FIELDS: Record<Step, (keyof CreateHackerHouseInput)[]> = {
   House: ["name", "region", "country", "city"],
   Amenities: ["start_date", "end_date", "capacity"],
   Community: ["profile_sought", "language"],
-  Access: ["application_type"],
+  Access: ["application_type", "application_deadline"],
 }
 
 const FIELD_TO_STEP: Partial<Record<keyof CreateHackerHouseInput, Step>> = {
@@ -189,7 +189,7 @@ export function CreateHackerHouseForm({
       language: ["English"],
       house_rules: "",
       application_type: "open",
-      application_deadline: "",
+      application_deadline: undefined,
       has_event: false,
       event_name: "",
       event_url: "",
@@ -901,9 +901,9 @@ export function CreateHackerHouseForm({
             <Controller
               name="application_deadline"
               control={control}
-              render={({ field }) => (
-                <Field>
-                  <FieldLabel optional>Application deadline</FieldLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Application deadline</FieldLabel>
                   <DatePicker
                     value={field.value}
                     onChange={(v) => field.onChange(v ?? "")}
@@ -911,6 +911,7 @@ export function CreateHackerHouseForm({
                     disableBefore={new Date()}
                     className="w-full"
                   />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
             />

@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabaseServer
     .from("hack_spaces")
     .insert(insertData)
-    .select(`*, creator:users(id, handle, archetype)`)
+    .select(`*, creator:users(id, handle, archetype, avatar_url)`)
     .single()
 
   if (error) {

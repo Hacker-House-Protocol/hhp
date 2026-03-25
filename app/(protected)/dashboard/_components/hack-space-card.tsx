@@ -73,7 +73,7 @@ export function HackSpaceCard({
         <div className="absolute inset-0 bg-linear-to-t from-card to-transparent" />
       </div>
 
-      <div className="p-5 flex flex-col gap-4 h-65">
+      <div className="p-5 flex flex-col gap-4 flex-1">
         {/* Header */}
         <div className="flex items-start gap-3">
           {/* Title + status */}

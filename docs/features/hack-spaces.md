@@ -90,9 +90,9 @@ Implementado en `app/(protected)/dashboard/_components/hack-space-card.tsx`.
 | **Skills** | Pills `border-primary/30 text-primary bg-primary/5`. Máximo 3 visibles + `+N`. Solo se renderiza si hay skills. |
 | **Arquetipos buscados** | Pills con variante de color por arquetipo. Muestra `label` (sin "The"). Solo se renderiza si hay arquetipos. |
 | **Zona pills** | `min-h-[44px]` — altura mínima reservada aunque no haya pills. Skills y arquetipos en filas separadas. |
-| **Footer — izq.** | Dots de miembros (máx 6 visibles) + contador `N/max` + idioma · ciudad/país/región · evento si aplica |
+| **Footer — izq.** | Avatares Cypher Kitten de participantes (máx 6 visibles, con color de arquetipo de fondo). Creador es el primero. Contador `N/max`. Idioma · ciudad/país/región · evento si aplica. |
 | **Footer — der.** | CTA contextual (ver abajo) |
-| **Altura body** | `h-[260px]` fijo — todas las cards tienen la misma altura independientemente del contenido |
+| **Altura body** | `flex-1` — el CSS Grid iguala la altura de las cards en la misma fila automáticamente |
 
 ### CTA contextual
 

@@ -48,35 +48,51 @@ type HackSpaceStatus = 'open' | 'full' | 'in_progress' | 'finished'
 type HackSpaceTrack = 'DeFi' | 'DAO tools' | 'AI' | 'Social' | 'Gaming' | 'NFTs' | 'Infrastructure' | 'Other'
 type ProjectStage = 'idea' | 'prototype' | 'in_development'
 type ApplicationType = 'open' | 'invite_only' | 'curated'
+type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced'
 
-type HackSpace = {
+interface HackSpaceParticipant {
   id: string
-  name: string
+  handle: string | null
+  archetype: string | null
+  avatar_url: string | null
+}
+
+interface HackSpace {
+  id: string
+  title: string                     // campo en DB y UI es "title", no "name"
   description: string
   track: HackSpaceTrack
   stage: ProjectStage
-  repo_url?: string
+  repo_url: string | null
   status: HackSpaceStatus
   creator_id: string
-  members: Profile[]
-  max_team_size: number
+  creator: {
+    id: string
+    handle: string | null
+    archetype: string | null
+    avatar_url: string | null       // incluido desde el API
+  }
+  looking_for: string[]             // arquetipos buscados: ['visionary', 'strategist', 'builder']
   skills_needed: string[]
-  experience_level: 'beginner' | 'intermediate' | 'advanced'
-  language: string[]
-  timezone_region?: string
+  max_team_size: number
+  experience_level: ExperienceLevel
+  language: string[]                // multi-select, default ['English']
+  region: string | null
+  country: string | null
+  city: string | null
+  image_url: string | null
   application_type: ApplicationType
-  application_deadline?: string
-  // Filtros on-chain
-  required_poaps?: string[]
-  required_nfts?: string[]
-  min_talent_score?: number
+  application_deadline: string | null
+  // Participants — el creador es participants[0]
+  // member_count = accepted_applications + 1
+  member_count?: number
+  participants?: HackSpaceParticipant[]
   // Evento relacionado (opcional)
-  event_id?: string
-  event_name?: string
-  event_url?: string
-  event_start_date?: string
-  event_end_date?: string
-  event_timing?: string[]
+  event_name: string | null
+  event_url: string | null
+  event_start_date: string | null
+  event_end_date: string | null     // opcional
+  event_timing: string[] | null     // multi-select: ['before', 'during', 'after']
   created_at: string
 }
 ```
@@ -163,7 +179,7 @@ type ApplicationTargetType = 'hack_space' | 'hacker_house'
 // Tabla unificada con dos FKs nullable (una por entidad).
 // Exactamente una de hack_space_id / hacker_house_id es non-null (CHECK constraint en DB).
 // Se usa target_type como discriminador de conveniencia.
-type Application = {
+interface Application {
   id: string
   applicant_id: string
   target_type: ApplicationTargetType
@@ -172,6 +188,16 @@ type Application = {
   message: string | null
   status: ApplicationStatus
   created_at: string
+}
+
+interface ApplicationWithApplicant extends Application {
+  applicant: {
+    id: string
+    handle: string | null
+    archetype: string | null
+    skills: string[] | null
+    avatar_url: string | null
+  }
 }
 ```
 

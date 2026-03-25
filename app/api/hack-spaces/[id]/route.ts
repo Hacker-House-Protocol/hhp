@@ -120,7 +120,7 @@ export async function PATCH(
     .from("hack_spaces")
     .update(cleaned)
     .eq("id", id)
-    .select(`*, creator:users(id, handle, archetype)`)
+    .select(`*, creator:users(id, handle, archetype, avatar_url)`)
     .single()
 
   if (error) {

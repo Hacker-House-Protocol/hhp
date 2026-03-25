@@ -12,49 +12,57 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 
 ---
 
-> **Estado actual (marzo 2026):** ❌ No implementado. Página placeholder "Coming soon" en `/dashboard/hacker-houses`. Pendiente para Fase 1 post-MVP core.
+> **Estado actual (marzo 2026):** ✅ Implementado. Crear, listar, filtrar, buscar, paginar, ver detalle, aplicar y gestionar aplicaciones están completos. Ver rutas en `docs/navigation.md`.
 >
-> **Decisiones de implementación confirmadas (Fase 1):**
+> **Decisiones de implementación (Fase 1):**
 > - Solo modalidad **gratuita** (`modality: 'free'` hardcodeado en schema de creación)
 > - `includes` → 5 columnas booleanas individuales (no JSONB)
-> - `images` → `text[]` en Supabase, máximo 5 fotos, upload múltiple en el formulario
+> - `images` → `text[]` en Supabase, máximo 5 fotos. Preview local via `URL.createObjectURL`, upload en bloque al confirmar creación.
 > - `house_rules` → texto libre, máximo 500 caracteres
 > - `profile_sought` → arquetipos del sistema (`visionary | strategist | builder`)
-> - `applications` → tabla `applications` unificada con `target_id + target_type` (migración desde `hack_space_id`)
+> - `applications` → tabla `applications` unificada con `hack_space_id | hacker_house_id` nullable + `target_type` discriminador + CHECK constraint
 > - Estados: transición manual por el creador (`open → full → active → finished`)
 > - Formulario: 4 pasos (House · Dates & Amenities · Community · Access) con toggle de evento inline
 
 ## Formulario de Creación (`/dashboard/hacker-houses/create`)
 
-### Sobre la Casa
-- Nombre de la Hacker House
-- Ciudad y país
-- Zona / Barrio aproximado (no dirección exacta — privacidad)
-- Fechas (inicio y fin)
-- Capacidad máxima de personas
-- Costo por persona (solo si es de pago — Fase 2)
-- Qué incluye (columnas booleanas): `includes_private_room` · `includes_shared_room` · `includes_meals` · `includes_workspace` · `includes_internet`
-- Imágenes (array de URLs): fotos reales de la casa. Se suben múltiples archivos y se guardan como `text[]` en Supabase.
+Formulario multi-step de 4 pasos implementado en `app/(protected)/dashboard/hacker-houses/create/_components/create-hacker-house-form.tsx`.
 
-### Sobre la Comunidad
-- Perfil buscado: arquetipos del sistema — `visionary | strategist | builder` (mismos que Hack Spaces, para consistencia de matching y filtros)
-- Idioma de comunicación (`language`) — multi-select pills, permite seleccionar varios idiomas. Default: `["English"]`.
-- Reglas básicas de la casa
+### Step 1 — House
+- Nombre de la Hacker House (`name`) — 3–80 caracteres
+- Ubicación — 3 comboboxes cascada opcionales:
+  - Región (`region`, UI-only, no persiste en DB) — de `LOCATION_DATA` en `lib/constants/location.ts`
+  - País (`country`) — se filtra según región seleccionada
+  - Ciudad (`city`) — se filtra según país seleccionado
+- Barrio / zona aproximada (`neighborhood`) — opcional, sin dirección exacta por privacidad
 
-### Evento Relacionado (Opcional)
-- Toggle: ¿Está ligada a uno o varios eventos?
-- Nombre y link del evento
-- Fecha de inicio del evento (`event_start_date`)
-- Fecha de fin del evento (`event_end_date`) — opcional
-- La Hacker House es: `antes / durante / después del evento` — multi-select, permite seleccionar varios.
+### Step 2 — Dates & Amenities
+- Fecha de inicio (`start_date`) — `DatePicker`
+- Fecha de fin (`end_date`) — `DatePicker`
+- Capacidad máxima de personas (`capacity`): stepper `− N +` (min 2, max 50, default 4)
+- Qué incluye (cards togglables, columnas booleanas): `includes_private_room` · `includes_shared_room` · `includes_meals` · `includes_workspace` · `includes_internet`
+- Imágenes (`images`): multi-select, hasta 5 fotos, AVIF + JPEG + PNG + WebP. Preview local via `URL.createObjectURL`. Se suben en bloque al confirmar creación via `POST /api/hacker-houses/upload-image`. Se guardan como `text[]` en Supabase.
 
-> Si está vinculada a un evento, aparece destacada en el mapa. Los builders que siguen ese evento la ven en su feed con prioridad.
+### Step 3 — Community
+- Perfil buscado (`profile_sought`): arquetipos del sistema — `visionary | strategist | builder` — al menos 1 requerido
+- Idioma de comunicación (`language`) — multi-select pills, permite seleccionar varios. Default: `["English"]`.
+- Reglas básicas de la casa (`house_rules`) — textarea libre, máximo 500 caracteres, opcional
 
-### Filtros de Acceso
-- Aplicación: `abierta / por invitación / curada`
-- Deadline para aplicar
+### Step 4 — Access
+- Tipo de aplicación (`application_type`): RadioGroup — `open · invite_only · curated`
+- Deadline para aplicar (`application_deadline`) — DatePicker, opcional
 - ~~Filtros on-chain: POAPs, NFTs, Talent Protocol score~~ → **Pospuesto a Fase 2**
 - ~~Staking requerido~~ → **Pospuesto a Fase 2**
+
+### Evento Relacionado (Opcional — inline toggle en cualquier step del formulario)
+- Toggle: ¿Está ligada a un evento? (`has_event`) — sección condicional con borde izquierdo
+- Nombre del evento (`event_name`)
+- Link del evento (`event_url`) — opcional
+- Fecha de inicio del evento (`event_start_date`)
+- Fecha de fin del evento (`event_end_date`) — opcional
+- La Hacker House es: `before · during · after` — multi-select pills, permite seleccionar varios (`event_timing: string[]`)
+
+> Si está vinculada a un evento, aparece destacada en el mapa. Los builders que siguen ese evento la ven en su feed con prioridad.
 
 ---
 
@@ -97,21 +105,13 @@ Cada Hacker House genera su propio POAP para los asistentes confirmados. Queda e
 ## Arquitectura técnica — Fase 1
 
 ### DB: tabla `applications` unificada
-Se migra la tabla `applications` existente para soportar ambas entidades sin romper FK integrity:
+Soporta ambas entidades sin romper FK integrity:
 
-```sql
--- Nuevas columnas en applications
-ADD COLUMN hacker_house_id uuid REFERENCES hacker_houses(id) ON DELETE CASCADE
-ADD COLUMN target_type text NOT NULL DEFAULT 'hack_space'
-
--- Constraint: exactamente una FK debe estar poblada
-ADD CONSTRAINT applications_target_check CHECK (
-  (hack_space_id IS NOT NULL AND hacker_house_id IS NULL) OR
-  (hack_space_id IS NULL AND hacker_house_id IS NOT NULL)
-)
-```
-
-`hack_space_id` se mantiene igual — código existente de Hack Spaces no cambia.
+- `hack_space_id uuid` — nullable, FK → `hack_spaces.id`
+- `hacker_house_id uuid` — nullable, FK → `hacker_houses.id`
+- `target_type text` — `'hack_space' | 'hacker_house'`
+- CHECK constraint: exactamente una FK non-null por fila
+- Código de Hack Spaces no cambia — `hack_space_id` sigue igual.
 
 ### DB: tabla `hacker_houses`
 Columnas de `includes` como booleanas individuales (no JSONB). `images` como `text[]`. `modality` con default `'free'`.
@@ -124,8 +124,11 @@ Columnas de `includes` como booleanas individuales (no JSONB). `images` como `te
 - En el detalle: todos los avatares
 
 ### Imágenes
-- Stored como `text[]` en Supabase
-- Máx 5 fotos por Hacker House
+- Upload a Supabase Storage bucket `hacker-house-images`
+- Stored como `text[]` en `hacker_houses`
+- Máx 5 fotos por Hacker House; formatos: AVIF, JPEG, PNG, WebP
+- Preview local via `URL.createObjectURL` — sin upload anticipado
+- Al crear/guardar: `Promise.all(files.map(upload))`, luego insert/update con URLs resultantes
 - Primera imagen = portada (cover en card y hero en detalle)
 - Detalle: hero grande + strip de thumbnails horizontal debajo
 
@@ -134,19 +137,99 @@ Columnas de `includes` como booleanas individuales (no JSONB). `images` como `te
 
 ### Status transitions (manual por el creador)
 ```
-open → full (auto cuando capacity se completa, o manual)
+open → full (auto cuando capacity se completa al aceptar aplicación)
 open/full → active (el creador marca "Ya empezó")
 active → finished (el creador marca "Terminó")
 ```
 
+## Estados de la Hacker House
+
+| Estado | Label UI | Token de color | Descripción |
+|---|---|---|---|
+| `open` | Open | `--primary` | Visible, acepta aplicaciones |
+| `full` | Full | `--builder-archetype` | Capacidad completada |
+| `active` | Active | `--strategist` | La house ya empezó |
+| `finished` | Finished | `--muted-foreground` | Terminada |
+
+---
+
+## Aplicación a una Hacker House
+
+- Los builders aplican con mensaje opcional (máx 300 caracteres).
+- Formulario inline en la card o en la página de detalle.
+- El creador puede aceptar o rechazar desde el `ApplicationManager`.
+- Al aceptar: si `participants_count >= capacity`, el estado pasa automáticamente a `full`.
+- En Fase 1: cualquier builder puede aplicar (sin validación on-chain).
+
+---
+
 ## UI: Card de Hacker House
 
-| Elemento | Contenido |
+Implementado en `app/(protected)/dashboard/_components/hacker-house-card.tsx`.
+
+| Zona | Contenido |
 |---|---|
-| Header | Nombre + ciudad + país. Badge de modalidad: Gratuita / De pago / Con staking. |
-| Fechas | '15–22 Marzo 2026' con ícono calendario. Countdown si quedan < 7 días. |
-| Progreso | Barra: 'X/Y ETH recaudados' + 'X/Y cupos llenos'. Solo en modalidades de pago. |
-| Qué incluye | Íconos: 🛏 Cuarto · 🍳 Comidas · 💻 Workspace · 🌐 Internet. Solo los que aplican. |
-| Participantes | Avatares de builders confirmados con colores de arquetipo. |
-| Evento vinculado | Badge con ícono: 'Antes / Durante / Después de ETH Global Cannes'. |
-| CTA | 'Aplicar' / 'Pagar mi parte' / 'Lista de espera' según estado del builder. |
+| **Imagen** | `images[0]` o gradiente placeholder. Overlay `from-card to-transparent` desde abajo. |
+| **Header** | Nombre + badge de estado (color según STATUS_CONFIG) |
+| **Ubicación** | Ciudad + país |
+| **Fechas** | `15–22 Mar 2026` con ícono calendario |
+| **Amenidades** | Pills de íconos (solo los `true`): 🛏 Private · 🤝 Shared · 🍳 Meals · 💻 Workspace · 🌐 Internet |
+| **Participantes** | Avatares Cypher Kitten (máx 6) con color de arquetipo de fondo. Creador es el primero. Contador `N/capacity`. |
+| **Evento vinculado** | Badge con nombre del evento si hay `event_name` |
+| **CTA** | `Apply →` / `Manage →` / `View →` según estado y rol |
+
+---
+
+## UI: Página de Lista (`/dashboard/hacker-houses`)
+
+Implementado en `app/(protected)/dashboard/hacker-houses/page.tsx`.
+
+Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_sought`, `q`.
+
+- **Búsqueda** (`q`): debounced 500ms, busca en `name` OR `city` (`ilike`)
+- **Status**: pills `Open · Full · Active`
+- **Profile sought**: pills Visionary / Strategist / Builder con color de arquetipo
+- **Paginación**: `useInfiniteQuery` + Load more button
+- **Skeleton**: replica la estructura de la card
+
+---
+
+## API Routes
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/api/hacker-houses` | Crear hacker house (auth requerida) |
+| `GET` | `/api/hacker-houses` | Listar con filtros, búsqueda y paginación |
+| `GET` | `/api/hacker-houses/:id` | Detalle (con creator avatar + participants aceptados) |
+| `PATCH` | `/api/hacker-houses/:id` | Actualizar (solo creador) |
+| `POST` | `/api/hacker-houses/upload-image` | Subir imagen a Supabase Storage, retorna `{ image_url }` |
+| `POST` | `/api/hacker-houses/:id/apply` | Aplicar |
+| `GET` | `/api/hacker-houses/:id/applications` | Listar aplicaciones (solo creador) |
+| `PATCH` | `/api/hacker-houses/:id/applications/:appId` | Aceptar o rechazar aplicación (solo creador) |
+
+### GET `/api/hacker-houses` — Query params
+
+| Param | Tipo | Default | Descripción |
+|---|---|---|---|
+| `status` | string | — | Filtro exacto. Si omitido: `open, full, active` |
+| `profile_sought` | string | — | Archetype ID — filtra si el array `profile_sought` lo contiene |
+| `q` | string | — | Búsqueda en `name` OR `city` (`ilike %q%`) |
+| `limit` | number | 12 | Items por página |
+| `offset` | number | 0 | Desplazamiento para paginación |
+
+**Respuesta**: `{ hacker_houses: HackerHouse[], total: number, offset: number, limit: number }`
+
+---
+
+## Service Hooks (`services/api/hacker-houses.ts`)
+
+| Hook | Descripción |
+|---|---|
+| `useFilteredHackerHouses(filters)` | Lista paginada con `useInfiniteQuery`. |
+| `useHackerHouse(id)` | Detalle de una hacker house. |
+| `useCreateHackerHouse()` | POST — crear. |
+| `useUpdateHackerHouse(id)` | PATCH — actualizar. |
+| `useApplyToHackerHouse(id)` | POST — aplicar. |
+| `useHackerHouseApplications(id)` | GET — listar aplicaciones (solo creador). |
+| `useReviewHackerHouseApplication(id)` | PATCH — aceptar/rechazar aplicación. |
+| `useUploadHackerHouseImage()` | POST FormData — subir imagen, retorna `{ image_url }`. |

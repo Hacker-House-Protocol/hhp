@@ -276,7 +276,7 @@ export default function HackSpacesPage() {
               {/* Image placeholder */}
               <Skeleton className="h-48 w-full rounded-none" />
               {/* Body */}
-              <div className="p-5 flex flex-col gap-4 h-[260px]">
+              <div className="p-5 flex flex-col gap-4 flex-1">
                 {/* Title + status */}
                 <div className="flex items-start justify-between gap-2">
                   <Skeleton className="h-5 w-2/3" />
