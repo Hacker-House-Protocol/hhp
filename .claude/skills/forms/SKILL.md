@@ -293,39 +293,46 @@ Alternative: use `<Button>` with `variant` for toggles when you need archetype-c
 
 ---
 
-## Number selector buttons
+## Number stepper (− N +)
 
-For numeric fields with a discrete set of values:
+For numeric fields with a continuous range, use a stepper with − and + buttons. Never hardcode a discrete array of values — it's not scalable and limits the user unnecessarily.
 
 ```tsx
 <Controller
-  name="max_team_size"
+  name="capacity"
   control={control}
   render={({ field, fieldState }) => (
     <Field data-invalid={fieldState.invalid}>
-      <FieldLabel>Max team size *</FieldLabel>
-      <div className="flex gap-2">
-        {[2, 3, 4, 5, 6, 8, 10].map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => field.onChange(n)}
-            className={cn(
-              "w-10 h-9 rounded-md border font-mono text-sm transition-all cursor-pointer",
-              field.value === n
-                ? "border-primary text-primary bg-primary/10"
-                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
-            )}
-          >
-            {n}
-          </button>
-        ))}
+      <FieldLabel>Capacity *</FieldLabel>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => field.onChange(Math.max(MIN, (field.value ?? DEFAULT) - 1))}
+          disabled={(field.value ?? DEFAULT) <= MIN}
+          className="w-10 h-10 rounded-md border border-border font-mono text-lg transition-all cursor-pointer hover:border-primary/40 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
+        >
+          −
+        </button>
+        <span className="w-10 text-center font-mono text-xl font-semibold tabular-nums">
+          {field.value ?? DEFAULT}
+        </span>
+        <button
+          type="button"
+          onClick={() => field.onChange(Math.min(MAX, (field.value ?? DEFAULT) + 1))}
+          disabled={(field.value ?? DEFAULT) >= MAX}
+          className="w-10 h-10 rounded-md border border-border font-mono text-lg transition-all cursor-pointer hover:border-primary/40 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
+        >
+          +
+        </button>
+        <span className="text-xs text-muted-foreground font-mono">(min {MIN}, max {MAX})</span>
       </div>
       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
     </Field>
   )}
 />
 ```
+
+Set the default value in `useForm` `defaultValues`, not in the stepper logic.
 
 ---
 
@@ -710,3 +717,124 @@ const ARCHETYPE_VARIANT: Record<ArchetypeId, { filled: ButtonVariant; outline: B
   builder: { filled: "builder", outline: "builder-outline" },
 }
 ```
+
+---
+
+## Image upload with local preview (upload on submit)
+
+**Do NOT upload images when the user selects them.** Instead, store `File` objects locally with `URL.createObjectURL` for instant preview, then upload in parallel on submit. This avoids orphaned files in Storage if the user abandons the form.
+
+### State
+
+```tsx
+const [pendingFiles, setPendingFiles] = useState<{ file: File; preview: string }[]>([])
+const fileInputRef = useRef<HTMLInputElement>(null)
+const uploadImage = useUploadImage() // mutation that POSTs to upload API route
+```
+
+### Cleanup object URLs on unmount
+
+```tsx
+useEffect(() => {
+  return () => {
+    pendingFiles.forEach((p) => URL.revokeObjectURL(p.preview))
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [])
+```
+
+### handleFileAdd — no async, no fetch
+
+```tsx
+function handleFileAdd(e: React.ChangeEvent<HTMLInputElement>) {
+  const files = Array.from(e.target.files ?? [])
+  if (!files.length) return
+
+  const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]
+  const slots = 5 - pendingFiles.length
+
+  if (slots <= 0) { toast.error("Maximum 5 images allowed"); e.target.value = ""; return }
+
+  const toAdd = files.slice(0, slots)
+  if (files.length > slots) toast.warning(`Only ${slots} slot(s) remaining — adding first ${slots}`)
+
+  if (toAdd.some((f) => !ALLOWED.includes(f.type))) {
+    toast.error("Invalid file type. Use JPEG, PNG, WebP, GIF or AVIF")
+    e.target.value = ""
+    return
+  }
+  if (toAdd.some((f) => f.size > 5 * 1024 * 1024)) {
+    toast.error("One or more files exceed 5MB")
+    e.target.value = ""
+    return
+  }
+
+  setPendingFiles((prev) => [...prev, ...toAdd.map((f) => ({ file: f, preview: URL.createObjectURL(f) }))])
+  e.target.value = ""
+}
+```
+
+### removeImage — revoke URL
+
+```tsx
+function removeImage(index: number) {
+  setPendingFiles((prev) => {
+    URL.revokeObjectURL(prev[index].preview)
+    return prev.filter((_, i) => i !== index)
+  })
+}
+```
+
+### onSubmit — upload then create
+
+```tsx
+async function onSubmit(values: MyInput) {
+  try {
+    let imageUrls: string[] = []
+    if (pendingFiles.length > 0) {
+      const results = await Promise.all(pendingFiles.map((p) => uploadImage.mutateAsync(p.file)))
+      imageUrls = results.map((r) => r.image_url)
+    }
+    await onFormSubmit({ ...values, images: imageUrls })
+  } catch (e) { /* error handling */ }
+}
+```
+
+### Preview UI
+
+```tsx
+<div className="flex flex-wrap gap-2">
+  {pendingFiles.map((p, index) => (
+    <div key={p.preview} className="relative size-20 rounded-lg overflow-hidden border border-border group">
+      <img src={p.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+      <button
+        type="button"
+        onClick={() => removeImage(index)}
+        className="absolute top-1 right-1 size-5 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <X className="size-3 text-white" />
+      </button>
+    </div>
+  ))}
+  {pendingFiles.length < 5 && (
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      className="size-20 rounded-lg border-2 border-dashed border-border hover:border-primary/40 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-muted-foreground"
+    >
+      <span className="text-xl">+</span>
+      <span className="text-[10px] font-mono">Photo</span>
+    </button>
+  )}
+</div>
+<input
+  ref={fileInputRef}
+  type="file"
+  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+  multiple
+  className="hidden"
+  onChange={handleFileAdd}
+/>
+```
+
+> Do NOT use `images` from react-hook-form for previews. It stays empty until submit. The schema field (`images: z.array(z.string().url()).optional()`) is populated by `onSubmit` before calling the parent callback.

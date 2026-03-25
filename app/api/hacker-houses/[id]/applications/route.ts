@@ -13,7 +13,7 @@ async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   }
 }
 
-// GET /api/hack-spaces/[id]/applications — creator only
+// GET /api/hacker-houses/[id]/applications — creator only
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -23,7 +23,7 @@ export async function GET(
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
-  const { id: hackSpaceId } = await params
+  const { id: hackerHouseId } = await params
 
   const { data: user } = await supabaseServer
     .from("users")
@@ -35,17 +35,17 @@ export async function GET(
     return NextResponse.json({ message: "User not found" }, { status: 404 })
   }
 
-  const { data: hackSpace } = await supabaseServer
-    .from("hack_spaces")
+  const { data: hackerHouse } = await supabaseServer
+    .from("hacker_houses")
     .select("creator_id")
-    .eq("id", hackSpaceId)
+    .eq("id", hackerHouseId)
     .single()
 
-  if (!hackSpace) {
-    return NextResponse.json({ message: "Hack Space not found" }, { status: 404 })
+  if (!hackerHouse) {
+    return NextResponse.json({ message: "Hacker House not found" }, { status: 404 })
   }
 
-  if (hackSpace.creator_id !== user.id) {
+  if (hackerHouse.creator_id !== user.id) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 })
   }
 
@@ -53,12 +53,14 @@ export async function GET(
     .from("applications")
     .select(`
       *,
-      applicant:users(id, handle, archetype, skills, avatar_url)
+      applicant:users!applicant_id(id, handle, archetype, skills, avatar_url)
     `)
-    .eq("hack_space_id", hackSpaceId)
+    .eq("hacker_house_id", hackerHouseId)
+    .eq("target_type", "hacker_house")
     .order("created_at", { ascending: false })
 
   if (error) {
+    console.error("[GET /api/hacker-houses/:id/applications]", error)
     return NextResponse.json({ message: "Database error" }, { status: 500 })
   }
 

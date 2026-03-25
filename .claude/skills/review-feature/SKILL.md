@@ -39,6 +39,8 @@ Report only actual violations — skip items that pass.
 - [ ] Optional array fields use `field.value ?? []` before `.includes()` / `.filter()` / spread
 - [ ] `useForm<T>` has type generic passed explicitly
 - [ ] `useWatch` used — never `watch()` from `useForm`
+- [ ] Numeric range fields use `− N +` stepper — never a hardcoded array of discrete values
+- [ ] Image upload uses local preview (`URL.createObjectURL`) + upload on submit — never uploads on file select
 
 ### API routes
 - [ ] Every write route (POST, PATCH, DELETE) verifies Privy token before DB access

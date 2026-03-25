@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { privy } from "@/lib/privy"
 import { supabaseServer } from "@/lib/supabase-server"
-import { updateHackSpaceSchema } from "@/lib/schemas/hack-space"
+import { updateHackerHouseSchema } from "@/lib/schemas/hacker-house"
 
 async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -21,11 +21,11 @@ export async function GET(
   const { id } = await params
 
   const { data, error } = await supabaseServer
-    .from("hack_spaces")
+    .from("hacker_houses")
     .select(`
       *,
       creator:users!creator_id(id, handle, archetype, avatar_url),
-      all_applications:applications!hack_space_id(
+      all_applications:applications!hacker_house_id(
         status,
         applicant:users!applicant_id(id, handle, archetype, avatar_url)
       )
@@ -34,21 +34,21 @@ export async function GET(
     .single()
 
   if (error || !data) {
-    return NextResponse.json({ message: "Hack Space not found" }, { status: 404 })
+    return NextResponse.json({ message: "Hacker House not found" }, { status: 404 })
   }
 
   const participants = (data.all_applications ?? [])
     .filter((a: { status: string }) => a.status === "accepted")
     .map((a: { applicant: unknown }) => a.applicant)
 
-  const hackSpace = {
+  const hackerHouse = {
     ...data,
     participants,
-    member_count: participants.length,
+    participants_count: participants.length + 1,
     all_applications: undefined,
   }
 
-  return NextResponse.json({ hack_space: hackSpace })
+  return NextResponse.json({ hacker_house: hackerHouse })
 }
 
 export async function PATCH(
@@ -72,38 +72,36 @@ export async function PATCH(
     return NextResponse.json({ message: "User not found" }, { status: 404 })
   }
 
-  const { data: hackSpace } = await supabaseServer
-    .from("hack_spaces")
+  const { data: hackerHouse } = await supabaseServer
+    .from("hacker_houses")
     .select("id, creator_id")
     .eq("id", id)
     .single()
 
-  if (!hackSpace) {
-    return NextResponse.json({ message: "Hack Space not found" }, { status: 404 })
+  if (!hackerHouse) {
+    return NextResponse.json({ message: "Hacker House not found" }, { status: 404 })
   }
 
-  if (hackSpace.creator_id !== user.id) {
+  if (hackerHouse.creator_id !== user.id) {
     return NextResponse.json({ message: "Forbidden" }, { status: 403 })
   }
 
-  const body = await req.json()
-  const parsed = updateHackSpaceSchema.safeParse(body)
+  const body: unknown = await req.json()
+  const parsed = updateHackerHouseSchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json(
       { message: parsed.error.errors[0]?.message ?? "Invalid input" },
-      { status: 400 },
+      { status: 400 }
     )
   }
 
   const { has_event, ...updates } = parsed.data
 
-  // Convert empty strings to null for optional DB columns
   const cleaned: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(updates)) {
     cleaned[key] = value === "" ? null : value
   }
 
-  // Clean event fields if event is toggled off
   if (has_event === false) {
     cleaned.event_name = null
     cleaned.event_url = null
@@ -114,16 +112,16 @@ export async function PATCH(
   cleaned.updated_at = new Date().toISOString()
 
   const { data, error } = await supabaseServer
-    .from("hack_spaces")
+    .from("hacker_houses")
     .update(cleaned)
     .eq("id", id)
-    .select(`*, creator:users(id, handle, archetype)`)
+    .select(`*, creator:users!creator_id(id, handle, archetype, avatar_url)`)
     .single()
 
   if (error) {
-    console.error("[PATCH /api/hack-spaces/:id]", error)
+    console.error("[PATCH /api/hacker-houses/:id]", error)
     return NextResponse.json({ message: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ hack_space: data })
+  return NextResponse.json({ hacker_house: { ...data, participants: [], participants_count: 1 } })
 }

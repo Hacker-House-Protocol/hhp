@@ -106,10 +106,7 @@ export function StepContext({ onNext, onSkip, onBack, loading, error }: StepCont
           control={control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>
-                Bio{" "}
-                <span className="text-muted-foreground font-normal">(optional)</span>
-              </FieldLabel>
+              <FieldLabel htmlFor={field.name} optional>Bio</FieldLabel>
               <Textarea
                 {...field}
                 id={field.name}

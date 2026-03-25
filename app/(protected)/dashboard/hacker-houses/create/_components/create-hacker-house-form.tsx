@@ -1,0 +1,925 @@
+"use client"
+
+import { Fragment, useEffect, useRef, useState } from "react"
+import { useForm, useWatch, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { X } from "lucide-react"
+import { ARCHETYPES, LANGUAGES } from "@/lib/onboarding"
+import {
+  createHackerHouseSchema,
+  type CreateHackerHouseInput,
+  APPLICATION_TYPES,
+  EVENT_TIMINGS,
+} from "@/lib/schemas/hacker-house"
+import { useUploadHackerHouseImage } from "@/services/api/hacker-houses"
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { DatePicker } from "@/components/ui/date-picker"
+import {
+  Field,
+  FieldLabel,
+  FieldDescription,
+  FieldError,
+} from "@/components/ui/field"
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from "@/components/ui/combobox"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { cn } from "@/lib/utils"
+import {
+  REGIONS,
+  getCountriesForRegion,
+  getCitiesForCountry,
+} from "@/lib/constants/location"
+
+
+const APPLICATION_TYPE_LABELS: Record<string, { title: string; description: string }> = {
+  open: { title: "Open", description: "Anyone can apply" },
+  invite_only: { title: "Invite only", description: "You invite builders directly" },
+  curated: { title: "Curated", description: "You review each applicant manually" },
+}
+
+const EVENT_TIMING_LABELS: Record<string, string> = {
+  before: "Before",
+  during: "During",
+  after: "After",
+}
+
+const AMENITY_OPTIONS: { key: keyof CreateHackerHouseInput; label: string; description: string }[] = [
+  { key: "includes_private_room", label: "Private room", description: "Each member gets their own room" },
+  { key: "includes_shared_room", label: "Shared room", description: "Members share bedrooms" },
+  { key: "includes_meals", label: "Meals included", description: "Breakfast, lunch or dinner" },
+  { key: "includes_workspace", label: "Workspace", description: "Dedicated desk/co-working area" },
+  { key: "includes_internet", label: "Internet", description: "High-speed WiFi included" },
+]
+
+const STEPS = ["House", "Amenities", "Community", "Access"] as const
+type Step = (typeof STEPS)[number]
+
+const STEP_FIELDS: Record<Step, (keyof CreateHackerHouseInput)[]> = {
+  House: ["name", "region", "country", "city"],
+  Amenities: ["start_date", "end_date", "capacity"],
+  Community: ["profile_sought", "language"],
+  Access: ["application_type"],
+}
+
+const FIELD_TO_STEP: Partial<Record<keyof CreateHackerHouseInput, Step>> = {
+  name: "House",
+  region: "House",
+  country: "House",
+  city: "House",
+  neighborhood: "House",
+  start_date: "Amenities",
+  end_date: "Amenities",
+  capacity: "Amenities",
+  images: "Amenities",
+  profile_sought: "Community",
+  language: "Community",
+  house_rules: "Community",
+  has_event: "Community",
+  event_name: "Community",
+  event_url: "Community",
+  event_date: "Community",
+  event_timing: "Community",
+  application_type: "Access",
+  application_deadline: "Access",
+}
+
+function SectionCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full bg-card border border-border rounded-xl p-6 flex flex-col gap-5">
+      {children}
+    </div>
+  )
+}
+
+function TogglePill({
+  selected,
+  onClick,
+  children,
+  className,
+}: {
+  selected: boolean
+  onClick: () => void
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "text-xs px-3 py-1.5 rounded-md border font-mono transition-all cursor-pointer",
+        selected
+          ? "border-primary text-primary bg-primary/10"
+          : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+interface CreateHackerHouseFormProps {
+  defaultValues?: Partial<CreateHackerHouseInput>
+  onFormSubmit: (values: CreateHackerHouseInput) => Promise<void>
+  submitLabel: string
+  submittingLabel: string
+}
+
+export function CreateHackerHouseForm({
+  defaultValues,
+  onFormSubmit,
+  submitLabel,
+  submittingLabel,
+}: CreateHackerHouseFormProps) {
+  const router = useRouter()
+  const [step, setStep] = useState<Step>("House")
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [pendingFiles, setPendingFiles] = useState<{ file: File; preview: string }[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadImage = useUploadHackerHouseImage()
+
+  useEffect(() => {
+    return () => {
+      pendingFiles.forEach((p) => URL.revokeObjectURL(p.preview))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const stepIndex = STEPS.indexOf(step)
+
+  const {
+    control,
+    handleSubmit,
+    trigger,
+    setError,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<CreateHackerHouseInput>({
+    resolver: zodResolver(createHackerHouseSchema),
+    defaultValues: {
+      name: "",
+      region: "",
+      country: "",
+      city: "",
+      neighborhood: "",
+      start_date: "",
+      end_date: "",
+      capacity: 4,
+      includes_private_room: false,
+      includes_shared_room: false,
+      includes_meals: false,
+      includes_workspace: false,
+      includes_internet: false,
+      images: [],
+      profile_sought: [],
+      language: "English",
+      house_rules: "",
+      application_type: "open",
+      application_deadline: "",
+      has_event: false,
+      event_name: "",
+      event_url: "",
+      event_date: "",
+      event_timing: undefined,
+      ...defaultValues,
+    },
+  })
+
+  const hasEvent = useWatch({ control, name: "has_event" })
+  const watchedRegion = useWatch({ control, name: "region" })
+  const watchedCountry = useWatch({ control, name: "country" })
+
+  const availableCountries = watchedRegion ? getCountriesForRegion(watchedRegion) : []
+  const availableCities =
+    watchedRegion && watchedCountry ? getCitiesForCountry(watchedRegion, watchedCountry) : []
+
+  function handleFileAdd(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+
+    const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]
+    const slots = 5 - pendingFiles.length
+
+    if (slots <= 0) {
+      toast.error("Maximum 5 images allowed")
+      e.target.value = ""
+      return
+    }
+
+    const toAdd = files.slice(0, slots)
+    if (files.length > slots) {
+      toast.warning(`Only ${slots} slot(s) remaining — adding first ${slots}`)
+    }
+
+    const invalid = toAdd.filter((f) => !ALLOWED.includes(f.type))
+    if (invalid.length) {
+      toast.error("Invalid file type. Use JPEG, PNG, WebP, GIF or AVIF")
+      e.target.value = ""
+      return
+    }
+    const oversized = toAdd.filter((f) => f.size > 5 * 1024 * 1024)
+    if (oversized.length) {
+      toast.error("One or more files exceed 5MB")
+      e.target.value = ""
+      return
+    }
+
+    const newEntries = toAdd.map((f) => ({ file: f, preview: URL.createObjectURL(f) }))
+    setPendingFiles((prev) => [...prev, ...newEntries])
+    e.target.value = ""
+  }
+
+  function removeImage(index: number) {
+    setPendingFiles((prev) => {
+      URL.revokeObjectURL(prev[index].preview)
+      return prev.filter((_, i) => i !== index)
+    })
+  }
+
+  async function goNext() {
+    setServerError(null)
+    const valid = await trigger(STEP_FIELDS[step])
+    if (valid) setStep(STEPS[stepIndex + 1])
+  }
+
+  async function onSubmit(values: CreateHackerHouseInput) {
+    setServerError(null)
+    try {
+      let imageUrls: string[] = []
+      if (pendingFiles.length > 0) {
+        const results = await Promise.all(pendingFiles.map((p) => uploadImage.mutateAsync(p.file)))
+        imageUrls = results.map((r) => r.image_url)
+      }
+      await onFormSubmit({ ...values, images: imageUrls })
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Something went wrong"
+      toast.error(message)
+      const matchedField = (Object.keys(FIELD_TO_STEP) as (keyof CreateHackerHouseInput)[]).find(
+        (field) => message.toLowerCase().includes(field.toLowerCase()),
+      )
+      if (matchedField && FIELD_TO_STEP[matchedField]) {
+        setError(matchedField, { type: "server", message })
+        setStep(FIELD_TO_STEP[matchedField]!)
+      } else {
+        setServerError(message)
+      }
+    }
+  }
+
+
+  return (
+    <div className="w-full flex flex-col gap-8">
+      {/* Step indicator */}
+      <div className="flex items-center w-full">
+        {STEPS.map((s, i) => (
+          <Fragment key={s}>
+            <div className="flex items-center gap-2 shrink-0">
+              <div
+                className={cn(
+                  "w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold border transition-all",
+                  i < stepIndex
+                    ? "bg-primary border-primary text-primary-foreground"
+                    : i === stepIndex
+                      ? "border-primary text-primary"
+                      : "border-border text-muted-foreground",
+                )}
+              >
+                {i < stepIndex ? "✓" : i + 1}
+              </div>
+              <span
+                className={cn(
+                  "text-xs font-mono hidden sm:block",
+                  i === stepIndex ? "text-foreground font-medium" : "text-muted-foreground",
+                )}
+              >
+                {s}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div
+                className={cn("h-px flex-1 mx-2", i < stepIndex ? "bg-primary" : "bg-border")}
+              />
+            )}
+          </Fragment>
+        ))}
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full flex flex-col gap-4">
+        {/* ── STEP 1: HOUSE ── */}
+        {step === "House" && (
+          <SectionCard>
+            <div>
+              <h2 className="font-display font-bold text-foreground text-xl">About the house</h2>
+              <p className="text-muted-foreground text-sm mt-1">Where is this Hacker House?</p>
+            </div>
+
+            <Controller
+              name="name"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>House name</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="e.g. ETH Cannes Builder House"
+                    maxLength={80}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="region"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Region</FieldLabel>
+                  <Combobox
+                    items={REGIONS}
+                    value={field.value ?? ""}
+                    onValueChange={(val) => {
+                      field.onChange(val)
+                      setValue("country", "")
+                      setValue("city", "")
+                    }}
+                  >
+                    <ComboboxInput placeholder="Search region..." showClear />
+                    <ComboboxContent>
+                      <ComboboxEmpty>No region found.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(r: string) => (
+                          <ComboboxItem key={r} value={r} className="font-mono text-sm">
+                            {r}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </Field>
+              )}
+            />
+
+            {watchedRegion && availableCountries.length > 0 && (
+              <Controller
+                name="country"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Country</FieldLabel>
+                    <Combobox
+                      items={availableCountries.map((c) => c.name)}
+                      value={field.value ?? ""}
+                      onValueChange={(val) => {
+                        field.onChange(val)
+                        setValue("city", "")
+                      }}
+                    >
+                      <ComboboxInput placeholder="Search country..." showClear />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No country found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(name: string) => (
+                            <ComboboxItem key={name} value={name} className="font-mono text-sm">
+                              {name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            )}
+
+            {watchedCountry && availableCities.length > 0 && (
+              <Controller
+                name="city"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>City</FieldLabel>
+                    <Combobox
+                      items={availableCities.map((c) => c.name)}
+                      value={field.value ?? ""}
+                      onValueChange={(val) => field.onChange(val)}
+                    >
+                      <ComboboxInput placeholder="Search city..." showClear />
+                      <ComboboxContent>
+                        <ComboboxEmpty>No city found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(name: string) => (
+                            <ComboboxItem key={name} value={name} className="font-mono text-sm">
+                              {name}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxContent>
+                    </Combobox>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            )}
+
+            <Controller
+              name="neighborhood"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel htmlFor={field.name} optional>Neighborhood</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    placeholder="Approx. zone or neighborhood"
+                  />
+                </Field>
+              )}
+            />
+          </SectionCard>
+        )}
+
+        {/* ── STEP 2: AMENITIES ── */}
+        {step === "Amenities" && (
+          <SectionCard>
+            <div>
+              <h2 className="font-display font-bold text-foreground text-xl">Dates & amenities</h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                When and what does the house include?
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Controller
+                name="start_date"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Start date</FieldLabel>
+                    <DatePicker
+                      value={field.value}
+                      onChange={(v) => field.onChange(v ?? "")}
+                      placeholder="Pick start date"
+                      disableBefore={new Date()}
+                      className="w-full"
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="end_date"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>End date</FieldLabel>
+                    <DatePicker
+                      value={field.value}
+                      onChange={(v) => field.onChange(v ?? "")}
+                      placeholder="Pick end date"
+                      disableBefore={new Date()}
+                      className="w-full"
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+            </div>
+
+            <Controller
+              name="capacity"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Capacity</FieldLabel>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => field.onChange(Math.max(2, (field.value ?? 4) - 1))}
+                      disabled={(field.value ?? 4) <= 2}
+                      className="w-10 h-10 rounded-md border border-border font-mono text-lg transition-all cursor-pointer hover:border-primary/40 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
+                    >
+                      −
+                    </button>
+                    <span className="w-10 text-center font-mono text-xl font-semibold tabular-nums">
+                      {field.value ?? 4}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => field.onChange(Math.min(50, (field.value ?? 4) + 1))}
+                      disabled={(field.value ?? 4) >= 50}
+                      className="w-10 h-10 rounded-md border border-border font-mono text-lg transition-all cursor-pointer hover:border-primary/40 hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed text-muted-foreground"
+                    >
+                      +
+                    </button>
+                    <span className="text-xs text-muted-foreground font-mono">people (min 2, max 50)</span>
+                  </div>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Field>
+              <FieldLabel>What&apos;s included</FieldLabel>
+              <div className="flex flex-col gap-2">
+                {AMENITY_OPTIONS.map(({ key, label, description }) => (
+                  <Controller
+                    key={key}
+                    name={key as "includes_private_room" | "includes_shared_room" | "includes_meals" | "includes_workspace" | "includes_internet"}
+                    control={control}
+                    render={({ field }) => (
+                      <label
+                        className={cn(
+                          "w-full flex items-start gap-4 p-3 rounded-lg border transition-all cursor-pointer",
+                          field.value
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/40",
+                        )}
+                      >
+                        <Checkbox
+                          checked={field.value ?? false}
+                          onCheckedChange={field.onChange}
+                          className="mt-0.5"
+                        />
+                        <div className="flex flex-col gap-0.5">
+                          <p className="text-foreground text-sm font-medium">{label}</p>
+                          <p className="text-muted-foreground text-xs">{description}</p>
+                        </div>
+                      </label>
+                    )}
+                  />
+                ))}
+              </div>
+            </Field>
+
+            {/* Image upload */}
+            <Field>
+              <FieldLabel optional>Photos</FieldLabel>
+              <FieldDescription>Max 5 photos. First one is the cover.</FieldDescription>
+              <div className="flex flex-wrap gap-2">
+                {pendingFiles.map((p, index) => (
+                  <div key={p.preview} className="relative size-20 rounded-lg overflow-hidden border border-border group">
+                    <img src={p.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 size-5 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="size-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+                {pendingFiles.length < 5 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="size-20 rounded-lg border-2 border-dashed border-border hover:border-primary/40 flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer text-muted-foreground"
+                  >
+                    <span className="text-xl">+</span>
+                    <span className="text-[10px] font-mono">Photo</span>
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                multiple
+                className="hidden"
+                onChange={handleFileAdd}
+              />
+            </Field>
+          </SectionCard>
+        )}
+
+        {/* ── STEP 3: COMMUNITY ── */}
+        {step === "Community" && (
+          <SectionCard>
+            <div>
+              <h2 className="font-display font-bold text-foreground text-xl">Community</h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Who is this house for?
+              </p>
+            </div>
+
+            <Controller
+              name="profile_sought"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Profiles sought</FieldLabel>
+                  <div className="flex gap-2 flex-wrap">
+                    {ARCHETYPES.map((a) => {
+                      const value = field.value ?? []
+                      const selected = value.includes(a.id)
+                      return (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() =>
+                            field.onChange(
+                              selected
+                                ? value.filter((v) => v !== a.id)
+                                : [...value, a.id],
+                            )
+                          }
+                          className={cn(
+                            "text-xs px-3 py-1.5 rounded-md border font-mono transition-all cursor-pointer",
+                            !selected &&
+                              "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                          )}
+                          style={
+                            selected
+                              ? {
+                                  borderColor: `var(${a.colorVar})`,
+                                  color: `var(${a.colorVar})`,
+                                  backgroundColor: `color-mix(in oklch, var(${a.colorVar}) 15%, transparent)`,
+                                }
+                              : undefined
+                          }
+                        >
+                          {a.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="language"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Working language</FieldLabel>
+                  <div className="flex flex-wrap gap-2">
+                    {LANGUAGES.map((lang) => (
+                      <TogglePill
+                        key={lang}
+                        selected={field.value === lang}
+                        onClick={() => field.onChange(lang)}
+                      >
+                        {lang}
+                      </TogglePill>
+                    ))}
+                  </div>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="house_rules"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name} optional>House rules</FieldLabel>
+                  <Textarea
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Quiet hours, guest policy, expectations..."
+                    maxLength={500}
+                    rows={3}
+                    className="resize-none"
+                  />
+                  <FieldDescription>{(field.value ?? "").length}/500</FieldDescription>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="has_event"
+              control={control}
+              render={({ field }) => (
+                <label
+                  className={cn(
+                    "w-full flex items-start gap-4 p-4 rounded-lg border transition-all cursor-pointer",
+                    field.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40",
+                  )}
+                >
+                  <Checkbox
+                    checked={field.value ?? false}
+                    onCheckedChange={field.onChange}
+                    className="mt-0.5"
+                  />
+                  <div className="flex flex-col gap-0.5">
+                    <p className="text-foreground text-sm font-medium">Linked to an event</p>
+                    <p className="text-muted-foreground text-xs">
+                      Appears highlighted on the map and in event-related feeds.
+                    </p>
+                  </div>
+                </label>
+              )}
+            />
+
+            {hasEvent && (
+              <div className="flex flex-col gap-4 pl-3 border-l-2 border-primary/30">
+                <Controller
+                  name="event_name"
+                  control={control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>Event name</FieldLabel>
+                      <Input
+                        {...field}
+                        id={field.name}
+                        placeholder="e.g. ETH Global Cannes 2026"
+                      />
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="event_url"
+                  control={control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor={field.name} optional>Event link</FieldLabel>
+                      <Input
+                        {...field}
+                        id={field.name}
+                        placeholder="https://lu.ma/..."
+                      />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="event_date"
+                  control={control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>Event date</FieldLabel>
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Pick event date"
+                        className="w-full"
+                      />
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="event_timing"
+                  control={control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>This house is</FieldLabel>
+                      <div className="flex gap-2">
+                        {EVENT_TIMINGS.map((t) => (
+                          <TogglePill
+                            key={t}
+                            selected={field.value === t}
+                            onClick={() => field.onChange(t)}
+                          >
+                            {EVENT_TIMING_LABELS[t]} the event
+                          </TogglePill>
+                        ))}
+                      </div>
+                    </Field>
+                  )}
+                />
+              </div>
+            )}
+          </SectionCard>
+        )}
+
+        {/* ── STEP 4: ACCESS ── */}
+        {step === "Access" && (
+          <SectionCard>
+            <div>
+              <h2 className="font-display font-bold text-foreground text-xl">
+                Access & applications
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">Who can apply and how?</p>
+            </div>
+
+            <Controller
+              name="application_type"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel>Application type</FieldLabel>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="gap-2"
+                  >
+                    {APPLICATION_TYPES.map((t) => (
+                      <label
+                        key={t}
+                        className={cn(
+                          "w-full flex items-center gap-4 p-4 rounded-lg border transition-all cursor-pointer",
+                          field.value === t
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/40",
+                        )}
+                      >
+                        <RadioGroupItem value={t} />
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-sm font-medium text-foreground">
+                            {APPLICATION_TYPE_LABELS[t].title}
+                          </span>
+                          <span className="text-xs text-muted-foreground font-mono">
+                            {APPLICATION_TYPE_LABELS[t].description}
+                          </span>
+                        </div>
+                      </label>
+                    ))}
+                  </RadioGroup>
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="application_deadline"
+              control={control}
+              render={({ field }) => (
+                <Field>
+                  <FieldLabel optional>Application deadline</FieldLabel>
+                  <DatePicker
+                    value={field.value}
+                    onChange={(v) => field.onChange(v ?? "")}
+                    placeholder="Pick a deadline"
+                    disableBefore={new Date()}
+                    className="w-full"
+                  />
+                </Field>
+              )}
+            />
+          </SectionCard>
+        )}
+
+        {/* Server error */}
+        {serverError && (
+          <p className="text-sm font-mono text-destructive border border-destructive/30 rounded-lg px-4 py-2.5 bg-destructive/5">
+            {serverError}
+          </p>
+        )}
+
+        {/* Navigation */}
+        <div className="flex justify-between pt-2">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => (stepIndex > 0 ? setStep(STEPS[stepIndex - 1]) : router.back())}
+            className="font-mono text-sm"
+          >
+            ← {stepIndex === 0 ? "Cancel" : "Back"}
+          </Button>
+
+          {step === "Access" ? (
+            <Button
+              key="submit"
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
+            >
+              {isSubmitting ? (
+                <>
+                  <Spinner className="mr-2" /> {submittingLabel}
+                </>
+              ) : (
+                submitLabel
+              )}
+            </Button>
+          ) : (
+            <Button
+              key="continue"
+              type="button"
+              onClick={goNext}
+              className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
+            >
+              Continue →
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
+  )
+}

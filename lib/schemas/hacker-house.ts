@@ -1,0 +1,54 @@
+import { z } from "zod"
+import { ARCHETYPE_IDS } from "@/lib/onboarding"
+
+const APPLICATION_TYPES = ["open", "invite_only", "curated"] as const
+const EVENT_TIMINGS = ["before", "during", "after"] as const
+
+export const createHackerHouseSchema = z.object({
+  name: z.string().min(3, "Minimum 3 characters").max(80),
+  region: z.string().optional(),
+  country: z.string().min(1, "Country is required"),
+  city: z.string().min(1, "City is required"),
+  neighborhood: z.string().optional(),
+  start_date: z.string().min(1, "Select a start date"),
+  end_date: z.string().min(1, "Select an end date"),
+  capacity: z.number().int().min(2).max(50),
+  includes_private_room: z.boolean().optional(),
+  includes_shared_room: z.boolean().optional(),
+  includes_meals: z.boolean().optional(),
+  includes_workspace: z.boolean().optional(),
+  includes_internet: z.boolean().optional(),
+  images: z.array(z.string().url()).max(5).optional(),
+  profile_sought: z.array(z.enum(ARCHETYPE_IDS)).min(1, "Select at least one archetype"),
+  language: z.string().min(1, "Language is required"),
+  house_rules: z.string().max(500).optional(),
+  application_type: z.enum(APPLICATION_TYPES),
+  application_deadline: z.string().optional(),
+  has_event: z.boolean().optional(),
+  event_name: z.string().optional(),
+  event_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  event_date: z.string().optional(),
+  event_timing: z.enum(EVENT_TIMINGS).optional(),
+})
+
+export type CreateHackerHouseInput = z.infer<typeof createHackerHouseSchema>
+
+export const updateHackerHouseSchema = createHackerHouseSchema.partial().extend({
+  status: z.enum(["open", "full", "active", "finished"]).optional(),
+})
+
+export type UpdateHackerHouseInput = z.infer<typeof updateHackerHouseSchema>
+
+export const applyToHackerHouseSchema = z.object({
+  message: z.string().max(300).optional(),
+})
+
+export type ApplyToHackerHouseInput = z.infer<typeof applyToHackerHouseSchema>
+
+export const reviewHackerHouseApplicationSchema = z.object({
+  status: z.enum(["accepted", "rejected"]),
+})
+
+export type ReviewHackerHouseApplicationInput = z.infer<typeof reviewHackerHouseApplicationSchema>
+
+export { APPLICATION_TYPES, EVENT_TIMINGS }

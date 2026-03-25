@@ -1,0 +1,164 @@
+import { NextRequest, NextResponse } from "next/server"
+import { privy } from "@/lib/privy"
+import { supabaseServer } from "@/lib/supabase-server"
+import { createHackerHouseSchema } from "@/lib/schemas/hacker-house"
+
+async function getPrivyUserId(req: NextRequest): Promise<string | null> {
+  const token = req.headers.get("authorization")?.replace("Bearer ", "")
+  if (!token) return null
+  try {
+    const claims = await privy.utils().auth().verifyAccessToken(token)
+    return claims.user_id
+  } catch {
+    return null
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url)
+  const status = searchParams.get("status")
+  const profileSought = searchParams.get("profile_sought")
+  const q = searchParams.get("q")
+  const limit = parseInt(searchParams.get("limit") ?? "12", 10)
+  const offset = parseInt(searchParams.get("offset") ?? "0", 10)
+
+  let query = supabaseServer
+    .from("hacker_houses")
+    .select(`*, creator:users!creator_id(id, handle, archetype, avatar_url)`, { count: "exact" })
+    .order("created_at", { ascending: false })
+
+  if (status) {
+    query = query.eq("status", status)
+  } else {
+    query = query.in("status", ["open", "full", "active"])
+  }
+
+  if (profileSought) {
+    query = query.contains("profile_sought", [profileSought])
+  }
+
+  if (q) {
+    query = query.or(`name.ilike.%${q}%,city.ilike.%${q}%`)
+  }
+
+  query = query.range(offset, offset + limit - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error("[GET /api/hacker-houses]", error)
+    return NextResponse.json({ message: "Database error" }, { status: 500 })
+  }
+
+  const houses = data ?? []
+
+  // Fetch accepted participants for each house
+  let participantsByHouse: Record<string, { id: string; handle: string | null; archetype: string | null; avatar_url: string | null }[]> = {}
+
+  if (houses.length > 0) {
+    const houseIds = houses.map((h) => h.id)
+    const { data: apps } = await supabaseServer
+      .from("applications")
+      .select("hacker_house_id, applicant:users!applicant_id(id, handle, archetype, avatar_url)")
+      .in("hacker_house_id", houseIds)
+      .eq("status", "accepted")
+      .eq("target_type", "hacker_house")
+
+    if (apps) {
+      for (const app of apps) {
+        const houseId = app.hacker_house_id as string
+        if (!participantsByHouse[houseId]) {
+          participantsByHouse[houseId] = []
+        }
+        participantsByHouse[houseId].push(
+          app.applicant as unknown as { id: string; handle: string | null; archetype: string | null; avatar_url: string | null }
+        )
+      }
+    }
+  }
+
+  const hackerHouses = houses.map((house) => {
+    const acceptedParticipants = participantsByHouse[house.id] ?? []
+    return {
+      ...house,
+      participants: acceptedParticipants.slice(0, 6),
+      participants_count: acceptedParticipants.length + 1, // +1 for creator
+    }
+  })
+
+  return NextResponse.json({ hacker_houses: hackerHouses, total: count ?? 0, offset, limit })
+}
+
+export async function POST(req: NextRequest) {
+  const privyUserId = await getPrivyUserId(req)
+  if (!privyUserId) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  const { data: user } = await supabaseServer
+    .from("users")
+    .select("id")
+    .eq("privy_id", privyUserId)
+    .single()
+
+  if (!user) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 })
+  }
+
+  const body: unknown = await req.json()
+  const parsed = createHackerHouseSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: parsed.error.issues[0].message },
+      { status: 400 }
+    )
+  }
+
+  const { has_event, ...fields } = parsed.data
+
+  const insertData = {
+    creator_id: user.id,
+    name: fields.name,
+    city: fields.city,
+    country: fields.country,
+    neighborhood: fields.neighborhood || null,
+    start_date: fields.start_date,
+    end_date: fields.end_date,
+    capacity: fields.capacity,
+    modality: "free" as const,
+    images: fields.images ?? [],
+    includes_private_room: fields.includes_private_room ?? false,
+    includes_shared_room: fields.includes_shared_room ?? false,
+    includes_meals: fields.includes_meals ?? false,
+    includes_workspace: fields.includes_workspace ?? false,
+    includes_internet: fields.includes_internet ?? false,
+    profile_sought: fields.profile_sought,
+    language: fields.language,
+    house_rules: fields.house_rules || null,
+    application_type: fields.application_type,
+    application_deadline: fields.application_deadline || null,
+    event_name: has_event ? (fields.event_name || null) : null,
+    event_url: has_event ? (fields.event_url || null) : null,
+    event_date: has_event ? (fields.event_date || null) : null,
+    event_timing: has_event ? (fields.event_timing ?? null) : null,
+  }
+
+  const { data, error } = await supabaseServer
+    .from("hacker_houses")
+    .insert(insertData)
+    .select(`*, creator:users!creator_id(id, handle, archetype, avatar_url)`)
+    .single()
+
+  if (error) {
+    console.error("[POST /api/hacker-houses]", error)
+    return NextResponse.json({ message: "Database error" }, { status: 500 })
+  }
+
+  const hackerHouse = {
+    ...data,
+    participants: [],
+    participants_count: 1,
+  }
+
+  return NextResponse.json({ hacker_house: hackerHouse }, { status: 201 })
+}

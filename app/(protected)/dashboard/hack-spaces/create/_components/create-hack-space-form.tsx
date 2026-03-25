@@ -426,7 +426,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Project name *</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Project name</FieldLabel>
                   <Input
                     {...field}
                     id={field.name}
@@ -446,7 +446,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel htmlFor={field.name}>Description *</FieldLabel>
+                  <FieldLabel htmlFor={field.name}>Description</FieldLabel>
                   <Textarea
                     {...field}
                     id={field.name}
@@ -471,7 +471,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Track *</FieldLabel>
+                  <FieldLabel>Track</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {TRACKS.map((t) => (
                       <TogglePill
@@ -495,7 +495,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Stage *</FieldLabel>
+                  <FieldLabel>Stage</FieldLabel>
                   <div className="flex gap-2 flex-wrap">
                     {STAGES.map((s) => (
                       <TogglePill
@@ -557,7 +557,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Archetypes needed *</FieldLabel>
+                  <FieldLabel>Archetypes needed</FieldLabel>
                   <div className="flex gap-2 flex-wrap">
                     {ARCHETYPES.map((a) => {
                       const value = field.value ?? []
@@ -642,7 +642,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Max team size *</FieldLabel>
+                  <FieldLabel>Max team size</FieldLabel>
                   <div className="flex gap-2">
                     {[2, 3, 4, 5, 6, 8, 10].map((n) => (
                       <button
@@ -672,7 +672,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>Experience level *</FieldLabel>
+                  <FieldLabel>Experience level</FieldLabel>
                   <div className="flex gap-2 flex-wrap">
                     {EXPERIENCE_LEVELS.map((lvl) => (
                       <TogglePill
@@ -693,7 +693,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Working language *</FieldLabel>
+                  <FieldLabel>Working language</FieldLabel>
                   <div className="flex flex-wrap gap-2">
                     {LANGUAGES.map((lang) => (
                       <TogglePill
@@ -971,7 +971,7 @@ export function HackSpaceForm({
               control={control}
               render={({ field }) => (
                 <Field>
-                  <FieldLabel>Application type *</FieldLabel>
+                  <FieldLabel>Application type</FieldLabel>
                   <RadioGroup
                     value={field.value}
                     onValueChange={field.onChange}

@@ -74,7 +74,7 @@ export function CreateHackSpaceModal({
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Title *</FieldLabel>
+                <FieldLabel htmlFor={field.name}>Title</FieldLabel>
                 <Input
                   {...field}
                   id={field.name}
@@ -97,7 +97,7 @@ export function CreateHackSpaceModal({
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel htmlFor={field.name}>Description *</FieldLabel>
+                <FieldLabel htmlFor={field.name}>Description</FieldLabel>
                 <Textarea
                   {...field}
                   id={field.name}
@@ -122,7 +122,7 @@ export function CreateHackSpaceModal({
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
-                <FieldLabel>Looking for *</FieldLabel>
+                <FieldLabel>Looking for</FieldLabel>
                 <div className="flex gap-2 flex-wrap">
                   {ARCHETYPES.map((a) => {
                     const selected = field.value.includes(a.id)
