@@ -144,7 +144,7 @@ Estas features están diseñadas pero **no se implementan en MVP**. Cualquier tr
 | Onboarding + Cypher Identity | ✅ Implementado |
 | Hack Spaces (crear, listar, aplicar, gestionar) | ✅ Implementado |
 | Perfiles de builders (propio + público) | ✅ Implementado |
-| Hacker Houses | ❌ Pendiente |
+| Hacker Houses (crear, listar, aplicar, gestionar) | ✅ Implementado |
 | Builder Feed (algoritmo + carruseles) | 🟡 Parcial — feed básico con Hack Spaces |
 | Mapa interactivo | ❌ Pendiente |
 | Notificaciones | ❌ Pendiente |
@@ -159,7 +159,7 @@ El MVP está listo para beta pública cuando:
 - [x] Onboarding completo sin errores (4 pasos + scanning)
 - [x] Hack Spaces: crear, listar, aplicar, aceptar/rechazar — sin errores críticos
 - [x] Perfil de builder (propio + público) — sin errores críticos
-- [ ] Hacker Houses: crear, listar, aplicar, aceptar/rechazar
+- [x] Hacker Houses: crear, listar, aplicar, aceptar/rechazar
 - [ ] El flujo core completo funciona (onboarding → hack spaces → hacker houses)
 - [ ] Funciona en mobile y desktop
 - [ ] Waitlist conectada a Supabase
