@@ -132,7 +132,8 @@ export async function POST(req: NextRequest) {
     application_deadline: fields.application_deadline || null,
     event_name: has_event ? (fields.event_name || null) : null,
     event_url: has_event ? (fields.event_url || null) : null,
-    event_date: has_event ? (fields.event_date || null) : null,
+    event_start_date: has_event ? (fields.event_start_date || null) : null,
+    event_end_date: has_event ? (fields.event_end_date || null) : null,
     event_timing: has_event ? (fields.event_timing ?? null) : null,
   }
 

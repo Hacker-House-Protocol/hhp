@@ -20,15 +20,16 @@ export const createHackerHouseSchema = z.object({
   includes_internet: z.boolean().optional(),
   images: z.array(z.string().url()).max(5).optional(),
   profile_sought: z.array(z.enum(ARCHETYPE_IDS)).min(1, "Select at least one archetype"),
-  language: z.string().min(1, "Language is required"),
+  language: z.array(z.string()).min(1, "Select at least one language"),
   house_rules: z.string().max(500).optional(),
   application_type: z.enum(APPLICATION_TYPES),
   application_deadline: z.string().optional(),
   has_event: z.boolean().optional(),
   event_name: z.string().optional(),
   event_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  event_date: z.string().optional(),
-  event_timing: z.enum(EVENT_TIMINGS).optional(),
+  event_start_date: z.string().optional(),
+  event_end_date: z.string().optional(),
+  event_timing: z.array(z.enum(EVENT_TIMINGS)).min(1).optional(),
 })
 
 export type CreateHackerHouseInput = z.infer<typeof createHackerHouseSchema>

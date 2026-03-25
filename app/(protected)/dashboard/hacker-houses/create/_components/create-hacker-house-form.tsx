@@ -89,7 +89,8 @@ const FIELD_TO_STEP: Partial<Record<keyof CreateHackerHouseInput, Step>> = {
   has_event: "Community",
   event_name: "Community",
   event_url: "Community",
-  event_date: "Community",
+  event_start_date: "Community",
+  event_end_date: "Community",
   event_timing: "Community",
   application_type: "Access",
   application_deadline: "Access",
@@ -185,15 +186,16 @@ export function CreateHackerHouseForm({
       includes_internet: false,
       images: [],
       profile_sought: [],
-      language: "English",
+      language: ["English"],
       house_rules: "",
       application_type: "open",
       application_deadline: "",
       has_event: false,
       event_name: "",
       event_url: "",
-      event_date: "",
-      event_timing: undefined,
+      event_start_date: "",
+      event_end_date: "",
+      event_timing: [],
       ...defaultValues,
     },
   })
@@ -668,23 +670,35 @@ export function CreateHackerHouseForm({
             <Controller
               name="language"
               control={control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Working language</FieldLabel>
-                  <div className="flex flex-wrap gap-2">
-                    {LANGUAGES.map((lang) => (
-                      <TogglePill
-                        key={lang}
-                        selected={field.value === lang}
-                        onClick={() => field.onChange(lang)}
-                      >
-                        {lang}
-                      </TogglePill>
-                    ))}
-                  </div>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-                </Field>
-              )}
+              render={({ field, fieldState }) => {
+                const value = field.value ?? []
+                return (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel>Working language</FieldLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {LANGUAGES.map((lang) => {
+                        const selected = value.includes(lang)
+                        return (
+                          <TogglePill
+                            key={lang}
+                            selected={selected}
+                            onClick={() =>
+                              field.onChange(
+                                selected
+                                  ? value.filter((l) => l !== lang)
+                                  : [...value, lang],
+                              )
+                            }
+                          >
+                            {lang}
+                          </TogglePill>
+                        )
+                      })}
+                    </div>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )
+              }}
             />
 
             <Controller
@@ -769,15 +783,31 @@ export function CreateHackerHouseForm({
                 />
 
                 <Controller
-                  name="event_date"
+                  name="event_start_date"
                   control={control}
                   render={({ field }) => (
                     <Field>
-                      <FieldLabel>Event date</FieldLabel>
+                      <FieldLabel>Event start date</FieldLabel>
                       <DatePicker
                         value={field.value}
                         onChange={field.onChange}
-                        placeholder="Pick event date"
+                        placeholder="Pick start date"
+                        className="w-full"
+                      />
+                    </Field>
+                  )}
+                />
+
+                <Controller
+                  name="event_end_date"
+                  control={control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel optional>Event end date</FieldLabel>
+                      <DatePicker
+                        value={field.value}
+                        onChange={(v) => field.onChange(v ?? "")}
+                        placeholder="Pick end date"
                         className="w-full"
                       />
                     </Field>
@@ -787,22 +817,34 @@ export function CreateHackerHouseForm({
                 <Controller
                   name="event_timing"
                   control={control}
-                  render={({ field }) => (
-                    <Field>
-                      <FieldLabel>This house is</FieldLabel>
-                      <div className="flex gap-2">
-                        {EVENT_TIMINGS.map((t) => (
-                          <TogglePill
-                            key={t}
-                            selected={field.value === t}
-                            onClick={() => field.onChange(t)}
-                          >
-                            {EVENT_TIMING_LABELS[t]} the event
-                          </TogglePill>
-                        ))}
-                      </div>
-                    </Field>
-                  )}
+                  render={({ field }) => {
+                    const value = field.value ?? []
+                    return (
+                      <Field>
+                        <FieldLabel>This house is</FieldLabel>
+                        <div className="flex gap-2">
+                          {EVENT_TIMINGS.map((t) => {
+                            const selected = value.includes(t)
+                            return (
+                              <TogglePill
+                                key={t}
+                                selected={selected}
+                                onClick={() =>
+                                  field.onChange(
+                                    selected
+                                      ? value.filter((v) => v !== t)
+                                      : [...value, t],
+                                  )
+                                }
+                              >
+                                {EVENT_TIMING_LABELS[t]} the event
+                              </TogglePill>
+                            )
+                          })}
+                        </div>
+                      </Field>
+                    )
+                  }}
                 />
               </div>
             )}

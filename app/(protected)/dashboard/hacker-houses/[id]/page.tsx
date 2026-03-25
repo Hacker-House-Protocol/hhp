@@ -241,7 +241,16 @@ export default function HackerHouseDetailPage({
                   <CalendarDays className="size-4 text-primary shrink-0" />
                   <span className="text-sm font-mono text-primary">
                     For {hackerHouse.event_name}
-                    {hackerHouse.event_timing && ` · ${hackerHouse.event_timing} the event`}
+                    {hackerHouse.event_timing && hackerHouse.event_timing.length > 0 &&
+                      ` · ${hackerHouse.event_timing.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join(" · ")} the event`}
+                    {hackerHouse.event_start_date && (
+                      <>
+                        {" · "}
+                        {hackerHouse.event_end_date
+                          ? `${new Date(hackerHouse.event_start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}–${new Date(hackerHouse.event_end_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                          : new Date(hackerHouse.event_start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </>
+                    )}
                   </span>
                   {hackerHouse.event_url && (
                     <a
@@ -474,7 +483,7 @@ export default function HackerHouseDetailPage({
                 {formatDateRange(hackerHouse.start_date, hackerHouse.end_date)}
               </DetailRow>
               <DetailRow icon={<Globe className="size-3.5" />} label="Language">
-                {hackerHouse.language}
+                {hackerHouse.language.join(", ")}
               </DetailRow>
               {hackerHouse.neighborhood && (
                 <DetailRow icon={<MapPin className="size-3.5" />} label="Zone">

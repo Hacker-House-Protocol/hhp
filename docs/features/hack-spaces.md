@@ -25,7 +25,7 @@ Formulario multi-step de 4 pasos implementado en `app/(protected)/dashboard/hack
 - Habilidades deseadas (`skills_needed`): skills específicas — opcional
 - Tamaño máximo del equipo (`max_team_size`): 2–20
 - Nivel de experiencia: `beginner · intermediate · advanced`
-- Idioma de trabajo (`language`)
+- Idioma de trabajo (`language`) — multi-select pills, permite seleccionar varios idiomas. Default: `["English"]`.
 - Ubicación — 3 comboboxes cascada opcionales:
   - Región (`region`) — de `LOCATION_DATA` en `lib/constants/location.ts`
   - País (`country`) — se filtra según región seleccionada
@@ -35,8 +35,9 @@ Formulario multi-step de 4 pasos implementado en `app/(protected)/dashboard/hack
 - Toggle: ¿Está ligado a un evento? (`has_event`)
 - Nombre del evento (`event_name`)
 - Link del evento (`event_url`) — Luma u otro
-- Fecha del evento (`event_date`)
-- Timing: `before · during · after`
+- Fecha de inicio del evento (`event_start_date`)
+- Fecha de fin del evento (`event_end_date`) — opcional
+- Timing (`event_timing`) — multi-select pills: `before · during · after`. Permite seleccionar varios.
 
 > Si está vinculado a un evento, aparece destacado. Cuando el equipo se forma, el shortcut para crear una Hacker House ya viene preconfigurado con fechas y ciudad.
 

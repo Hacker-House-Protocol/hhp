@@ -191,7 +191,9 @@ export function HackSpaceCard({
               </span>
             </div>
             <div className="flex items-center gap-2 text-[11px] font-mono text-muted-foreground">
-              <span>{hackSpace.language}</span>
+              {hackSpace.language.length > 0 && (
+                <span>{hackSpace.language.slice(0, 2).join(" · ")}</span>
+              )}
               {(hackSpace.city || hackSpace.country || hackSpace.region) && (
                 <>
                   <span>·</span>
@@ -204,7 +206,15 @@ export function HackSpaceCard({
                 <>
                   <span>·</span>
                   <span className="text-primary truncate">
-                    📅 {hackSpace.event_name}
+                    {hackSpace.event_name}
+                    {hackSpace.event_start_date && (
+                      <>
+                        {" "}
+                        {hackSpace.event_end_date
+                          ? `${new Date(hackSpace.event_start_date).getDate()}–${new Date(hackSpace.event_end_date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}`
+                          : new Date(hackSpace.event_start_date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                      </>
+                    )}
                   </span>
                 </>
               )}

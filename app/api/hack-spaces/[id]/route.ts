@@ -107,7 +107,8 @@ export async function PATCH(
   if (has_event === false) {
     cleaned.event_name = null
     cleaned.event_url = null
-    cleaned.event_date = null
+    cleaned.event_start_date = null
+    cleaned.event_end_date = null
     cleaned.event_timing = null
   }
 

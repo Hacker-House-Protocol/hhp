@@ -35,8 +35,9 @@ function hackerHouseToDefaults(hh: HackerHouse): Partial<CreateHackerHouseInput>
     has_event: !!hh.event_name,
     event_name: hh.event_name ?? "",
     event_url: hh.event_url ?? "",
-    event_date: hh.event_date ?? "",
-    event_timing: (hh.event_timing as CreateHackerHouseInput["event_timing"]) ?? undefined,
+    event_start_date: hh.event_start_date ?? "",
+    event_end_date: hh.event_end_date ?? "",
+    event_timing: (hh.event_timing as CreateHackerHouseInput["event_timing"]) ?? [],
   }
 }
 

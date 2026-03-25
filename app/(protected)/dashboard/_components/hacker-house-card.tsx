@@ -115,8 +115,18 @@ export function HackerHouseCard({ hackerHouse, currentUserId }: HackerHouseCardP
           <div className="flex items-center gap-1.5 text-[11px] font-mono text-primary">
             <span className="size-1.5 rounded-full bg-primary shrink-0" />
             <span className="truncate">
-              {hackerHouse.event_timing ? `${hackerHouse.event_timing.charAt(0).toUpperCase() + hackerHouse.event_timing.slice(1)} ` : ""}
+              {hackerHouse.event_timing && hackerHouse.event_timing.length > 0
+                ? `${hackerHouse.event_timing.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join(" · ")} · `
+                : ""}
               {hackerHouse.event_name}
+              {hackerHouse.event_start_date && (
+                <>
+                  {" · "}
+                  {hackerHouse.event_end_date
+                    ? `${new Date(hackerHouse.event_start_date).getDate()}–${new Date(hackerHouse.event_end_date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}`
+                    : new Date(hackerHouse.event_start_date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                </>
+              )}
             </span>
           </div>
         )}

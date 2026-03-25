@@ -263,8 +263,16 @@ export default function HackSpaceDetailPage({
                   <CalendarDays className="size-4 text-primary shrink-0" />
                   <span className="text-sm font-mono text-primary">
                     For {hackSpace.event_name}
-                    {hackSpace.event_timing &&
-                      ` · ${hackSpace.event_timing} the event`}
+                    {hackSpace.event_timing && hackSpace.event_timing.length > 0 &&
+                      ` · ${hackSpace.event_timing.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join(" · ")} the event`}
+                    {hackSpace.event_start_date && (
+                      <>
+                        {" · "}
+                        {hackSpace.event_end_date
+                          ? `${new Date(hackSpace.event_start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}–${new Date(hackSpace.event_end_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+                          : new Date(hackSpace.event_start_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </>
+                    )}
                   </span>
                   {hackSpace.event_url && (
                     <a
@@ -462,7 +470,7 @@ export default function HackSpaceDetailPage({
                 <span className="capitalize">{hackSpace.experience_level}</span>
               </DetailRow>
               <DetailRow icon={<Globe className="size-3.5" />} label="Language">
-                {hackSpace.language}
+                {hackSpace.language.join(", ")}
               </DetailRow>
               {(hackSpace.city || hackSpace.country || hackSpace.region) && (
                 <DetailRow

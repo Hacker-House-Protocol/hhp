@@ -19,7 +19,7 @@ export const createHackSpaceSchema = z.object({
   skills_needed: z.array(z.string()).optional(),
   max_team_size: z.number().int().min(2).max(20),
   experience_level: z.enum(EXPERIENCE_LEVELS),
-  language: z.string().min(1, "Select a language"),
+  language: z.array(z.string()).min(1, "Select at least one language"),
   region: z.string().optional(),
   country: z.string().optional(),
   city: z.string().optional(),
@@ -31,8 +31,9 @@ export const createHackSpaceSchema = z.object({
   has_event: z.boolean().optional(),
   event_name: z.string().optional(),
   event_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  event_date: z.string().optional(),
-  event_timing: z.enum(EVENT_TIMINGS).optional(),
+  event_start_date: z.string().optional(),
+  event_end_date: z.string().optional(),
+  event_timing: z.array(z.enum(EVENT_TIMINGS)).min(1).optional(),
 })
 
 export type CreateHackSpaceInput = z.infer<typeof createHackSpaceSchema>

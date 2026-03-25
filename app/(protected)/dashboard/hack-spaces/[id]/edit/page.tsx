@@ -33,8 +33,9 @@ function hackSpaceToDefaults(hs: HackSpace): Partial<CreateHackSpaceInput> {
     has_event: !!hs.event_name,
     event_name: hs.event_name ?? "",
     event_url: hs.event_url ?? "",
-    event_date: hs.event_date ?? "",
-    event_timing: (hs.event_timing as CreateHackSpaceInput["event_timing"]) ?? undefined,
+    event_start_date: hs.event_start_date ?? "",
+    event_end_date: hs.event_end_date ?? "",
+    event_timing: (hs.event_timing as CreateHackSpaceInput["event_timing"]) ?? [],
   }
 }
 

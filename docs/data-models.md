@@ -62,7 +62,7 @@ type HackSpace = {
   max_team_size: number
   skills_needed: string[]
   experience_level: 'beginner' | 'intermediate' | 'advanced'
-  language: string
+  language: string[]
   timezone_region?: string
   application_type: ApplicationType
   application_deadline?: string
@@ -74,8 +74,9 @@ type HackSpace = {
   event_id?: string
   event_name?: string
   event_url?: string
-  event_date?: string
-  event_timing?: 'before' | 'during' | 'after'
+  event_start_date?: string
+  event_end_date?: string
+  event_timing?: string[]
   created_at: string
 }
 ```
@@ -111,7 +112,7 @@ type HackerHouse = {
   // Imágenes — array de URLs, primera es la portada, máx 5
   images: string[]
   profile_sought: string[]        // arquetipos: ['visionary', 'strategist', 'builder']
-  language: string
+  language: string[]
   house_rules?: string            // texto libre, máx 500 chars
   status: HouseStatus
   creator_id: string
@@ -138,8 +139,9 @@ type HackerHouse = {
   // Evento relacionado (opcional)
   event_name?: string
   event_url?: string
-  event_date?: string
-  event_timing?: 'before' | 'during' | 'after'
+  event_start_date?: string
+  event_end_date?: string
+  event_timing?: string[]
   created_at: string
   creator: {
     id: string

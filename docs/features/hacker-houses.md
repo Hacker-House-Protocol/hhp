@@ -38,13 +38,15 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 
 ### Sobre la Comunidad
 - Perfil buscado: arquetipos del sistema — `visionary | strategist | builder` (mismos que Hack Spaces, para consistencia de matching y filtros)
-- Idioma de comunicación
+- Idioma de comunicación (`language`) — multi-select pills, permite seleccionar varios idiomas. Default: `["English"]`.
 - Reglas básicas de la casa
 
 ### Evento Relacionado (Opcional)
 - Toggle: ¿Está ligada a uno o varios eventos?
-- Nombre, link y fecha del evento
-- La Hacker House es: `antes / durante / después del evento`
+- Nombre y link del evento
+- Fecha de inicio del evento (`event_start_date`)
+- Fecha de fin del evento (`event_end_date`) — opcional
+- La Hacker House es: `antes / durante / después del evento` — multi-select, permite seleccionar varios.
 
 > Si está vinculada a un evento, aparece destacada en el mapa. Los builders que siguen ese evento la ven en su feed con prioridad.
 

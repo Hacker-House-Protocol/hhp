@@ -66,7 +66,7 @@ export interface HackSpace {
   skills_needed: string[]
   max_team_size: number
   experience_level: ExperienceLevel
-  language: string
+  language: string[]
   region: string | null
   country: string | null
   city: string | null
@@ -76,8 +76,9 @@ export interface HackSpace {
   // Event (optional)
   event_name: string | null
   event_url: string | null
-  event_date: string | null
-  event_timing: "before" | "during" | "after" | null
+  event_start_date: string | null
+  event_end_date: string | null
+  event_timing: string[] | null
   created_at: string
   creator: {
     id: string
@@ -153,15 +154,16 @@ export interface HackerHouse {
   includes_workspace: boolean
   includes_internet: boolean
   profile_sought: string[]
-  language: string
+  language: string[]
   house_rules: string | null
   status: HouseStatus
   application_type: ApplicationType
   application_deadline: string | null
   event_name: string | null
   event_url: string | null
-  event_date: string | null
-  event_timing: "before" | "during" | "after" | null
+  event_start_date: string | null
+  event_end_date: string | null
+  event_timing: string[] | null
   created_at: string
   creator: HackerHouseParticipant
   participants: HackerHouseParticipant[]
