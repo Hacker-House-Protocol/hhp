@@ -192,6 +192,191 @@ async function getPrivyUserId(req: NextRequest): Promise<string | null> {
 }
 ```
 
+## API route auth pattern — Privy ID → Supabase UUID
+
+**Critical:** `getPrivyUserId` returns the Privy string ID. The DB stores a separate internal UUID in `users.id`. Every write route must do a two-step resolution — verify Privy, then resolve to the internal user:
+
+```ts
+export async function POST(req: NextRequest) {
+  // Step 1 — verify Privy JWT
+  const privyUserId = await getPrivyUserId(req)
+  if (!privyUserId) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+
+  // Step 2 — resolve internal Supabase UUID (never use privyUserId for DB queries)
+  const { data: user } = await supabaseServer
+    .from("users")
+    .select("id")
+    .eq("privy_id", privyUserId)
+    .single()
+
+  if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 })
+
+  // From here, use user.id (UUID) for all inserts and ownership checks
+}
+```
+
+Never use `privyUserId` directly in DB queries — `creator_id`, `applicant_id` etc. store the Supabase UUID, not the Privy string.
+
+## Ownership guard — re-fetch before checking
+
+For PATCH/DELETE on owned resources, always re-fetch the entity to verify ownership. Never trust `creator_id` from the client:
+
+```ts
+// Minimal select — only fetch what you need for the guard
+const { data: entity } = await supabaseServer
+  .from("hack_spaces")
+  .select("id, creator_id")
+  .eq("id", id)
+  .single()
+
+if (!entity) return NextResponse.json({ message: "Not found" }, { status: 404 })
+if (entity.creator_id !== user.id) return NextResponse.json({ message: "Forbidden" }, { status: 403 })
+```
+
+For mutation routes that also need business logic fields (e.g. checking capacity before accepting), add those to the select: `"id, creator_id, max_team_size, status"`.
+
+## Auto-status promotion on accept
+
+When accepting an application, re-count accepted members and auto-promote the parent entity to `"full"` if capacity is reached. Use `{ count: "exact", head: true }` to avoid fetching rows:
+
+```ts
+// After updating application status to "accepted":
+const { count } = await supabaseServer
+  .from("applications")
+  .select("*", { count: "exact", head: true })
+  .eq("hack_space_id", hackSpaceId)
+  .eq("status", "accepted")
+
+if (count !== null && count >= hackSpace.max_team_size) {
+  await supabaseServer
+    .from("hack_spaces")
+    .update({ status: "full" })
+    .eq("id", hackSpaceId)
+}
+```
+
+## Data enrichment patterns
+
+### List endpoint — bulk post-query enrichment
+
+For list endpoints, do NOT join participants inline (causes N+1). Instead, run one bulk query after the main list, group in JS, then merge:
+
+```ts
+async function enrichWithParticipants(spaces: { id: string; creator: Participant }[]) {
+  if (!spaces.length) return spaces
+  const ids = spaces.map((s) => s.id)
+
+  const { data: apps } = await supabaseServer
+    .from("applications")
+    .select("hack_space_id, applicant:users!applicant_id(id, handle, archetype, avatar_url)")
+    .in("hack_space_id", ids)
+    .eq("status", "accepted")
+
+  const bySpace: Record<string, Participant[]> = {}
+  for (const app of apps ?? []) {
+    const sid = app.hack_space_id as string
+    if (!bySpace[sid]) bySpace[sid] = []
+    bySpace[sid].push(app.applicant as Participant)
+  }
+
+  return spaces.map((hs) => {
+    const accepted = bySpace[hs.id] ?? []
+    return {
+      ...hs,
+      participants: [hs.creator, ...accepted].slice(0, 6),
+      member_count: accepted.length + 1,  // creator counts as member #1
+    }
+  })
+}
+```
+
+### Single entity endpoint — nested join
+
+For single-entity GET, use a nested join and filter in JS. Strip the raw join field before returning:
+
+```ts
+const { data } = await supabaseServer
+  .from("hack_spaces")
+  .select(`
+    *,
+    creator:users!creator_id(id, handle, archetype, avatar_url),
+    all_applications:applications!hack_space_id(
+      status,
+      applicant:users!applicant_id(id, handle, archetype, avatar_url)
+    )
+  `)
+  .eq("id", id)
+  .single()
+
+const participants = (data.all_applications ?? [])
+  .filter((a) => a.status === "accepted")
+  .map((a) => a.applicant)
+
+const result = {
+  ...data,
+  participants: [data.creator, ...participants],
+  member_count: participants.length + 1,
+  all_applications: undefined,  // strip — never expose raw applications to client
+}
+```
+
+## Supabase select — FK disambiguator
+
+When a table has multiple FK relationships to the same table (e.g. `users` referenced by both `creator_id` and `applicant_id`), PostgREST requires the `!fk_column_name` disambiguator:
+
+```ts
+// ❌ ambiguous — PostgREST 400 error
+.select("creator:users(id, handle)")
+
+// ✅ correct — explicit FK column
+.select("creator:users!creator_id(id, handle, archetype, avatar_url)")
+.select("applicant:users!applicant_id(id, handle, archetype, avatar_url)")
+```
+
+Always use `!fk_column_name` for any join involving `users` (since both `creator_id` and `applicant_id` point to it).
+
+## has_event — UI-only flag, strip before DB
+
+`has_event` exists only in the form schema. Never add a `has_event` column to the DB. In POST/PATCH routes, destructure it out and use it to null event fields when toggled off:
+
+```ts
+const { has_event, ...fields } = parsed.data
+
+const insertData = {
+  // ...other fields
+  event_name: has_event ? (fields.event_name || null) : null,
+  event_url: has_event ? (fields.event_url || null) : null,
+  event_start_date: has_event ? (fields.event_start_date || null) : null,
+  event_end_date: has_event ? (fields.event_end_date || null) : null,
+  event_timing: has_event ? (fields.event_timing ?? null) : null,
+}
+```
+
+For PATCH, explicitly null all event fields if `has_event === false`:
+
+```ts
+if (has_event === false) {
+  cleaned.event_name = null
+  cleaned.event_url = null
+  cleaned.event_start_date = null
+  cleaned.event_end_date = null
+  cleaned.event_timing = null
+}
+```
+
+## useProfile — get current user's Supabase ID
+
+To get the current user's internal Supabase UUID on the client, use `useProfile({ enabled: true })`:
+
+```ts
+import { useProfile } from "@/services/api/profile"
+
+const { data: profile } = useProfile({ enabled: true })
+// profile.id is the Supabase UUID — use this for ownership checks
+```
+
+Never use `usePrivy().user.id` for ownership comparisons — that's the Privy string ID, not the DB UUID.
+
 ## Rules
 
 1. One file per domain — never split or merge domains across files.

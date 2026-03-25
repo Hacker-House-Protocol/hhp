@@ -346,3 +346,40 @@ const slots = Array.from({ length: Math.min(item.max_size, 6) })
   )}
 </div>
 ```
+
+## Ownership check — always use Supabase UUID
+
+To check if the current user owns an entity, compare against the **Supabase UUID** (`profile.id`), not the Privy ID:
+
+```tsx
+import { useProfile } from "@/services/api/profile"
+
+const { data: profile } = useProfile({ enabled: true })
+const isOwner = profile?.id === entity.creator.id  // ✅ both are Supabase UUIDs
+```
+
+Never use `usePrivy().user?.id` for ownership — that's the Privy string ID, which doesn't match `creator_id` in the DB.
+
+## currentUserId prop threading
+
+List pages that render cards must pass the current user's Supabase UUID down so cards can determine ownership locally without a separate query per card:
+
+```tsx
+// Page — fetch profile once, pass id to each card
+const { data: profile } = useProfile({ enabled: true })
+
+<HackSpaceCard hackSpace={hs} currentUserId={profile?.id} />
+
+// Card — receive as prop
+interface HackSpaceCardProps {
+  hackSpace: HackSpace
+  currentUserId?: string
+}
+
+function HackSpaceCard({ hackSpace, currentUserId }: HackSpaceCardProps) {
+  const isOwner = currentUserId === hackSpace.creator.id
+  // Use isOwner to conditionally show "Manage →" vs "Apply →"
+}
+```
+
+This avoids N+1 profile queries and keeps ownership logic inside the card.

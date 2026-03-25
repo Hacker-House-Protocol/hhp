@@ -247,6 +247,22 @@ Usage for single select:
 />
 ```
 
+**Display label constants** (`STAGE_LABELS`, `TRACK_EMOJIS`, `APPLICATION_TYPE_LABELS`, etc.) are defined **locally inside each form file** — they are not shared utilities and should NOT be imported from `lib/` or elsewhere. Define them at the top of the form file:
+
+```ts
+const STAGE_LABELS: Record<Stage, string> = {
+  idea: "Idea",
+  building: "Building",
+  launched: "Launched",
+}
+
+const TRACK_EMOJIS: Record<Track, string> = {
+  defi: "💸",
+  nft: "🎨",
+  dao: "🏛️",
+}
+```
+
 ---
 
 ## Toggle pill — multi select (array fields)
@@ -503,7 +519,7 @@ DatePicker props: `value`, `onChange`, `placeholder`, `className`, `disabled`, `
 
 ## SectionCard — grouping fields
 
-Wrap logically related fields in a card:
+Wrap logically related fields in a card. **`SectionCard` is defined locally inside each form file — it is NOT a shared component and should NOT be imported from elsewhere:**
 
 ```tsx
 function SectionCard({ children }: { children: React.ReactNode }) {
