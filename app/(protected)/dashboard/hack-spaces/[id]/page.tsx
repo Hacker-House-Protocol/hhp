@@ -181,7 +181,7 @@ export default function HackSpaceDetailPage({
   const canApply = !isOwner && hackSpace.status === "open"
 
   const memberCount = hackSpace.member_count ?? 0
-  const slots = Array.from({ length: Math.min(hackSpace.max_team_size, 8) })
+  const participants = hackSpace.participants ?? []
 
   function handleStatusChange(newStatus: HackSpaceStatus) {
     updateHackSpace.mutate({ status: newStatus })
@@ -517,21 +517,25 @@ export default function HackSpaceDetailPage({
                   {memberCount}/{hackSpace.max_team_size} members
                 </span>
               </div>
-              {/* Member dots */}
-              <div className="flex items-center gap-1.5">
-                {slots.map((_, i) => (
+              {/* Member avatars */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {participants.map((p, i) => (
                   <div
-                    key={i}
-                    className={cn(
-                      "size-3 rounded-full transition-colors",
-                      i < memberCount ? statusCfg.dotCls : "bg-border",
+                    key={p.id ?? i}
+                    className="size-9 rounded-full overflow-hidden border-2 border-card shrink-0"
+                    style={p.archetype ? {
+                      backgroundColor: `color-mix(in oklch, var(--${p.archetype === "builder" ? "builder-archetype" : p.archetype}) 20%, transparent)`,
+                    } : undefined}
+                  >
+                    {p.avatar_url ? (
+                      <img src={p.avatar_url} alt={p.handle ?? "member"} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-muted" />
                     )}
-                  />
+                  </div>
                 ))}
-                {hackSpace.max_team_size > 8 && (
-                  <span className="text-[10px] font-mono text-muted-foreground ml-1">
-                    +{hackSpace.max_team_size - 8}
-                  </span>
+                {memberCount > participants.length && (
+                  <span className="text-[10px] font-mono text-muted-foreground">+{memberCount - participants.length}</span>
                 )}
               </div>
             </div>

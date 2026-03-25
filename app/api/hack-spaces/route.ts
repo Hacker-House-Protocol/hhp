@@ -24,11 +24,36 @@ export async function GET(req: NextRequest) {
   const limit = parseInt(searchParams.get("limit") ?? "12", 10)
   const offset = parseInt(searchParams.get("offset") ?? "0", 10)
 
+  type Participant = { id: string; handle: string | null; archetype: string | null; avatar_url: string | null }
+
+  async function enrichWithParticipants(spaces: { id: string; creator: Participant }[]) {
+    if (!spaces.length) return spaces
+    const ids = spaces.map((s) => s.id)
+    const { data: apps } = await supabaseServer
+      .from("applications")
+      .select("hack_space_id, applicant:users!applicant_id(id, handle, archetype, avatar_url)")
+      .in("hack_space_id", ids)
+      .eq("status", "accepted")
+    const bySpace: Record<string, Participant[]> = {}
+    for (const app of apps ?? []) {
+      const sid = app.hack_space_id as string
+      if (!bySpace[sid]) bySpace[sid] = []
+      bySpace[sid].push(app.applicant as unknown as Participant)
+    }
+    return spaces.map((hs) => {
+      const accepted = bySpace[hs.id] ?? []
+      return {
+        ...hs,
+        participants: [hs.creator, ...accepted].slice(0, 6),
+        member_count: accepted.length + 1,
+      }
+    })
+  }
+
   if (creatorId) {
-    // Creator-specific query — keep existing behavior, no pagination
     const { data, error } = await supabaseServer
       .from("hack_spaces")
-      .select(`*, creator:users(id, handle, archetype), member_count:applications(count)`)
+      .select(`*, creator:users(id, handle, archetype, avatar_url)`)
       .eq("creator_id", creatorId)
       .in("status", ["open", "full", "in_progress"])
       .order("created_at", { ascending: false })
@@ -37,18 +62,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "Database error" }, { status: 500 })
     }
 
-    const hackSpaces = data.map((hs) => ({
-      ...hs,
-      member_count: (hs.member_count as unknown as { count: number }[])?.[0]?.count ?? 0,
-    }))
-
-    return NextResponse.json({ hack_spaces: hackSpaces })
+    return NextResponse.json({ hack_spaces: await enrichWithParticipants(data) })
   }
 
   // Public list with filtering + pagination
   let query = supabaseServer
     .from("hack_spaces")
-    .select(`*, creator:users(id, handle, archetype), member_count:applications(count)`, { count: "exact" })
+    .select(`*, creator:users(id, handle, archetype, avatar_url)`, { count: "exact" })
     .order("created_at", { ascending: false })
 
   if (status) {
@@ -77,12 +97,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "Database error" }, { status: 500 })
   }
 
-  const hackSpaces = (data ?? []).map((hs) => ({
-    ...hs,
-    member_count: (hs.member_count as unknown as { count: number }[])?.[0]?.count ?? 0,
-  }))
-
-  return NextResponse.json({ hack_spaces: hackSpaces, total: count ?? 0, offset, limit })
+  return NextResponse.json({ hack_spaces: await enrichWithParticipants(data ?? []), total: count ?? 0, offset, limit })
 }
 
 export async function POST(req: NextRequest) {

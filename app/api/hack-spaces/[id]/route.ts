@@ -41,10 +41,12 @@ export async function GET(
     .filter((a: { status: string }) => a.status === "accepted")
     .map((a: { applicant: unknown }) => a.applicant)
 
+  const allParticipants = [data.creator, ...participants]
+
   const hackSpace = {
     ...data,
-    participants,
-    member_count: participants.length,
+    participants: allParticipants,
+    member_count: allParticipants.length,
     all_applications: undefined,
   }
 

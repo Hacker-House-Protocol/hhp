@@ -55,7 +55,7 @@ export function HackSpaceCard({
   }
 
   const memberCount = hackSpace.member_count ?? 0
-  const slots = Array.from({ length: Math.min(hackSpace.max_team_size, 6) })
+  const participants = hackSpace.participants ?? []
 
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/30 transition-all duration-200">
@@ -166,27 +166,25 @@ export function HackSpaceCard({
           {/* Left: member dots + metadata */}
           <div className="flex flex-col gap-1 min-w-0">
             <div className="flex items-center gap-1">
-              {slots.map((_, i) => (
+              {participants.slice(0, 6).map((p, i) => (
                 <div
-                  key={i}
-                  className={
-                    i < memberCount
-                      ? "size-2 rounded-full transition-colors"
-                      : "size-2 rounded-full transition-colors bg-border"
-                  }
-                  style={
-                    i < memberCount
-                      ? { background: `var(${statusCfg.colorVar})` }
-                      : undefined
-                  }
-                />
+                  key={p.id ?? i}
+                  className="size-7 rounded-full overflow-hidden border-2 border-card shrink-0"
+                  style={p.archetype ? {
+                    backgroundColor: `color-mix(in oklch, var(--${p.archetype === "builder" ? "builder-archetype" : p.archetype}) 20%, transparent)`,
+                  } : undefined}
+                >
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt={p.handle ?? "member"} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted" />
+                  )}
+                </div>
               ))}
-              {hackSpace.max_team_size > 6 && (
-                <span className="text-[10px] font-mono text-muted-foreground ml-1">
-                  +{hackSpace.max_team_size - 6}
-                </span>
+              {memberCount > 6 && (
+                <span className="text-[10px] font-mono text-muted-foreground ml-1">+{memberCount - 6}</span>
               )}
-              <span className="text-[10px] font-mono text-muted-foreground ml-1">
+              <span className="text-[10px] font-mono text-muted-foreground ml-2">
                 {memberCount}/{hackSpace.max_team_size}
               </span>
             </div>
