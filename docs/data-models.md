@@ -9,26 +9,32 @@ Shapes de datos para mockear el frontend. Refleja las tablas de Supabase + campo
 ```ts
 type Archetype = 'visionary' | 'strategist' | 'builder'
 
-type Profile = {
+interface UserProfile {
   id: string
-  handle: string                  // alias público, oculta wallet real
-  bio?: string
-  archetype: Archetype
-  avatar_url: string              // GIF del Cypher Kitten seleccionado
-  wallet_address?: string         // opcional, truncada en UI: 0xd7ed...6C0e
-  onchain_since?: string          // fecha del primer registro on-chain
-  skills: string[]                // ['Frontend', 'Smart Contracts', 'Design', ...]
-  languages: string[]
-  timezone?: string
-  region?: string
-  github_url?: string
-  twitter_url?: string
-  farcaster_url?: string
-  website_url?: string
+  privy_id: string
+  handle: string | null           // alias público, oculta wallet real
+  bio: string | null
+  archetype: string | null
+  skills: string[] | null
+  wallet_address: string | null   // truncada en UI: 0xd7ed...6C0e
+  email: string | null
+  onboarding_step: string | null  // 'archetype' | 'identity' | 'skills' | 'context' | 'complete'
+  avatar_url: string | null       // GIF del Cypher Kitten seleccionado
+  languages: string[] | null
+  timezone: string | null
+  region: string | null
+  country: string | null
+  city: string | null
+  github_url: string | null
+  twitter_url: string | null
+  farcaster_url: string | null
+  website_url: string | null
   is_verified: boolean            // tiene Talent Protocol y/o POAP conectados
-  talent_protocol_score?: number
+  talent_protocol_score: number | null
   poaps: POAP[]
+  onchain_since: string | null
   created_at: string
+  updated_at: string
 }
 
 type POAP = {
@@ -65,12 +71,12 @@ interface HackSpace {
   stage: ProjectStage
   repo_url: string | null
   status: HackSpaceStatus
-  creator_id: string
+  // creator_id no se expone en el tipo cliente — se accede vía creator.id
   creator: {
     id: string
     handle: string | null
     archetype: string | null
-    avatar_url: string | null       // incluido desde el API
+    avatar_url: string | null
   }
   looking_for: string[]             // arquetipos buscados: ['visionary', 'strategist', 'builder']
   skills_needed: string[]
@@ -83,15 +89,14 @@ interface HackSpace {
   image_url: string | null
   application_type: ApplicationType
   application_deadline: string | null
-  // Participants — el creador es participants[0]
-  // member_count = accepted_applications + 1
+  // Participants — member_count = accepted_applications + 1
   member_count?: number
   participants?: HackSpaceParticipant[]
   // Evento relacionado (opcional)
   event_name: string | null
   event_url: string | null
   event_start_date: string | null
-  event_end_date: string | null     // opcional
+  event_end_date: string | null
   event_timing: string[] | null     // multi-select: ['before', 'during', 'after']
   created_at: string
 }
@@ -106,19 +111,17 @@ type HouseModality = 'free' | 'paid' | 'staking'
 // 'paid' and 'staking' are Fase 2 only. Fase 1 hardcodes modality = 'free'.
 type HouseStatus = 'open' | 'full' | 'active' | 'finished'
 
-type HackerHouse = {
+interface HackerHouse {
   id: string
   name: string
   city: string
   country: string
-  neighborhood?: string           // zona aproximada, sin dirección exacta
+  neighborhood: string | null     // zona aproximada, sin dirección exacta
   start_date: string
   end_date: string
   capacity: number                // total cupos incluyendo el creador
-  modality: HouseModality
-  cost_per_person?: number        // en ETH, solo si paid o staking — Fase 2
-  cost_currency?: string          // 'ETH' — Fase 2
-  sponsored_by?: string           // org_id si es patrocinada — Fase 2
+  modality: HouseModality         // Fase 1: siempre 'free'
+  // cost_per_person, cost_currency, sponsored_by — Fase 2
   // Amenities — columnas booleanas individuales
   includes_private_room: boolean
   includes_shared_room: boolean
@@ -129,42 +132,27 @@ type HackerHouse = {
   images: string[]
   profile_sought: string[]        // arquetipos: ['visionary', 'strategist', 'builder']
   language: string[]
-  house_rules?: string            // texto libre, máx 500 chars
+  house_rules: string | null      // texto libre, máx 500 chars
   status: HouseStatus
-  creator_id: string
+  // creator_id no se expone en el tipo cliente — se accede vía creator.id
+  creator: HackerHouseParticipant
   // Participants — el creador cuenta como participante #1
   // participants_count = accepted_applications + 1
+  participants: HackerHouseParticipant[]
   participants_count: number
-  participants: {                 // hasta 6 en card, todos en detalle
-    id: string
-    handle: string | null
-    archetype: string | null
-    avatar_url: string | null
-  }[]
   application_type: ApplicationType
-  application_deadline?: string
-  // Filtros on-chain — Fase 2
-  required_poaps?: string[]
-  required_nfts?: string[]
-  min_talent_score?: number
-  staking_amount?: number
-  // Contrato — Fase 2
-  contract_address?: string
-  funds_raised?: number
-  target_funds?: number
+  application_deadline: string    // requerido en creación
+  // Filtros on-chain — Fase 2 — pendiente
+  // required_poaps, required_nfts, min_talent_score, staking_amount
+  // Contrato — Fase 2 — pendiente
+  // contract_address, funds_raised, target_funds
   // Evento relacionado (opcional)
-  event_name?: string
-  event_url?: string
-  event_start_date?: string
-  event_end_date?: string
-  event_timing?: string[]
+  event_name: string | null
+  event_url: string | null
+  event_start_date: string | null
+  event_end_date: string | null
+  event_timing: string[] | null
   created_at: string
-  creator: {
-    id: string
-    handle: string | null
-    archetype: string | null
-    avatar_url: string | null
-  }
 }
 ```
 
@@ -263,6 +251,19 @@ type Notification = {
   created_at: string
 }
 ```
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado y en uso:** `UserProfile`, `HackSpace`, `HackerHouse`, `Application`, `ApplicationWithApplicant`, `POAP`. Todos los tipos viven en `lib/types.ts`. Schemas Zod en `lib/schemas/`.
+
+**Planificado pero no implementado:**
+- `Friendship` — pendiente (Fase 2)
+- `Event` — pendiente
+- `Notification` — tipo definido en esta doc, tabla y UI pendientes
+- Campos de contrato/pago en `HackerHouse` — pendiente (Fase 2)
+- Filtros on-chain en `HackerHouse` — pendiente (Fase 2)
 
 ---
 

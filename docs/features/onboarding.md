@@ -1,7 +1,7 @@
 # Feature: Onboarding — Hacker House Protocol
 
 Ruta: `/onboarding`
-Punto de entrada post-auth. El builder completa su Cypher Identity antes de llegar al `/home`.
+Punto de entrada post-auth. El builder completa su Cypher Identity antes de llegar al `/dashboard`.
 
 ---
 
@@ -34,7 +34,7 @@ El builder elige cómo entrar. Privy maneja toda la autenticación.
 **Edge cases:**
 - Builder sin wallet → embedded wallet creada en segundo plano, sin fricción visible
 - Builder con wallet → wallet conectada y asociada al perfil
-- Builder que ya completó el onboarding → redirige directamente a `/home`
+- Builder que ya completó el onboarding → redirige directamente a `/dashboard`
 
 ---
 
@@ -113,8 +113,8 @@ Paso completamente opcional. El builder puede saltarlo con "Skip for now →" y 
 
 **Acciones al pie:**
 - `← Back` — vuelve a Skills
-- `Skip for now →` (ghost) — guarda `onboarding_step: "complete"` sin datos de contexto, redirige a `/home`
-- `Enter the Protocol →` (primary) — guarda todos los campos completados, redirige a `/home`
+- `Skip for now →` (ghost) — guarda `onboarding_step: "complete"` sin datos de contexto, redirige a `/dashboard`
+- `Enter the Protocol →` (primary) — guarda todos los campos completados, redirige a `/dashboard`
 
 Schema: `contextSchema` en `lib/schemas/onboarding.ts`.
 
@@ -155,3 +155,20 @@ Se actualiza la fila en `profiles` de Supabase con:
 - Cache: TanStack Query con key `queryKeys.profile`
 - Schemas en `lib/schemas/onboarding.ts` — usar `handleSchema` (step 2) y `contextSchema` (step 4). Los schemas `profileSchema` e `identitySchema` son legacy.
 - Al completar cualquier paso: `onboarding_step` avanza en DB. Al completar step 4 o hacer skip: `router.push("/dashboard")`
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado:**
+- Wizard de 4 pasos: Archetype → Identity → Skills → Context
+- Pantalla de scanning condicional (`StepScanning`) — solo para wallets externas con imports pendientes
+- Importación automática de Talent Protocol score y POAPs en background
+- Persistencia del paso actual en `profile.onboarding_step` — permite retomar si se abandona
+- Validación de handle único con error inline
+- Skip en Step 4 (Context)
+- Barra de progreso top + contador de paso
+
+**Pendiente:**
+- Paso de verificación on-chain con resumen visual ("We found 12 POAPs...") — Fase 2
+- `is_verified: true` tras import exitoso — Fase 2

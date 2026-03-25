@@ -74,5 +74,22 @@ Sugerencias en el sidebar del feed, similar al panel de X (Twitter). **No es mat
 | Wallet address | Truncada (0xd7ed...6C0e) en JetBrains Mono. |
 | Onchain since | Derivado de la wallet. Antigüedad en el ecosistema. |
 | Achievement Gallery | Colección horizontal de POAPs + badges importados con contador total. |
-| Linked accounts | Twitter/X, GitHub, Farcaster, Worldcoin. |
+| Linked accounts | Twitter/X, GitHub, Farcaster. Worldcoin — pendiente. |
 | Verified badge | Cuando conecta Talent Protocol y/o POAP. |
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado:**
+- `/dashboard` muestra `HackSpacesFeed` como feed principal (Hack Spaces open/full/in_progress)
+- `CypherIdentityCard` en sidebar del dashboard
+- `/dashboard/builders` existe pero solo muestra search bar sin resultados — pendiente
+
+**Pendiente:**
+- Algoritmo de matching (contenido y personas) — pendiente
+- Carruseles personalizados en feed — pendiente
+- `/dashboard/builders` con resultados reales — pendiente
+- Mapa interactivo — pendiente
+- Sistema de amistad — Fase 2
+- Card de Builder — pendiente

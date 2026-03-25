@@ -1,13 +1,13 @@
 # Design System — Hacker House Protocol
 
-> Always-dark interface. Sin modo light. La clase `.dark` está fija en `<html>` en `app/layout.tsx`.
+> Always-dark interface. Sin modo light. La clase `.dark` está fija en `<html>` en `app/layout.tsx`. También se usa `color-scheme: dark` en `:root` en `globals.css`.
 
 ---
 
 ## Tokens de color
 
 El sistema usa **oklch** (Tailwind v4 nativo). Todos los tokens viven en `app/globals.css` dentro de `:root`.
-Los tokens se mapean a clases Tailwind en el bloque `@theme inline` del mismo archivo.
+Los tokens se mapean a clases Tailwind en el bloque `@theme inline` del mismo archivo. No existe `tailwind.config.ts` — Tailwind v4 se configura enteramente en `globals.css`.
 
 ### Jerarquía de superficies
 
@@ -181,3 +181,18 @@ El avatar siempre se muestra con un borde circular del color del arquetipo del u
 border: 2–3px solid var(--visionary | --strategist | --builder-archetype)
 border-radius: 9999px
 ```
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado y en uso:**
+- Todos los tokens de color en `globals.css` — superficies, brand, arquetipos, sidebar
+- Tipografía: Inter (body), Space Grotesk (display), JetBrains Mono (mono)
+- Border radius tokens definidos y en uso
+- Clase `.dark` fija en `<html>`, sin modo light
+- Utilidades custom: `animate-float`, `no-scrollbar`
+
+**Pendiente:**
+- Categorías de color para pills de skills — "a determinar en implementación"
+- Cypher Kittens V2 minteable como NFT

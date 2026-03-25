@@ -33,6 +33,7 @@ For detailed rules, read the relevant skill before writing code:
 | Writing service hooks or API routes | `.claude/skills/service-layer/SKILL.md` |
 | Implementing a full feature | Use `/implement-feature` |
 | Reviewing code | Use `/review-feature` |
+| Syncing docs with code | Use `/sync-docs <doc-name>` |
 
 ## Commands
 

@@ -14,6 +14,8 @@ Una Hacker House es un espacio de co-living físico donde builders se juntan par
 
 > **Estado actual (marzo 2026):** ✅ Implementado. Crear, listar, filtrar, buscar, paginar, ver detalle, aplicar y gestionar aplicaciones están completos. Ver rutas en `docs/navigation.md`.
 >
+> **Nota:** `application_deadline` es **requerido** en el schema de creación (Zod valida `min(1)`), no opcional.
+>
 > **Decisiones de implementación (Fase 1):**
 > - Solo modalidad **gratuita** (`modality: 'free'` hardcodeado en schema de creación)
 > - `includes` → 5 columnas booleanas individuales (no JSONB)
@@ -50,7 +52,7 @@ Formulario multi-step de 4 pasos implementado en `app/(protected)/dashboard/hack
 
 ### Step 4 — Access
 - Tipo de aplicación (`application_type`): RadioGroup — `open · invite_only · curated`
-- Deadline para aplicar (`application_deadline`) — DatePicker, opcional
+- Deadline para aplicar (`application_deadline`) — DatePicker, **requerido**
 - ~~Filtros on-chain: POAPs, NFTs, Talent Protocol score~~ → **Pospuesto a Fase 2**
 - ~~Staking requerido~~ → **Pospuesto a Fase 2**
 
@@ -233,3 +235,24 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 | `useHackerHouseApplications(id)` | GET — listar aplicaciones (solo creador). |
 | `useReviewHackerHouseApplication(id)` | PATCH — aceptar/rechazar aplicación. |
 | `useUploadHackerHouseImage()` | POST FormData — subir imagen, retorna `{ image_url }`. |
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado:**
+- Listado con filtros (status, profile_sought, q), paginación "Load more", skeleton
+- Creación (formulario 4 pasos: House → Dates & Amenities → Community → Access + toggle evento)
+- Página de detalle: hero imagen, galería de thumbnails, amenidades, participantes, apply form, owner actions, application manager
+- Aplicar y gestionar aplicaciones (aceptar/rechazar)
+- Edición por el creador (`/dashboard/hacker-houses/[id]/edit`)
+- Transición de estados manual: `open/full → active → finished`
+- Upload de imágenes a Supabase Storage
+
+**Pendiente:**
+- Modalidades de pago (`paid`, `staking`) — Fase 2
+- Filtros on-chain (POAPs, NFTs, Talent Score) — Fase 2
+- Key NFT por cupo — Fase 2
+- HHP POAPs por asistencia — Fase 2
+- Hacker Houses de organizaciones — Fase 2
+- Dashboard de asistencia — Fase 2

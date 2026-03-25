@@ -1,6 +1,6 @@
 # Feature: Notificaciones — Hacker House Protocol
 
-Centro de notificaciones en `/notificaciones`. Las notificaciones se emiten en tiempo real via Supabase Realtime.
+Centro de notificaciones en `/dashboard/notifications`. Las notificaciones se emiten en tiempo real via Supabase Realtime — pendiente.
 
 ---
 
@@ -23,3 +23,9 @@ Centro de notificaciones en `/notificaciones`. Las notificaciones se emiten en t
 ## Data model
 
 Ver `data-models.md` — type `Notification` y `NotificationType`.
+
+---
+
+## Estado actual (marzo 2026)
+
+**Pendiente:** `/dashboard/notifications` existe pero muestra "Coming soon". No hay API routes, no hay tabla en uso, ni Supabase Realtime configurado. El copy de notificaciones está definido en este documento para cuando se implemente.

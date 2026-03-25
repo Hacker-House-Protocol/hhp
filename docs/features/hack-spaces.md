@@ -211,3 +211,21 @@ Incluye todos los campos del formulario más:
 - `hooks/use-debounce.ts` — `useDebounce<T>(value, delay = 500)` — hook genérico reutilizable
 - `lib/types.ts` — `HackSpaceListParams`, `HackSpaceListResponse` — tipos de la API paginada
 - `lib/constants/location.ts` — `LOCATION_DATA`, `REGIONS`, `getCountriesForRegion`, `getCitiesForCountry`
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado:**
+- Listado con filtros (track, status, looking_for, q), paginación "Load more", skeleton
+- Creación (formulario 4 pasos: Proyecto → Equipo → Evento → Acceso)
+- Página de detalle: hero imagen, descripción, skills, arquetipos, apply form, owner actions, application manager
+- Aplicar y gestionar aplicaciones (aceptar/rechazar)
+- Edición por el creador (`/dashboard/hack-spaces/[id]/edit`)
+- Transición de estados manual: `open → in_progress → finished`
+- Upload de imagen de portada a Supabase Storage
+- Feed de Hack Spaces en `/dashboard` (componente `HackSpacesFeed`)
+
+**Pendiente:**
+- Shortcut Hack Space → Hacker House cuando el equipo está completo — pendiente
+- Filtros on-chain (POAPs, NFTs, Talent Protocol score) — Fase 2

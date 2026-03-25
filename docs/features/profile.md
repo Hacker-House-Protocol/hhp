@@ -1,6 +1,6 @@
 # Feature: Profile — Hacker House Protocol
 
-Rutas: `/dashboard/perfil` (propio) · `/dashboard/builders/[username]` (público)
+Rutas: `/dashboard/profile` (propio) · `/dashboard/builders/[username]` (público — pendiente)
 
 ---
 
@@ -13,7 +13,7 @@ El perfil tiene dos capas:
 
 ---
 
-## `/dashboard/perfil` — Perfil propio
+## `/dashboard/profile` — Perfil propio
 
 ### Modos
 
@@ -225,8 +225,8 @@ export const useBuilderProfile = (username: string) => {
 
 ```
 app/(protected)/dashboard/
-  perfil/
-    page.tsx                          → /dashboard/perfil
+  profile/
+    page.tsx                          → /dashboard/profile
     _components/
       profile-view.tsx                → layout completo (recibe profile + isOwner)
       profile-identity.tsx            → sección Cypher Identity
@@ -236,11 +236,11 @@ app/(protected)/dashboard/
       profile-onchain.tsx             → sección On-chain (Talent Score + POAPs)
       profile-activity.tsx            → sección Activity (Hack Spaces / Houses)
       profile-edit-form.tsx           → wrapper del modo edit (react-hook-form)
-      kitten-selector.tsx             → grid de kittens seleccionables (reutiliza lógica de StepIdentity)
+      kitten-selector.tsx             → grid de kittens seleccionables
       poap-card.tsx                   → card individual de POAP
   builders/
     [username]/
-      page.tsx                        → /dashboard/builders/[username]
+      page.tsx                        → /dashboard/builders/[username] — pendiente
 
 app/api/builders/
   [username]/
@@ -270,6 +270,24 @@ app/api/builders/
 | Item | Prioridad |
 |---|---|
 | CTA "Connect" en perfil público (friendship system) | Fase 2 |
-| Hacker Houses activas en sección Activity | Cuando feature Hacker Houses esté implementada |
+| Hacker Houses activas en sección Activity | ~~Cuando feature Hacker Houses esté implementada~~ — Hacker Houses ya están implementadas; integrar en Activity |
 | `is_verified` activado automáticamente tras import exitoso | Fase 2 — hoy siempre es `false` |
 | Kitten colección expandida | Bloqueado por assets |
+| `/dashboard/builders/[username]` — perfil público | Pendiente |
+
+---
+
+## Estado actual (marzo 2026)
+
+**Implementado:**
+- `/dashboard/profile` — perfil propio completo con edit mode
+- Secciones: Cypher Identity, Skills, Location & Languages, Social Links, On-chain (Talent Score + POAPs), Activity (Hack Spaces del usuario)
+- Edit mode: archetype, bio, avatar (kitten selector), skills, languages, location, social links
+- Botón re-import de on-chain data (Talent Score + POAPs) si hay wallet
+- Skeleton de carga
+
+**Pendiente:**
+- `/dashboard/builders/[username]` — perfil público de otro builder
+- Hacker Houses activas en sección Activity
+- `is_verified` automático tras import — Fase 2
+- CTA "Connect" (friendship) en perfil público — Fase 2

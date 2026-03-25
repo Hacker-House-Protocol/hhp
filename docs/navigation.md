@@ -4,11 +4,13 @@
 
 | Tab | Ícono | Contenido |
 |---|---|---|
-| Home | Casa / Grid | Dashboard con carruseles personalizados |
-| Map | Globo / Pin | Mapa interactivo con eventos, houses y builders |
-| **Create +** | Plus central | Modal: elegir Hack Space o Hacker House. Botón central prominente. |
-| Network | Personas | Builders sugeridos, conexiones, solicitudes pendientes |
-| Profile | Avatar (kitten) | Cypher identity, achievement gallery, Hack Spaces y Houses activas, settings |
+| Home | Casa | Dashboard — CypherIdentityCard + HackSpacesFeed |
+| Map | Pin | Mapa — pendiente |
+| **Create +** | Plus central (botón circular) | Modal: elegir Hack Space o Hacker House |
+| Builders | Personas | Explorar builders — pendiente |
+| Profile | Avatar (kitten) | Cypher identity, skills, on-chain, Hack Spaces activos |
+
+> En mobile el bottom nav muestra: Home · Map · **+** · Builders · Profile. No incluye Hack Spaces, Hacker Houses ni Notifications (solo accesibles en sidebar desktop o desde Home).
 
 ## Flujo Principal
 
@@ -25,19 +27,28 @@ Todo el contenido autenticado vive bajo el prefijo `/dashboard`, dentro del rout
 ```
 app/
   (public)/
-    page.tsx                      → hackerhouse.app (landing)
-    onboarding/page.tsx           → /onboarding
+    page.tsx                          → hackerhouse.app (landing)
+    onboarding/page.tsx               → /onboarding
   (protected)/
+    layout.tsx                        → SidebarProvider + AppSidebar + BottomNav (auth guard)
+    _components/
+      app-sidebar.tsx                 → sidebar desktop (Home, Hack Spaces, Hacker Houses, Builders, Map, Notifications)
+      bottom-nav.tsx                  → nav mobile (Home, Map, +, Builders, Profile)
+      back-button.tsx                 → botón Back mobile-only
     dashboard/
-      page.tsx                    → /dashboard (feed principal, entry point post-login)
-      hack-spaces/page.tsx        → /dashboard/hack-spaces
-      hack-spaces/[id]/page.tsx   → /dashboard/hack-spaces/[id]
-      hack-spaces/create/page.tsx → /dashboard/hack-spaces/create
-      hacker-houses/page.tsx      → /dashboard/hacker-houses
-      map/page.tsx                → /dashboard/map
-      builders/page.tsx           → /dashboard/builders
-      profile/page.tsx            → /dashboard/profile
-      notifications/page.tsx      → /dashboard/notifications
+      page.tsx                        → /dashboard (feed principal, entry point post-login)
+      hack-spaces/page.tsx            → /dashboard/hack-spaces
+      hack-spaces/[id]/page.tsx       → /dashboard/hack-spaces/[id]
+      hack-spaces/[id]/edit/page.tsx  → /dashboard/hack-spaces/[id]/edit
+      hack-spaces/create/page.tsx     → /dashboard/hack-spaces/create
+      hacker-houses/page.tsx          → /dashboard/hacker-houses
+      hacker-houses/[id]/page.tsx     → /dashboard/hacker-houses/[id]
+      hacker-houses/[id]/edit/page.tsx → /dashboard/hacker-houses/[id]/edit
+      hacker-houses/create/page.tsx   → /dashboard/hacker-houses/create
+      map/page.tsx                    → /dashboard/map — pendiente
+      builders/page.tsx               → /dashboard/builders — UI stub (search bar + "Coming soon")
+      profile/page.tsx                → /dashboard/profile
+      notifications/page.tsx          → /dashboard/notifications — "Coming soon"
 ```
 
 ## Todas las Rutas del MVP
@@ -51,21 +62,24 @@ app/
 | `/dashboard/hack-spaces` | Listado de Hack Spaces con filtros |
 | `/dashboard/hack-spaces/[id]` | Detalle, aplicar, ver equipo, ver evento vinculado |
 | `/dashboard/hack-spaces/create` | Formulario de creación multi-paso |
+| `/dashboard/hack-spaces/[id]/edit` | Editar Hack Space (solo creador) |
 | `/dashboard/hacker-houses` | Listado de Hacker Houses con filtros |
 | `/dashboard/hacker-houses/[id]` | Detalle, aplicar, ver participantes, ver evento vinculado |
 | `/dashboard/hacker-houses/create` | Formulario de creación multi-paso |
 | `/dashboard/hacker-houses/[id]/edit` | Editar Hacker House (solo creador) |
-| `/dashboard/hacker-houses/[id]/payment` | Pago grupal, split, estado del contrato — Fase 2 |
-| `/dashboard/builders` | Explorar builders, matching, sugerencias |
-| `/dashboard/builders/[username]` | Perfil público de un builder |
-| `/dashboard/profile` | Mi Cypher Identity, settings, linked accounts |
-| `/dashboard/notifications` | Centro de notificaciones |
+| `/dashboard/hacker-houses/[id]/payment` | Pago grupal, split, estado del contrato — Fase 2 — pendiente |
+| `/dashboard/builders` | Explorar builders, matching, sugerencias — pendiente (solo search bar) |
+| `/dashboard/builders/[username]` | Perfil público de un builder — pendiente |
+| `/dashboard/profile` | Mi Cypher Identity, skills, on-chain, Hack Spaces activos |
+| `/dashboard/notifications` | Centro de notificaciones — pendiente ("Coming soon") |
 
 ## Pantalla: /dashboard — Estado actual (marzo 2026)
 
 Layout actual implementado:
-- **Sidebar izquierdo**: `CypherIdentityCard` — muestra kitten, handle, arquetipo, skills, wallet del builder autenticado.
-- **Contenido principal**: `HackSpacesFeed` — muestra los primeros 3 Hack Spaces (open/full/in_progress) con link "View all →".
+- **Mobile top bar**: logo centrado + ícono Bell (link a `/dashboard/notifications`) a la derecha.
+- **Grid layout**: `grid-cols-1 lg:grid-cols-[320px_1fr]`
+- **Columna izquierda**: `CypherIdentityCard` — muestra kitten, handle, arquetipo, skills, wallet del builder autenticado.
+- **Columna derecha**: `HackSpacesFeed` — muestra los primeros Hack Spaces (open/full/in_progress).
 
 ### Carruseles planificados (pendientes)
 
@@ -85,6 +99,7 @@ Orden de los carruseles cuando estén implementados (priorizados por relevancia)
 | Paso | Acción | Detalle |
 |---|---|---|
 | 0 | Auth con Privy | Login social (Gmail, Apple, magic link) o wallet (MetaMask, WalletConnect, Coinbase). Sin wallet → embedded wallet automática. |
+| — | Scanning (condicional) | `StepScanning` — solo si tiene wallet externa con imports pendientes. Importa Talent Score y POAPs en background. Avanza automáticamente tras 2.5s. |
 | 1 | Archetype | Elige tu rol: Visionary / Strategist / Builder. |
 | 2 | Identity | Handle permanente (`@username`) + Cypher Kitten (avatar). |
 | 3 | Skills | Skills filtradas por arquetipo. |
@@ -99,6 +114,26 @@ Ver detalle completo en `docs/features/onboarding.md`.
 - **Micro** (ciudad): Leaflet + OSM en tema oscuro. Pins de houses y builders.
 - Al tocar un pin → bottom sheet con resumen del evento/house y builders de tu red que van.
 - Filtros: eventos / houses / builders / todo.
+
+## Estado actual (marzo 2026)
+
+**Implementado:**
+- `/dashboard` — layout con CypherIdentityCard + HackSpacesFeed, mobile top bar con Bell
+- `/dashboard/hack-spaces` — listado, filtros, detalle, create, apply, manage applications
+- `/dashboard/hacker-houses` — listado, filtros, detalle, create, apply, manage applications
+- `/dashboard/profile` — perfil propio con edit mode
+- `/onboarding` — wizard de 4 pasos + pantalla Scanning condicional
+- Layout protegido: `AppSidebar` (desktop) + `BottomNav` (mobile) + auth guard
+
+**Pendiente:**
+- `/dashboard/map` — ruta existe, contenido no implementado
+- `/dashboard/builders` — solo search bar visible, sin resultados reales
+- `/dashboard/builders/[username]` — ruta no implementada
+- `/dashboard/notifications` — muestra "Coming soon"
+- `/dashboard/hacker-houses/[id]/payment` — Fase 2
+- Carruseles personalizados en `/dashboard` — pendiente
+
+---
 
 ## Pantalla: /hacker-houses/[id]/pago
 
