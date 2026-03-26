@@ -25,14 +25,7 @@ Validar que builders del ecosistema Web3 quieren usar una plataforma para formar
 
 ## Métricas de éxito
 
-### Waitlist (pre-lanzamiento)
-| Métrica | Señal mínima | Señal fuerte |
-|---|---|---|
-| Emails capturados | 500 | 1.500 |
-
-> **Por qué estos números**: el nicho de builders Web3 activos globalmente es pequeño pero de alta intención. 500 emails en un nicho técnico equivalen a 5.000 en un producto de consumo masivo. 1.500 indicaría product-market fit temprano suficiente para priorizar el desarrollo post-MVP.
-
-### MVP (post-lanzamiento beta)
+### MVP (mes 1)
 | Métrica | Target primer mes |
 |---|---|
 | Builders registrados | 50 |

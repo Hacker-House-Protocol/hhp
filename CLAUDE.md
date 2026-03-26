@@ -8,19 +8,19 @@ All product and design documentation lives in `docs/`. **Always read the relevan
 
 | Doc | When to read |
 |---|---|
-| [`docs/product-overview.md`](./docs/product-overview.md) | Vision, archetypes, user types, stack, roadmap |
-| [`docs/prd.md`](./docs/prd.md) | MVP scope, acceptance criteria, Definition of Done |
-| [`docs/open-questions.md`](./docs/open-questions.md) | Decisions already made — check before proposing alternatives |
-| [`docs/design-system.md`](./docs/design-system.md) | Color tokens, typography, spacing — **visual source of truth** |
-| [`docs/navigation.md`](./docs/navigation.md) | Routes, bottom nav, page structure |
-| [`docs/data-models.md`](./docs/data-models.md) | TypeScript types for all entities |
-| [`docs/landing-page.md`](./docs/landing-page.md) | Landing page brief |
+| [`docs/strategy/problem.md`](./docs/strategy/problem.md) | The problem, pain points, why current solutions fail |
+| [`docs/strategy/pitch.md`](./docs/strategy/pitch.md) | One-liner, value prop, differentiators, vision |
+| [`docs/product/overview.md`](./docs/product/overview.md) | Vision, archetypes, user types, stack, roadmap, business decisions |
+| [`docs/product/prd.md`](./docs/product/prd.md) | MVP scope, acceptance criteria, Definition of Done |
+| [`docs/product/data-models.md`](./docs/product/data-models.md) | TypeScript types for all entities |
+| [`docs/design/design-system.md`](./docs/design/design-system.md) | Color tokens, typography, spacing — **visual source of truth** |
+| [`docs/design/navigation.md`](./docs/design/navigation.md) | Routes, bottom nav, page structure |
+| [`docs/design/landing-page.md`](./docs/design/landing-page.md) | Landing page brief |
 | [`docs/features/onboarding.md`](./docs/features/onboarding.md) | Registration flow, Cypher Identity, edge cases |
 | [`docs/features/profile.md`](./docs/features/profile.md) | Own and public profile, edit mode, on-chain, POAPs |
 | [`docs/features/hack-spaces.md`](./docs/features/hack-spaces.md) | Main feature — forms, states, UI card |
 | [`docs/features/hacker-houses.md`](./docs/features/hacker-houses.md) | Hacker Houses — modalities, flow, UI card |
 | [`docs/features/matching-and-feed.md`](./docs/features/matching-and-feed.md) | Matching algorithm, feed, Builder card |
-| [`docs/features/notifications.md`](./docs/features/notifications.md) | Notification copy per trigger |
 
 ## Skills — detailed rules for implementation
 

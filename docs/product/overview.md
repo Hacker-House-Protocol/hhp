@@ -75,11 +75,21 @@ Grupos de builders que forman organizaciones propias. Fuera del alcance del MVP.
 
 ---
 
+## Negocio
+
+| Decisión | Detalle |
+|---|---|
+| **Precio** | 100% gratuito en MVP — sin fees ni planes de pago |
+| **Mercado** | Global — ecosistema crypto/Web3, sin foco geográfico específico |
+| **Competencia** | Sin competidores directos conocidos — propuesta única en el mercado |
+| **Fallback de matching** | Si no hay match por algoritmo, el feed muestra Hack Spaces, Hacker Houses, eventos y ciudades activas |
+
+---
+
 ## Pendientes Operativos
 
 | Ítem | Estado |
 |---|---|
-| Privy API keys | Pendiente |
 | Email del proyecto | Pendiente |
 | Handles Twitter/X, GitHub org | Pendiente |
 | Cypher Kittens GIFs subidos al repo | Pendiente |

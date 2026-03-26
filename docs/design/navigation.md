@@ -94,18 +94,9 @@ Orden de los carruseles cuando estén implementados (priorizados por relevancia)
 | 5 | Builder Match | Builders sugeridos. Sidebar tipo X (Twitter). |
 | 6 | Ciudades activas | Ciudades con mayor actividad builder. Puerta al mapa. |
 
-## Pantalla: /onboarding — 4 Pasos
+## Pantalla: /onboarding
 
-| Paso | Acción | Detalle |
-|---|---|---|
-| 0 | Auth con Privy | Login social (Gmail, Apple, magic link) o wallet (MetaMask, WalletConnect, Coinbase). Sin wallet → embedded wallet automática. |
-| — | Scanning (condicional) | `StepScanning` — solo si tiene wallet externa con imports pendientes. Importa Talent Score y POAPs en background. Avanza automáticamente tras 2.5s. |
-| 1 | Archetype | Elige tu rol: Visionary / Strategist / Builder. |
-| 2 | Identity | Handle permanente (`@username`) + Cypher Kitten (avatar). |
-| 3 | Skills | Skills filtradas por arquetipo. |
-| 4 | Context | Bio, idiomas, ubicación, links sociales. Skippable. |
-
-Ver detalle completo en `docs/features/onboarding.md`.
+Ver detalle completo en [`docs/features/onboarding.md`](../features/onboarding.md).
 
 ## Pantalla: /map
 

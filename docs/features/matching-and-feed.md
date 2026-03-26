@@ -64,21 +64,6 @@ Sugerencias en el sidebar del feed, similar al panel de X (Twitter). **No es mat
 
 ---
 
-## UI: Cypher Identity (Perfil)
-
-| Elemento | Descripción |
-|---|---|
-| Avatar / Cypher Kitten | GIF animado con borde de color del arquetipo seleccionado. |
-| Username / Alias | Nombre público. Oculta wallet real en interfaces públicas. |
-| Arquetipo | Visionary / Strategist / Builder con color correspondiente. |
-| Wallet address | Truncada (0xd7ed...6C0e) en JetBrains Mono. |
-| Onchain since | Derivado de la wallet. Antigüedad en el ecosistema. |
-| Achievement Gallery | Colección horizontal de POAPs + badges importados con contador total. |
-| Linked accounts | Twitter/X, GitHub, Farcaster. Worldcoin — pendiente. |
-| Verified badge | Cuando conecta Talent Protocol y/o POAP. |
-
----
-
 ## Estado actual (marzo 2026)
 
 **Implementado:**
