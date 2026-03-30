@@ -85,11 +85,11 @@ El **Key NFT** es un ticket de acceso físico tokenizado. Cada Hacker House de p
 
 ### Capa 2 — Verificación on-chain sin exposición
 
-Las Hacker Houses tienen filtros de acceso: Talent Protocol tags (skills) requeridas, POAPs requeridos, NFTs específicos. El TEE verifica que el builder cumple las condiciones contra su wallet dentro del enclave. Output: "cumple / no cumple". La wallet nunca se expone al creador ni a otros participantes.
+Las Hacker Houses tienen filtros de acceso: Talent Protocol skill tags requeridas, POAPs requeridos, NFTs específicos. El TEE verifica que el builder cumple las condiciones contra su wallet dentro del enclave. Output: "cumple / no cumple". La wallet nunca se expone al creador ni a otros participantes.
 
 ### Capa 3 — Crédito reputacional confidencial
 
-Las organizaciones verificadas pueden financiar Hacker Houses y otorgar acceso gratuito basado en la reputación on-chain del builder. El TEE evalúa las credenciales del builder (skills, historial, contribuciones) de forma privada y determina si califica para el patrocinio — sin que el builder tenga que revelar su perfil completo ni la organización revele sus criterios internos.
+Las organizaciones verificadas pueden financiar Hacker Houses y otorgar acceso gratuito basado en la reputación on-chain del builder. El TEE evalúa las credenciales del builder (skill tags, historial, contribuciones) de forma privada y determina si califica para el patrocinio — sin que el builder tenga que revelar su perfil completo ni la organización revele sus criterios internos.
 
 ### Qué cambia con iExec
 
@@ -161,7 +161,7 @@ La privacidad no es un feature opcional en este contexto. Es lo que determina si
 
 No prometemos toda la plataforma. El entregable a 30 días es exclusivamente el **motor de Confidential Staking + Key NFT**:
 
-1. **Smart contract** donde un creador levanta una Hacker House con requisitos de acceso ocultos (skills requeridas, POAPs requeridos)
+1. **Smart contract** donde un creador levanta una Hacker House con requisitos de acceso ocultos (skill tags requeridas, POAPs requeridos)
 2. **Integración iExec TEE** donde un builder conecta su wallet y prueba que tiene las credenciales o los fondos de staking requeridos — sin exponer datos en la blockchain pública
 3. **Emisión de Key NFT** confidencial — el contrato valida el match, asegura el cupo, y emite el token de acceso
 4. **Interfaz mínima** para el flujo completo: crear House con requisitos -> verificar builder -> pagar/stakear -> recibir Key NFT
@@ -177,7 +177,7 @@ La plataforma HHP (landing, perfiles, mapas, feeds) ya existe y funciona. Este M
 | Infraestructura TEE | iExec ya provee — no hay que construir el enclave |
 | Integración con Ethereum | HHP ya usa Ethereum Mainnet via Alchemy RPC |
 | Wallet auth | Privy ya gestiona wallets (embedded + externas) |
-| Data models para verificación on-chain | POAPs, NFTs, Talent Protocol tags (skills) ya diseñados como tipos TypeScript |
+| Data models para verificación on-chain | POAPs, NFTs, Talent Protocol skill tags ya diseñados como tipos TypeScript |
 | Key NFT (metadata: evento, fechas, cupo) | Diseñado en la doc de producto |
 
 La arquitectura de iExec encaja naturalmente: el TEE actúa como intermediario de confianza entre la wallet del builder y el smart contract de la Hacker House. No requiere cambios en la UX — el builder paga normalmente, pero la transacción se procesa de forma confidencial.
