@@ -42,7 +42,7 @@ A builder with a significant wallet becomes a target for:
 
 ### For high-profile builders and stealth founders
 
-A top developer, investor, or founder working in stealth mode wants to scout talent or apply to a project. To do so, they need to connect their wallet and prove on-chain credentials (POAPs, Talent Protocol score, NFTs). **That means revealing who they are, how much they have, and who they work with.** Top talent simply doesn't participate.
+A top developer, investor, or founder working in stealth mode wants to scout talent or apply to a project. To do so, they need to connect their wallet and prove on-chain credentials (POAPs, Talent Protocol tags, NFTs). **That means revealing who they are, how much they have, and who they work with.** Top talent simply doesn't participate.
 
 ### For the Web3 co-living ecosystem
 
@@ -85,11 +85,11 @@ The **Key NFT** is a tokenized physical access ticket. Each paid Hacker House ge
 
 ### Layer 2 — On-chain Verification Without Exposure
 
-Hacker Houses have access filters: minimum Talent Protocol score, required POAPs, specific NFTs. The TEE verifies the builder meets the conditions against their wallet inside the enclave. Output: "pass / fail". The wallet is never exposed to the creator or other participants.
+Hacker Houses have access filters: required Talent Protocol tags (skills), required POAPs, specific NFTs. The TEE verifies the builder meets the conditions against their wallet inside the enclave. Output: "pass / fail". The wallet is never exposed to the creator or other participants.
 
 ### Layer 3 — Confidential Reputation Credit
 
-Verified organizations can fund Hacker Houses and grant free access based on the builder's on-chain reputation. The TEE evaluates the builder's credentials (score, history, contributions) privately and determines if they qualify for sponsorship — without the builder revealing their full profile or the organization revealing their internal criteria.
+Verified organizations can fund Hacker Houses and grant free access based on the builder's on-chain reputation. The TEE evaluates the builder's credentials (skills, history, contributions) privately and determines if they qualify for sponsorship — without the builder revealing their full profile or the organization revealing their internal criteria.
 
 ### What Changes with iExec
 
@@ -123,7 +123,7 @@ A builder stakes 0.1 ETH as a guarantee they'll attend. If they don't show up, t
 
 ### 3. Confidential Reputation Credit
 
-A verified organization wants to fund access for 20 builders to a premium Hacker House. Not just any builder — only those with strong credentials (ETHGlobal POAP, Talent Protocol score >500, contributions to relevant repos).
+A verified organization wants to fund access for 20 builders to a premium Hacker House. Not just any builder — only those with strong credentials (ETHGlobal POAP, relevant Talent Protocol tags, contributions to relevant repos).
 
 **Today**: The builder has to expose their entire wallet and credentials to prove they qualify. The organization has to publish their criteria and amounts.
 
@@ -161,7 +161,7 @@ Privacy is not an optional feature in this context. It's what determines whether
 
 We're not promising the entire platform. The 30-day deliverable is exclusively the **Confidential Staking + Key NFT engine**:
 
-1. **Smart contract** where a creator sets up a Hacker House with hidden access requirements (min score, required POAPs)
+1. **Smart contract** where a creator sets up a Hacker House with hidden access requirements (required skills, required POAPs)
 2. **iExec TEE integration** where a builder connects their wallet and proves they have the required credentials or staking funds — without exposing data on the public blockchain
 3. **Confidential Key NFT minting** — the contract validates the match, secures the slot, and mints the access token
 4. **Minimal interface** for the full flow: create House with requirements → verify builder → pay/stake → receive Key NFT
@@ -177,7 +177,7 @@ The HHP platform (landing, profiles, maps, feeds) already exists and works. This
 | TEE infrastructure | iExec already provides — no need to build the enclave |
 | Ethereum integration | HHP already uses Ethereum Mainnet via Alchemy RPC |
 | Wallet auth | Privy already manages wallets (embedded + external) |
-| Data models for on-chain verification | POAPs, NFTs, Talent Score already designed as TypeScript types |
+| Data models for on-chain verification | POAPs, NFTs, Talent Protocol tags (skills) already designed as TypeScript types |
 | Key NFT (metadata: event, dates, slot) | Designed in product docs |
 
 iExec's architecture fits naturally: the TEE acts as a trust intermediary between the builder's wallet and the Hacker House smart contract. No UX changes required — the builder pays normally, but the transaction is processed confidentially.

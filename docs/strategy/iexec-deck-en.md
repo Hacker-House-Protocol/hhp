@@ -41,7 +41,7 @@ Founders in stealth mode can't recruit talent without doxxing their identity. Or
 Builder pays → iExec TEE processes the transaction privately → Key NFT (access ticket) is minted → public output: "Slot confirmed" (no amount, no wallet exposed).
 
 **2. On-chain verification without exposure**
-Hacker Houses have access filters (min Talent Score, required POAPs). The TEE verifies credentials inside the enclave. Output: pass/fail. The wallet is never exposed to the creator or other participants.
+Hacker Houses have access filters (required skills, required POAPs). The TEE verifies credentials inside the enclave. Output: pass/fail. The wallet is never exposed to the creator or other participants.
 
 **3. Confidential reputation credit**
 Verified organizations fund builder access based on on-chain reputation evaluated privately. The builder doesn't reveal their full profile. The organization doesn't reveal their criteria.
@@ -76,7 +76,7 @@ Sends payment → iExec TEE (secure enclave)
          ▼
 TEE processes privately:
   ✓ Verifies correct amount
-  ✓ Confirms on-chain credentials (POAPs, Score)
+  ✓ Confirms on-chain credentials (POAPs, skills)
   ✓ Mints Key NFT (transferable access ticket)
   ✓ Records payment in smart contract
          │
@@ -94,7 +94,7 @@ Private output (builder only): receipt + Key NFT
 ## Slide 6 — What Ships in 30 Days
 
 ### In scope
-- Smart contract: creator sets up a Hacker House with hidden access requirements (min score, required POAPs)
+- Smart contract: creator sets up a Hacker House with hidden access requirements (required skills, required POAPs)
 - iExec TEE integration: builder connects wallet, proves credentials/funds privately
 - Confidential Key NFT minting: contract validates match, secures slot, mints access token
 - Minimal interface: create House with requirements → verify builder → pay/stake → receive Key NFT

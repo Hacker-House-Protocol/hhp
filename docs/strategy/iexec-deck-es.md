@@ -41,7 +41,7 @@ Los founders en stealth no pueden reclutar talento sin doxxear su identidad. Las
 Builder paga → el TEE de iExec procesa la transacción en privado → se mintea el Key NFT (ticket de acceso) → output público: "Cupo confirmado" (sin monto, sin wallet expuesta).
 
 **2. Verificación on-chain sin exposición**
-Las Hacker Houses tienen filtros de acceso (min Talent Score, POAPs requeridos). El TEE verifica credenciales dentro del enclave. Output: pass/fail. La wallet nunca se expone al creador ni a otros participantes.
+Las Hacker Houses tienen filtros de acceso (skills requeridas, POAPs requeridos). El TEE verifica credenciales dentro del enclave. Output: pass/fail. La wallet nunca se expone al creador ni a otros participantes.
 
 **3. Crédito reputacional confidencial**
 Organizaciones verificadas financian el acceso de builders basándose en reputación on-chain evaluada de forma privada. El builder no revela su perfil completo. La organización no revela sus criterios.
@@ -76,7 +76,7 @@ Envía pago → iExec TEE (enclave seguro)
          ▼
 El TEE procesa en privado:
   ✓ Verifica monto correcto
-  ✓ Confirma credenciales on-chain (POAPs, Score)
+  ✓ Confirma credenciales on-chain (POAPs, skills)
   ✓ Mintea Key NFT (ticket de acceso transferible)
   ✓ Registra pago en el smart contract
          │
@@ -94,7 +94,7 @@ Output privado (solo builder): recibo + Key NFT
 ## Slide 6 — Qué se entrega en 30 días
 
 ### En scope
-- Smart contract: el creador levanta una Hacker House con requisitos de acceso ocultos (min score, POAPs requeridos)
+- Smart contract: el creador levanta una Hacker House con requisitos de acceso ocultos (skills requeridas, POAPs requeridos)
 - Integración iExec TEE: el builder conecta su wallet, prueba credenciales/fondos de forma privada
 - Minteo confidencial de Key NFT: el contrato valida el match, asegura el cupo, mintea el token de acceso
 - Interfaz mínima: crear House con requisitos → verificar builder → pagar/stakear → recibir Key NFT
