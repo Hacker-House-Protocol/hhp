@@ -10,8 +10,8 @@ y co-living físico en un solo lugar.
 ## El pitch
 
 Los builders Web3 tienen credenciales on-chain reales por primera vez en la
-historia: POAPs que prueban dónde estuvieron, Talent Protocol tags que
-reflejan sus skill tags técnicas, wallets que son identidad.
+historia: POAPs que prueban dónde estuvieron, Talent Protocol skill tags que
+reflejan sus habilidades técnicas, wallets que son identidad.
 
 Pero toda esa infraestructura de identidad no tiene una capa social que la use.
 
@@ -25,7 +25,7 @@ Una sola plataforma. Una sola identidad.
 ## Por qué ahora
 
 Por primera vez, los builders tienen credenciales on-chain verificables —
-POAPs, Talent Protocol tags, historial de contribuciones. La identidad
+POAPs, Talent Protocol skill tags, historial de contribuciones. La identidad
 builder ya existe en la blockchain. Solo faltaba una plataforma que la use
 para conectar personas.
 

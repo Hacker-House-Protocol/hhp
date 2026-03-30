@@ -42,7 +42,7 @@ Un builder con una wallet significativa se convierte en target de:
 
 ### Para builders de alto perfil y founders en stealth
 
-Un desarrollador top, un inversor, o un founder trabajando en modo stealth quiere buscar talento o aplicar a un proyecto. Para hacerlo tiene que conectar su wallet y probar credenciales on-chain (POAPs, Talent Protocol tags, NFTs). **Eso implica revelar quién es, cuánto tiene, y con quién trabaja.** El talento de alto nivel simplemente no participa.
+Un desarrollador top, un inversor, o un founder trabajando en modo stealth quiere buscar talento o aplicar a un proyecto. Para hacerlo tiene que conectar su wallet y probar credenciales on-chain (POAPs, Talent Protocol skill tags, NFTs). **Eso implica revelar quién es, cuánto tiene, y con quién trabaja.** El talento de alto nivel simplemente no participa.
 
 ### Para el ecosistema de co-living Web3
 
@@ -123,7 +123,7 @@ Un builder stakea 0.1 ETH como garantía de que asistirá. Si no va, pierde el s
 
 ### 3. Crédito reputacional confidencial
 
-Una organización verificada quiere financiar el acceso de 20 builders a una Hacker House premium. No cualquier builder — solo los que tengan credenciales fuertes (POAP de ETHGlobal, Talent Protocol tags relevantes, contribuciones a repos relevantes).
+Una organización verificada quiere financiar el acceso de 20 builders a una Hacker House premium. No cualquier builder — solo los que tengan credenciales fuertes (POAP de ETHGlobal, Talent Protocol skill tags relevantes, contribuciones a repos relevantes).
 
 **Hoy**: El builder tiene que exponer toda su wallet y credenciales para probar que califica. La organización tiene que publicar sus criterios y montos.
 
