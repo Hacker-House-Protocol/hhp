@@ -76,7 +76,7 @@ Sends payment → iExec TEE (secure enclave)
          ▼
 TEE processes privately:
   ✓ Verifies correct amount
-  ✓ Confirms on-chain credentials (POAPs, skill tags)
+  ✓ Confirms on-chain credentials (POAPs, Talent Protocol skill tags, Custom NFTs)
   ✓ Mints Key NFT (transferable access ticket)
   ✓ Records payment in smart contract
          │

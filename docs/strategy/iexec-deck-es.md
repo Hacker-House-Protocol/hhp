@@ -76,7 +76,7 @@ Envía pago → iExec TEE (enclave seguro)
          ▼
 El TEE procesa en privado:
   ✓ Verifica monto correcto
-  ✓ Confirma credenciales on-chain (POAPs, skill tags)
+  ✓ Confirma credenciales on-chain (POAPs, Talent Protocol skill tags, Custom NFTs)
   ✓ Mintea Key NFT (ticket de acceso transferible)
   ✓ Registra pago en el smart contract
          │

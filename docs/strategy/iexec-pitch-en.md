@@ -42,7 +42,7 @@ A builder with a significant wallet becomes a target for:
 
 ### For high-profile builders and stealth founders
 
-A top developer, investor, or founder working in stealth mode wants to scout talent or apply to a project. To do so, they need to connect their wallet and prove on-chain credentials (POAPs, Talent Protocol skill tags, NFTs). **That means revealing who they are, how much they have, and who they work with.** Top talent simply doesn't participate.
+A top developer, investor, or founder working in stealth mode wants to scout talent or apply to a project. To do so, they need to connect their wallet and prove on-chain credentials (POAPs, Talent Protocol skill tags, Custom NFTs). **That means revealing who they are, how much they have, and who they work with.** Top talent simply doesn't participate.
 
 ### For the Web3 co-living ecosystem
 
