@@ -32,16 +32,16 @@ export function Hero() {
           {/* Headline */}
           <div className="flex flex-col gap-1">
             <h1 className="font-display font-bold text-foreground leading-tight text-4xl sm:text-5xl lg:text-6xl">
-              Find your Builder.
+              Match.
             </h1>
             <h1 className="font-display font-bold text-foreground leading-tight text-4xl sm:text-5xl lg:text-6xl">
-              Build together.
+              Build.
             </h1>
             <h1
               className="font-display font-bold leading-tight text-4xl sm:text-5xl lg:text-6xl"
               style={{ color: "var(--primary)" }}
             >
-              Live the protocol.
+              Co-Live.
             </h1>
           </div>
 
