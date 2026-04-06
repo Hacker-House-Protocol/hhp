@@ -40,6 +40,8 @@ Formulario multi-step de 4 pasos implementado en `app/(protected)/dashboard/hack
 - Timing (`event_timing`) — multi-select pills: `before · during · after`. Permite seleccionar varios.
 
 > Si está vinculado a un evento, aparece destacado. Cuando el equipo se forma, el shortcut para crear una Hacker House ya viene preconfigurado con fechas y ciudad.
+>
+> **Geocodificación automática:** Al crear o editar un Hack Space con `city` y `country`, las coordenadas `lat/lng` se generan automáticamente via Nominatim (OpenStreetMap). La función `geocodeAndUpdate` en `lib/geocode.ts` es fire-and-forget — no bloquea la respuesta. El Hack Space aparece en el mapa interactivo (`/dashboard/map`) **solo si está vinculado a un evento** (tiene `event_name`).
 
 ### Step 4 — Acceso
 - Tipo de aplicación (`application_type`): `open · invite_only · curated`
@@ -201,6 +203,8 @@ Incluye todos los campos del formulario más:
 - `region text` — región seleccionada (antes `timezone_region`)
 - `country text`
 - `city text`
+- `lat double precision` — geocodificado automáticamente desde city+country (nullable)
+- `lng double precision` — geocodificado automáticamente desde city+country (nullable)
 - `status` — gestionado por la plataforma
 - `created_at / updated_at`
 

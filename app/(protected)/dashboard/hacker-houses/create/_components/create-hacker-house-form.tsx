@@ -352,6 +352,9 @@ export function CreateHackerHouseForm({
               render={({ field }) => (
                 <Field>
                   <FieldLabel>Region</FieldLabel>
+                  <FieldDescription>
+                    Your Hacker House will appear on the interactive map once you set a location.
+                  </FieldDescription>
                   <Combobox
                     items={REGIONS}
                     value={field.value ?? ""}

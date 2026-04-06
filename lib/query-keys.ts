@@ -7,4 +7,10 @@ export const queryKeys = {
   hackerHouses: "hacker-houses",
   hackerHouse: "hacker-house",
   hackerHouseApplications: "hacker-house-applications",
+  friendships: "friendships",
+  friendshipStatus: "friendship-status",
+  notifications: "notifications",
+  unreadNotificationCount: "unread-notification-count",
+  builders: "builders",
+  mapMarkers: "map-markers",
 }

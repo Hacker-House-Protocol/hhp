@@ -132,6 +132,26 @@
   --sidebar-ring: oklch(0.62 0.26 295);          /* = ring */
 }
 
+/* Leaflet popup dark theme override */
+.map-popup-dark .leaflet-popup-content-wrapper {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px color-mix(in oklch, var(--background) 70%, transparent);
+}
+
+.map-popup-dark .leaflet-popup-tip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-left: none;
+}
+
+.map-popup-dark .leaflet-popup-content {
+  margin: 12px;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

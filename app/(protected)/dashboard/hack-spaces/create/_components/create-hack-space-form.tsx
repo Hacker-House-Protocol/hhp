@@ -737,6 +737,9 @@ export function HackSpaceForm({
                       (optional)
                     </span>
                   </FieldLabel>
+                  <FieldDescription>
+                    Add a location to show your Hack Space on the interactive map.
+                  </FieldDescription>
                   <Combobox
                     items={REGIONS}
                     value={field.value ?? ""}

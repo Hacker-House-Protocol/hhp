@@ -10,6 +10,7 @@ import { ProfileLinks } from "./profile-links"
 import { ProfileOnchain } from "./profile-onchain"
 import { ProfileActivity } from "./profile-activity"
 import { ProfileEditForm } from "./profile-edit-form"
+import { ConnectButton } from "../../_components/connect-button"
 import type { UserProfile } from "@/lib/types"
 
 interface ProfileViewProps {
@@ -51,8 +52,8 @@ export function ProfileView({ profile, isOwner }: ProfileViewProps) {
       <div className="flex flex-col gap-4 lg:sticky lg:top-20">
         <div className="relative">
           <ProfileIdentity profile={profile} />
-          {isOwner && (
-            <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-4 right-4 z-10">
+            {isOwner ? (
               <Button
                 type="button"
                 variant="outline"
@@ -66,8 +67,10 @@ export function ProfileView({ profile, isOwner }: ProfileViewProps) {
               >
                 ✏ Edit
               </Button>
-            </div>
-          )}
+            ) : (
+              <ConnectButton targetUserId={profile.id} />
+            )}
+          </div>
         </div>
 
         {hasLocationSection && (

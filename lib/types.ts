@@ -5,6 +5,59 @@ export interface POAP {
   event_date: string
 }
 
+export interface TalentCredential {
+  id: string
+  name: string
+  category: string
+  value: string
+  last_calculated_at: string
+}
+
+export type FriendshipStatus = "pending" | "accepted" | "rejected"
+
+export interface Friendship {
+  id: string
+  requester_id: string
+  receiver_id: string
+  status: FriendshipStatus
+  created_at: string
+}
+
+export interface FriendshipWithUser extends Friendship {
+  other_user: {
+    id: string
+    handle: string | null
+    archetype: string | null
+    avatar_url: string | null
+  }
+  direction: "sent" | "received"
+}
+
+export interface FriendshipStatusResponse {
+  friendship_id: string | null
+  status: FriendshipStatus | null
+  direction: "sent" | "received" | null
+}
+
+export type NotificationType =
+  | "friend_request"
+  | "friend_accepted"
+  | "hack_space_application"
+  | "hack_space_accepted"
+  | "hacker_house_application"
+  | "hacker_house_accepted"
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  body: string
+  link: string | null
+  read: boolean
+  created_at: string
+}
+
 export interface UserProfile {
   id: string
   privy_id: string
@@ -27,6 +80,8 @@ export interface UserProfile {
   website_url: string | null
   is_verified: boolean
   talent_protocol_score: number | null
+  talent_tags: string[]
+  talent_credentials: TalentCredential[]
   poaps: POAP[]
   onchain_since: string | null
   created_at: string
@@ -79,6 +134,8 @@ export interface HackSpace {
   event_start_date: string | null
   event_end_date: string | null
   event_timing: string[] | null
+  lat: number | null
+  lng: number | null
   created_at: string
   creator: {
     id: string
@@ -165,6 +222,8 @@ export interface HackerHouse {
   event_start_date: string | null
   event_end_date: string | null
   event_timing: string[] | null
+  lat: number | null
+  lng: number | null
   created_at: string
   creator: HackerHouseParticipant
   participants: HackerHouseParticipant[]
@@ -184,4 +243,52 @@ export interface HackerHouseListResponse {
   total: number
   offset: number
   limit: number
+}
+
+// Builder Discovery
+export interface BuilderListParams {
+  archetype?: string
+  q?: string
+  exclude_id?: string
+  limit?: number
+  offset?: number
+}
+
+export interface BuilderListResponse {
+  builders: UserProfile[]
+  total: number
+  offset: number
+  limit: number
+}
+
+export interface SuggestedBuilder extends UserProfile {
+  match_score: number
+  match_reasons: string[]
+}
+
+// Map
+export type MapMarkerType = "hacker_house" | "hack_space"
+
+export interface MapMarkerData {
+  id: string
+  type: MapMarkerType
+  name: string
+  city: string | null
+  country: string | null
+  lat: number
+  lng: number
+  status: string
+  event_name: string | null
+  event_start_date: string | null
+  event_end_date: string | null
+  capacity: number | null
+  participants_count: number | null
+  max_team_size: number | null
+  member_count: number | null
+  track: string | null
+  image_url: string | null
+}
+
+export interface MapMarkersResponse {
+  markers: MapMarkerData[]
 }

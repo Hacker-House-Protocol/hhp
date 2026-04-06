@@ -16,6 +16,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import React from "react"
 import { SidebarUserCard } from "./sidebar-user-card"
+import { NotificationBadge } from "./notification-badge"
 
 const NAV_MAIN: {
   href: string
@@ -75,8 +76,16 @@ export function AppSidebar() {
                     className="h-12 text-base font-medium [&_svg]:size-5 px-6"
                   >
                     <Link href={href}>
-                      <Icon />
+                      <span className="relative">
+                        <Icon />
+                        {label === "Notifications" && (
+                          <NotificationBadge variant="absolute" />
+                        )}
+                      </span>
                       <span className="ml-2">{label}</span>
+                      {label === "Notifications" && (
+                        <NotificationBadge variant="inline" />
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

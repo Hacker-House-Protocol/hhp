@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { privy } from "@/lib/privy"
 import { supabaseServer } from "@/lib/supabase-server"
 import { createHackSpaceSchema } from "@/lib/schemas/hack-space"
+import { geocodeAndUpdate } from "@/lib/geocode"
 
 async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -160,6 +161,10 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     return NextResponse.json({ message: "Database error" }, { status: 500 })
+  }
+
+  if (insertData.city && insertData.country) {
+    geocodeAndUpdate("hack_spaces", data.id, insertData.city as string, insertData.country as string)
   }
 
   return NextResponse.json({ hack_space: data }, { status: 201 })

@@ -12,7 +12,16 @@
       "Bash(pnpm build:*)",
       "Bash(ls -la /d/dev/hack-house-protocol/app/\\\\\\(public\\\\\\)/)",
       "Bash(ls -la /d/dev/hack-house-protocol/app/\\\\\\(public\\\\\\)/onboarding/_components/)",
-      "Bash(grep -E \"\\\\.tsx$\")"
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(find /d/dev/hack-house-protocol -type f -path \"*/\\(auth\\)/*\" -name \"page.tsx\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(public\\)/onboarding/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(public\\)/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(protected\\)/dashboard/profile/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(protected\\)/dashboard/profile/_components/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(protected\\)/dashboard/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(public\\)/onboarding/_components/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(protected\\)/dashboard/hack-spaces/\")",
+      "Bash(ls \"D:/dev/hack-house-protocol/app/\\(protected\\)/dashboard/hacker-houses/\")"
     ]
   }
 }

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useImportTalentScore, useImportPoaps } from "@/services/api/integrations"
 import { PoapCard } from "./poap-card"
+import { ProfileTags } from "./profile-tags"
 import type { UserProfile } from "@/lib/types"
 
 interface ProfileOnchainProps {
@@ -87,6 +88,9 @@ export function ProfileOnchain({ profile }: ProfileOnchainProps) {
           <p className="text-xs text-muted-foreground/60 font-mono">Used for team matching</p>
         </div>
       </div>
+
+      {/* Verified Tags */}
+      <ProfileTags tags={profile.talent_tags} />
 
       {/* POAP Gallery */}
       <div className="flex flex-col gap-3">

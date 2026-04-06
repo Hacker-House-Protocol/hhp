@@ -31,7 +31,8 @@ For detailed rules, read the relevant skill before writing code:
 | Building any UI component or page | `.claude/skills/ui-components/SKILL.md` |
 | Writing any form | `.claude/skills/forms/SKILL.md` |
 | Writing service hooks or API routes | `.claude/skills/service-layer/SKILL.md` |
-| Implementing a full feature | Use `/implement-feature` |
+| Any new idea (trivial, small, or complex) | Use `/spec` — triages and routes automatically |
+| Implementing a full feature (after spec) | Use `/build-feature` |
 | Reviewing code | Use `/review-feature` |
 | Syncing docs with code | Use `/sync-docs <doc-name>` |
 

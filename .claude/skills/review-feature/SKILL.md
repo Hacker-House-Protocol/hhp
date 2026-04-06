@@ -1,6 +1,6 @@
 ---
 name: review-feature
-description: Review code written for a new feature in Hacker House Protocol. Checks conventions, types, form rules, design system usage, security, and common bugs. Run after implement-feature or any significant code change.
+description: Review code written for a new feature in Hacker House Protocol. Checks conventions, types, form rules, design system usage, security, and common bugs. Run after build-feature or any significant code change.
 ---
 
 You are reviewing code for **Hacker House Protocol**. Catch real bugs and convention violations — not style preferences or unnecessary refactors.

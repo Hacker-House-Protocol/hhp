@@ -40,9 +40,9 @@ Validar que builders del ecosistema Web3 quieren usar una plataforma para formar
 El flujo mínimo que debe funcionar sin errores para considerar el MVP completo:
 
 ```
-Landing → Waitlist
+Landing → Auth (Privy)
   └── Onboarding → Cypher Identity
-        └── /home (feed)
+        └── /dashboard (feed)
               ├── Hack Spaces → Crear → Listar → Aplicar → Aceptar/Rechazar
               └── Hacker Houses → Crear → Listar → Aplicar → Aceptar/Rechazar
 ```
@@ -66,7 +66,7 @@ Landing → Waitlist
 - Selección de Cypher Kitten
 - Campos opcionales: bio, skills, idiomas, zona horaria, links
 
-**Criterio de aceptación**: un builder sin wallet puede registrarse con Gmail, completar su Cypher Identity, y llegar al `/home`.
+**Criterio de aceptación**: un builder sin wallet puede registrarse con Gmail, completar su Cypher Identity, y llegar al `/dashboard`.
 
 ---
 
@@ -95,7 +95,7 @@ Landing → Waitlist
 ---
 
 ### 5. Builder Feed
-- Feed simple en `/home` ordenado por relevancia de skills
+- Feed simple en `/dashboard` ordenado por relevancia de skills
 - No requiere algoritmo sofisticado en MVP — matching básico por `skills_needed` vs `profile.skills`
 - Muestra Hack Spaces y Hacker Houses relevantes
 
@@ -107,7 +107,7 @@ Landing → Waitlist
 - Ver perfil público de un builder
 - Ver sus skills, arquetipo, Cypher Kitten, POAPs, links
 
-**Criterio de aceptación**: el perfil es visible públicamente sin necesidad de estar logueado.
+**Criterio de aceptación**: el perfil es visible para cualquier builder autenticado (ruta protegida bajo `/dashboard/builders/[username]`).
 
 ---
 
@@ -117,11 +117,11 @@ Estas features están diseñadas pero **no se implementan en MVP**. Cualquier tr
 
 | Feature | Motivo |
 |---|---|
-| Notificaciones | Nice-to-have — el flujo funciona sin ellas en MVP |
-| Mapa interactivo | Complejidad alta, bajo impacto en validación core |
+| ~~Notificaciones~~ | ✅ Implementado — centro de notificaciones completo |
+| ~~Mapa interactivo~~ | ✅ Implementado — Leaflet + CARTO dark tiles, geocodificación automática |
 | Pagos on-chain (Hacker Houses de pago/staking) | Requiere smart contract auditado |
 | Filtros on-chain (POAPs, NFTs, Talent Protocol score) | Los campos existen pero sin validación |
-| Sistema de amistad (conectar builders) | Secundario al flujo core |
+| ~~Sistema de amistad (conectar builders)~~ | ✅ Implementado — flujo completo con ConnectButton |
 | Organizaciones verificadas | Fase 2 |
 | Chat interno | V2 |
 | Cypher Kittens NFT minteable | V2 |
@@ -133,14 +133,17 @@ Estas features están diseñadas pero **no se implementan en MVP**. Cualquier tr
 
 | Feature | Estado |
 |---|---|
-| Landing + Waitlist | ✅ Implementado |
+| Landing (acceso directo, sin waitlist) | ✅ Implementado |
 | Onboarding + Cypher Identity | ✅ Implementado |
 | Hack Spaces (crear, listar, aplicar, gestionar) | ✅ Implementado |
 | Perfiles de builders (propio + público) | ✅ Implementado |
 | Hacker Houses (crear, listar, aplicar, gestionar) | ✅ Implementado |
-| Builder Feed (algoritmo + carruseles) | 🟡 Parcial — feed básico con Hack Spaces |
-| Mapa interactivo | ❌ Pendiente |
-| Notificaciones | ❌ Pendiente |
+| Builder Feed (algoritmo + carruseles) | 🟡 Parcial — solo Hack Spaces en feed, sin Hacker Houses ni carruseles personalizados |
+| Builder Discovery (listado, filtros, sugerencias) | ✅ Implementado |
+| Sistema de amistad (conectar builders) | ✅ Implementado |
+| Notificaciones | ✅ Implementado |
+| Talent Protocol Tags y Credentials | ✅ Implementado |
+| Mapa interactivo | ✅ Implementado |
 
 ---
 
@@ -155,7 +158,6 @@ El MVP está listo para beta pública cuando:
 - [x] Hacker Houses: crear, listar, aplicar, aceptar/rechazar
 - [ ] El flujo core completo funciona (onboarding → hack spaces → hacker houses)
 - [ ] Funciona en mobile y desktop
-- [ ] Waitlist conectada a Supabase
 - [ ] Deploy en Vercel estable
 - [ ] Al menos 2 rondas de dogfooding interno sin bugs bloqueantes
 

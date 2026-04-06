@@ -1,6 +1,6 @@
 # Feature: Profile — Hacker House Protocol
 
-Rutas: `/dashboard/profile` (propio) · `/dashboard/builders/[username]` (público — pendiente)
+Rutas: `/dashboard/profile` (propio) · `/dashboard/builders/[username]` (público — ✅ implementado)
 
 ---
 
@@ -80,6 +80,7 @@ En modo view: mostrar como texto simple (`Buenos Aires · South America · GMT-3
 | GitHub | `github.com/` | ✅ |
 | Twitter / X | `x.com/` | ✅ |
 | Farcaster | `warpcast.com/` | ✅ |
+| Website | full URL | ✅ |
 
 En modo view: mostrar como links clickeables con ícono. En modo edit: mismos inputs con prefijo que `StepContext`.
 
@@ -87,22 +88,40 @@ En modo view: mostrar como links clickeables con ícono. En modo edit: mismos in
 
 #### 5. On-chain
 
-Sección siempre en modo read-only. El usuario puede re-importar manualmente.
+Sección siempre en modo read-only. El usuario puede re-importar manualmente. Componente: `ProfileOnchain`.
 
 **Talent Protocol Score**
 
-Card compacta mostrando el score numérico de Talent Protocol.
+Card compacta mostrando el score numérico de Talent Protocol con glow sutil de fondo.
 
 ```
 ┌─────────────────────────────────┐
-│  Builder Score        847       │
-│  via Talent Protocol  ──────── │
+│  Builder Score · Talent Protocol│
+│                                 │
+│         847                     │
+│              pts                │
 │  Used for team matching         │
 └─────────────────────────────────┘
 ```
 
-- Si `talent_protocol_score` es null y hay wallet: mostrar placeholder "No score yet" con botón re-import.
-- Si no hay wallet: mostrar "Connect a wallet to import your Builder Score".
+- Si `talent_protocol_score` es null y hay wallet: "No score found." con botón Sync.
+- Si no hay wallet: "Connect a wallet to import your Builder Score."
+
+**Talent Tags — Verified Tags** (via Talent Protocol) — ✅ Implementado
+
+Componente: `ProfileTags`. Muestra las skill tags importadas de Talent Protocol como badges `variant="secondary"`.
+
+```
+┌─────────────────────────────────┐
+│  VERIFIED TAGS                  │
+│  via Talent Protocol            │
+│  [Solidity] [DeFi] [Frontend]  │
+└─────────────────────────────────┘
+```
+
+- Solo se muestra si `talent_tags` tiene al menos un elemento.
+- Tags se importan junto con el score via `POST /api/integrations/talent-protocol`.
+- Se persisten en columna `talent_tags text[]` de la tabla `users`.
 
 **POAP Gallery — Achievement Wall**
 
@@ -128,10 +147,12 @@ Grid de cards, una por POAP. Cada card:
 ```
 
 - Solo visible si `profile.wallet_address` existe.
-- Al presionar: dispara `useImportTalentScore` y `useImportPoaps` en paralelo.
+- Texto del boton: "Sync" (no "Update on-chain data").
+- Al presionar: dispara `useImportTalentScore` y `useImportPoaps` en paralelo via `Promise.allSettled`.
 - Estado loading: spinner + "Importing...".
 - Al completar: invalidar `queryKeys.profile`.
 - Errores: silent fail — no bloquea al usuario.
+- La importacion de Talent Protocol ahora trae score + tags + credentials (3 endpoints TP en paralelo).
 
 ---
 
@@ -162,12 +183,27 @@ Mismo layout y secciones que el perfil propio, con estas diferencias:
 | Wallet address | Solo visible si `is_verified: true` |
 | Bio vacía | Mostrar "No bio yet" en muted |
 | Sección On-chain | Talent Score y POAPs visibles (read-only). Sin botón re-import. |
-| CTA | Botón "Connect" — Fase 2 (friendships). Por ahora omitir o mostrar disabled. |
+| CTA | `ConnectButton` — ✅ implementado. Muestra estados: "Connect" / "Pending" / "Accept + Decline" / "Connected". |
 | Sección Activity | Sus Hack Spaces activos — sin "Create one" link |
 
 **Ruta dinámica:** `[username]` corresponde al `handle` del builder en la tabla `users`. Fetch: `GET /api/builders/[username]`.
 
 **404:** Si no existe el handle → redirect a `/dashboard/builders`.
+
+---
+
+## ConnectButton — ✅ Implementado
+
+Componente `connect-button.tsx` que maneja el flujo completo de amistad desde el perfil publico y las BuilderCards.
+
+| Estado de amistad | UI renderizada |
+|---|---|
+| Sin relacion / `rejected` | Boton "Connect" (primary) — envia solicitud via `useSendFriendRequest` |
+| `pending` + `direction: "sent"` | Boton "Pending" (outline, disabled) |
+| `pending` + `direction: "received"` | Dos botones: "Accept" (primary) + "Decline" (outline) via `useUpdateFriendship` |
+| `accepted` | Boton "Connected" (outline) — al click muestra confirmacion "Remove" + "Cancel" |
+
+El componente usa `useFriendshipStatus(targetUserId)` para obtener el estado actual y `Skeleton` durante la carga.
 
 ---
 
@@ -178,6 +214,7 @@ Mismo layout y secciones que el perfil propio, con estas diferencias:
 | `GET` | `/api/profile` | Perfil del usuario autenticado |
 | `PATCH` | `/api/profile` | Actualizar perfil |
 | `GET` | `/api/builders/[username]` | Perfil público por handle — ✅ implementado |
+| `POST` | `/api/integrations/talent-protocol` | Importar score, tags y credentials de TP — ✅ implementado |
 
 `GET /api/builders/[username]`:
 - No requiere auth (perfil público).
@@ -191,7 +228,7 @@ Mismo layout y secciones que el perfil propio, con estas diferencias:
 `lib/schemas/profile.ts` ya tiene `patchProfileSchema` con todos los campos editables.
 
 Para edit mode, usar `patchProfileSchema` como base pero **solo los campos editables desde perfil**:
-- `bio`, `archetype`, `avatar_url`, `skills`, `languages`, `region`, `country`, `city`, `timezone`, `github_url`, `twitter_url`, `farcaster_url`
+- `bio`, `archetype`, `avatar_url`, `skills`, `languages`, `region`, `country`, `city`, `timezone`, `github_url`, `twitter_url`, `farcaster_url`, `website_url`
 - Excluir: `handle` (permanente), `onboarding_step`, `is_verified`, `talent_protocol_score`, `poaps`
 
 ---
@@ -233,14 +270,15 @@ app/(protected)/dashboard/
       profile-skills.tsx              → sección Skills
       profile-location.tsx            → sección Location & Languages
       profile-links.tsx               → sección Social Links
-      profile-onchain.tsx             → sección On-chain (Talent Score + POAPs)
+      profile-onchain.tsx             → sección On-chain (Talent Score + Tags + POAPs)
+      profile-tags.tsx                → sub-componente de tags verificados (Talent Protocol)
       profile-activity.tsx            → sección Activity (Hack Spaces / Houses)
       profile-edit-form.tsx           → wrapper del modo edit (react-hook-form)
       kitten-selector.tsx             → grid de kittens seleccionables
       poap-card.tsx                   → card individual de POAP
   builders/
     [username]/
-      page.tsx                        → /dashboard/builders/[username] — pendiente
+      page.tsx                        → /dashboard/builders/[username] — ✅ implementado
 
 app/api/builders/
   [username]/
@@ -269,11 +307,11 @@ app/api/builders/
 
 | Item | Prioridad |
 |---|---|
-| CTA "Connect" en perfil público (friendship system) | Fase 2 |
+| ~~CTA "Connect" en perfil público (friendship system)~~ | ✅ Implementado — `ConnectButton` con estados Connect/Pending/Accept/Connected |
 | Hacker Houses activas en sección Activity | ~~Cuando feature Hacker Houses esté implementada~~ — Hacker Houses ya están implementadas; integrar en Activity |
 | `is_verified` activado automáticamente tras import exitoso | Fase 2 — hoy siempre es `false` |
 | Kitten colección expandida | Bloqueado por assets |
-| `/dashboard/builders/[username]` — perfil público | Pendiente |
+| ~~`/dashboard/builders/[username]` — perfil público~~ | ✅ Implementado — usa `ProfileView` con `isOwner=false`, skeleton de carga, 404 con redirect a `/dashboard/builders` |
 
 ---
 
@@ -281,13 +319,14 @@ app/api/builders/
 
 **Implementado:**
 - `/dashboard/profile` — perfil propio completo con edit mode
-- Secciones: Cypher Identity, Skills, Location & Languages, Social Links, On-chain (Talent Score + POAPs), Activity (Hack Spaces del usuario)
+- Secciones: Cypher Identity, Skills, Location & Languages, Social Links, On-chain (Talent Score + Talent Tags + POAPs), Activity (Hack Spaces del usuario)
+- Talent Tags: badges verificados importados de Talent Protocol, mostrados en `ProfileTags`
+- Talent Credentials: credenciales verificadas importadas y persistidas en `talent_credentials jsonb`
 - Edit mode: archetype, bio, avatar (kitten selector), skills, languages, location, social links
-- Botón re-import de on-chain data (Talent Score + POAPs) si hay wallet
+- Boton Sync de on-chain data (Talent Score + Tags + Credentials + POAPs) si hay wallet
 - Skeleton de carga
+- `ConnectButton` en perfil publico — sistema de amistad completo (enviar/aceptar/rechazar/eliminar)
 
 **Pendiente:**
-- `/dashboard/builders/[username]` — perfil público de otro builder
 - Hacker Houses activas en sección Activity
 - `is_verified` automático tras import — Fase 2
-- CTA "Connect" (friendship) en perfil público — Fase 2

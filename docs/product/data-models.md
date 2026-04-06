@@ -7,7 +7,10 @@ Shapes de datos para mockear el frontend. Refleja las tablas de Supabase + campo
 ## Profile (Builder)
 
 ```ts
-type Archetype = 'visionary' | 'strategist' | 'builder'
+// Canonical definition: ARCHETYPE_IDS and ArchetypeId in lib/onboarding.ts
+// export const ARCHETYPE_IDS = ["visionary", "strategist", "builder"] as const
+// export type ArchetypeId = (typeof ARCHETYPES)[number]["id"]
+// UserProfile.archetype is typed as string | null (not ArchetypeId) for DB flexibility.
 
 interface UserProfile {
   id: string
@@ -31,6 +34,8 @@ interface UserProfile {
   website_url: string | null
   is_verified: boolean            // tiene Talent Protocol y/o POAP conectados
   talent_protocol_score: number | null
+  talent_tags: string[]           // skill tags importados de Talent Protocol
+  talent_credentials: TalentCredential[]  // credenciales verificadas de Talent Protocol
   poaps: POAP[]
   onchain_since: string | null
   created_at: string
@@ -42,6 +47,14 @@ type POAP = {
   name: string
   image_url: string
   event_date: string
+}
+
+interface TalentCredential {
+  id: string
+  name: string
+  category: string
+  value: string
+  last_calculated_at: string
 }
 ```
 
@@ -98,7 +111,31 @@ interface HackSpace {
   event_start_date: string | null
   event_end_date: string | null
   event_timing: string[] | null     // multi-select: ['before', 'during', 'after']
+  lat: number | null               // geocodificado automáticamente desde city+country
+  lng: number | null               // geocodificado automáticamente desde city+country
   created_at: string
+}
+```
+
+---
+
+## Hack Space — List Types
+
+```ts
+interface HackSpaceListParams {
+  track?: HackSpaceTrack
+  status?: HackSpaceStatus
+  looking_for?: string
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+interface HackSpaceListResponse {
+  hack_spaces: HackSpace[]
+  total: number
+  offset: number
+  limit: number
 }
 ```
 
@@ -152,7 +189,56 @@ interface HackerHouse {
   event_start_date: string | null
   event_end_date: string | null
   event_timing: string[] | null
+  lat: number | null               // geocodificado automáticamente desde city+country
+  lng: number | null               // geocodificado automáticamente desde city+country
   created_at: string
+}
+```
+
+---
+
+## Hacker House — List Types
+
+```ts
+interface HackerHouseListParams {
+  status?: HouseStatus
+  profile_sought?: string
+  q?: string
+  limit?: number
+  offset?: number
+}
+
+interface HackerHouseListResponse {
+  hacker_houses: HackerHouse[]
+  total: number
+  offset: number
+  limit: number
+}
+```
+
+---
+
+## Builder Discovery — ✅ Implementado
+
+```ts
+interface BuilderListParams {
+  archetype?: string
+  q?: string
+  exclude_id?: string
+  limit?: number
+  offset?: number
+}
+
+interface BuilderListResponse {
+  builders: UserProfile[]
+  total: number
+  offset: number
+  limit: number
+}
+
+interface SuggestedBuilder extends UserProfile {
+  match_score: number       // 0-100, suma ponderada de criterios de afinidad
+  match_reasons: string[]   // ej: ["3 shared skills", "Complementary archetype", "Same city"]
 }
 ```
 
@@ -191,19 +277,79 @@ interface ApplicationWithApplicant extends Application {
 
 ---
 
-## Friendship
+## Friendship — ✅ Implementado
 
 ```ts
 type FriendshipStatus = 'pending' | 'accepted' | 'rejected'
 
-type Friendship = {
+interface Friendship {
   id: string
   requester_id: string
   receiver_id: string
   status: FriendshipStatus
   created_at: string
 }
+
+// Friendship con datos del otro usuario (para listados)
+interface FriendshipWithUser extends Friendship {
+  other_user: {
+    id: string
+    handle: string | null
+    archetype: string | null
+    avatar_url: string | null
+  }
+  direction: 'sent' | 'received'
+}
+
+// Respuesta de estado de amistad entre dos usuarios
+interface FriendshipStatusResponse {
+  friendship_id: string | null
+  status: FriendshipStatus | null
+  direction: 'sent' | 'received' | null
+}
 ```
+
+**Tabla Supabase:** `friendships` con constraint `UNIQUE (requester_id, receiver_id)` y `CHECK (requester_id <> receiver_id)`. Indices en `requester_id`, `receiver_id` y `status`.
+
+**Schemas Zod:** `lib/schemas/friendships.ts` — `sendFriendRequestSchema` (POST) y `updateFriendshipSchema` (PATCH).
+
+**Notificaciones automáticas:** Al enviar solicitud se crea notificación `friend_request` para el receptor. Al aceptar se crea notificación `friend_accepted` para el solicitante.
+
+---
+
+## Map — ✅ Implementado
+
+```ts
+type MapMarkerType = 'hacker_house' | 'hack_space'
+
+interface MapMarkerData {
+  id: string
+  type: MapMarkerType
+  name: string                     // name (houses) o title (spaces)
+  city: string | null
+  country: string | null
+  lat: number
+  lng: number
+  status: string
+  event_name: string | null
+  event_start_date: string | null
+  event_end_date: string | null
+  capacity: number | null          // solo hacker_house
+  participants_count: number | null // solo hacker_house (accepted apps + 1)
+  max_team_size: number | null     // solo hack_space
+  member_count: number | null      // solo hack_space (accepted apps + 1)
+  track: string | null             // solo hack_space
+  image_url: string | null         // images[0] (houses) o image_url (spaces)
+}
+
+interface MapMarkersResponse {
+  markers: MapMarkerData[]
+}
+```
+
+**Endpoint:** `GET /api/map/markers` — retorna todas las Hacker Houses con coordenadas (status `open/full/active`) y Hack Spaces con coordenadas vinculados a un evento (status `open/full/in_progress`).
+
+**Service hook:** `useMapMarkers()` en `services/api/map.ts`.
 
 ---
 
@@ -226,31 +372,38 @@ type Event = {
 
 ---
 
-## Notification
+## Notification — ✅ Implementado
 
 ```ts
+// Tipos implementados actualmente
 type NotificationType =
+  | 'friend_request'
+  | 'friend_accepted'
   | 'hack_space_application'
   | 'hack_space_accepted'
   | 'hacker_house_application'
   | 'hacker_house_accepted'
-  | 'friend_request'
-  | 'friend_accepted'
-  | 'payment_confirmed'
-  | 'refund_executed'
-  | 'team_complete'
 
-type Notification = {
+// Tipos planificados (Fase 2)
+// | 'payment_confirmed'
+// | 'refund_executed'
+// | 'team_complete'
+
+interface Notification {
   id: string
   user_id: string
   type: NotificationType
   title: string
   body: string
-  link?: string
+  link: string | null
   read: boolean
   created_at: string
 }
 ```
+
+**Tabla Supabase:** `notifications` con indices en `(user_id, created_at DESC)` y parcial en `user_id WHERE read = false`.
+
+**Schemas Zod:** `lib/schemas/notifications.ts` — `markNotificationReadSchema` (PATCH individual).
 
 ### Copy por trigger
 
@@ -270,14 +423,13 @@ type Notification = {
 
 ## Estado actual (marzo 2026)
 
-**Implementado y en uso:** `UserProfile`, `HackSpace`, `HackerHouse`, `Application`, `ApplicationWithApplicant`, `POAP`. Todos los tipos viven en `lib/types.ts`. Schemas Zod en `lib/schemas/`.
+**Implementado y en uso:** `UserProfile` (con `talent_tags` y `talent_credentials`), `TalentCredential`, `HackSpace` (con `lat/lng`), `HackerHouse` (con `lat/lng`), `Application`, `ApplicationWithApplicant`, `POAP`, `Friendship`, `FriendshipWithUser`, `FriendshipStatusResponse`, `Notification`, `BuilderListParams`, `BuilderListResponse`, `SuggestedBuilder`, `MapMarkerData`, `MapMarkersResponse`, `MapMarkerType`. Todos los tipos viven en `lib/types.ts`. Schemas Zod en `lib/schemas/`.
 
 **Planificado pero no implementado:**
-- `Friendship` — pendiente (Fase 2)
 - `Event` — pendiente
-- `Notification` — tipo definido en esta doc, tabla y UI pendientes
 - Campos de contrato/pago en `HackerHouse` — pendiente (Fase 2)
 - Filtros on-chain en `HackerHouse` — pendiente (Fase 2)
+- Tipos de notificación `payment_confirmed`, `refund_executed`, `team_complete` — pendiente (Fase 2)
 
 ---
 
@@ -285,11 +437,11 @@ type Notification = {
 
 | Tabla | Descripción |
 |---|---|
-| `users` | Datos del builder: handle, bio, habilidades, arquetipo, wallet, links, avatar |
-| `hack_spaces` | Proyectos virtuales con filtros, estados y evento vinculado |
-| `hacker_houses` | Espacios físicos: ciudad, fechas, modalidad de pago, evento vinculado |
+| `users` | Datos del builder: handle, bio, habilidades, arquetipo, wallet, links, avatar, `talent_tags text[]`, `talent_credentials jsonb` |
+| `hack_spaces` | Proyectos virtuales con filtros, estados, evento vinculado y coordenadas `lat/lng` (geocodificadas) |
+| `hacker_houses` | Espacios fisicos: ciudad, fechas, modalidad de pago, evento vinculado y coordenadas `lat/lng` (geocodificadas) |
 | `applications` | Solicitudes de ingreso a hack spaces y hacker houses |
-| `friendships` | Relaciones entre builders |
-| `organizations` | Entidades verificadas para Hacker Houses patrocinadas |
-| `notifications` | Registro de eventos: aplicaciones, pagos, amistades |
-| `events` | Eventos externos curados con builders que marcaron asistencia |
+| `friendships` | Relaciones entre builders — ✅ implementada con constraint unique y no-self |
+| `organizations` | Entidades verificadas para Hacker Houses patrocinadas — pendiente |
+| `notifications` | Registro de eventos: aplicaciones, amistades — ✅ implementada |
+| `events` | Eventos externos curados con builders que marcaron asistencia — pendiente |

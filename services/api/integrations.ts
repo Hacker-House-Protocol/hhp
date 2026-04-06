@@ -4,13 +4,19 @@ import { useQueryClient } from "@tanstack/react-query"
 import { genericAuthRequest } from "@/lib/api-client"
 import { useAppMutation } from "@/lib/query-hooks"
 import { queryKeys } from "@/lib/query-keys"
-import type { POAP } from "@/lib/types"
+import type { POAP, TalentCredential } from "@/lib/types"
+
+interface TalentProtocolResponse {
+  talent_protocol_score: number | null
+  talent_tags: string[]
+  talent_credentials: TalentCredential[]
+}
 
 export const useImportTalentScore = () => {
   const queryClient = useQueryClient()
-  return useAppMutation<undefined, { talent_protocol_score: number | null }>({
+  return useAppMutation<undefined, TalentProtocolResponse>({
     fetcher: async () => {
-      return await genericAuthRequest<{ talent_protocol_score: number | null }>(
+      return await genericAuthRequest<TalentProtocolResponse>(
         "post",
         "/api/integrations/talent-protocol",
       )

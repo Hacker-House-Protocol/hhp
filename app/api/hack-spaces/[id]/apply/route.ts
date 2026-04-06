@@ -68,6 +68,7 @@ export async function POST(
       hack_space_id: hackSpaceId,
       applicant_id: user.id,
       message: parsed.data.message ?? null,
+      target_type: "hack_space",
     })
     .select()
     .single()

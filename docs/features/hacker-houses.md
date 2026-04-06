@@ -65,6 +65,8 @@ Formulario multi-step de 4 pasos implementado en `app/(protected)/dashboard/hack
 - La Hacker House es: `before · during · after` — multi-select pills, permite seleccionar varios (`event_timing: string[]`)
 
 > Si está vinculada a un evento, aparece destacada en el mapa. Los builders que siguen ese evento la ven en su feed con prioridad.
+>
+> **Geocodificación automática:** Al crear o editar una Hacker House con `city` y `country`, las coordenadas `lat/lng` se generan automáticamente via Nominatim (OpenStreetMap). La función `geocodeAndUpdate` en `lib/geocode.ts` es fire-and-forget — no bloquea la respuesta. Las coordenadas permiten mostrar la house en el mapa interactivo (`/dashboard/map`).
 
 ---
 
@@ -116,7 +118,7 @@ Soporta ambas entidades sin romper FK integrity:
 - Código de Hack Spaces no cambia — `hack_space_id` sigue igual.
 
 ### DB: tabla `hacker_houses`
-Columnas de `includes` como booleanas individuales (no JSONB). `images` como `text[]`. `modality` con default `'free'`.
+Columnas de `includes` como booleanas individuales (no JSONB). `images` como `text[]`. `modality` con default `'free'`. Columnas `lat double precision` y `lng double precision` (nullable) — geocodificadas automáticamente al crear/editar.
 
 ### Participantes
 - El creador cuenta como participante #1 — su `avatar_url` aparece primero
@@ -236,6 +238,8 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 | `useReviewHackerHouseApplication(id)` | PATCH — aceptar/rechazar aplicación. |
 | `useUploadHackerHouseImage()` | POST FormData — subir imagen, retorna `{ image_url }`. |
 
+> **Pendiente:** `useMyHackerHouses(creatorId)` no existe todavía. Hack Spaces tiene su equivalente (`useMyHackSpaces` en `services/api/hack-spaces.ts`), pero Hacker Houses carece de este hook. Es necesario para mostrar "Mis Hacker Houses" en la sección Activity del perfil del builder. Bloqueante para esa feature.
+
 ---
 
 ## Estado actual (marzo 2026)
@@ -250,6 +254,7 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 - Upload de imágenes a Supabase Storage
 
 **Pendiente:**
+- Hook `useMyHackerHouses(creatorId)` en `services/api/hacker-houses.ts` — bloquea "Hacker Houses in profile Activity"
 - Modalidades de pago (`paid`, `staking`) — Fase 2
 - Filtros on-chain (POAPs, NFTs, Talent Score) — Fase 2
 - Key NFT por cupo — Fase 2

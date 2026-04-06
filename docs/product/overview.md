@@ -55,11 +55,14 @@ Grupos de builders que forman organizaciones propias. Fuera del alcance del MVP.
 |---|---|
 | Auth | Privy — login social + wallets + embedded wallet (API keys pendientes) |
 | Backend / DB | Supabase — Postgres + RLS + Edge Functions + Realtime |
-| Frontend | Next.js + TypeScript (App Router) — deploy en Vercel |
+| Frontend | Next.js 16 App Router · React 19 · TypeScript strict · Tailwind CSS v4 — deploy en Vercel |
 | Blockchain | Ethereum Mainnet via Alchemy RPC. Smart contract Solidity/Hardhat (Fase 2) |
-| Mapa | Leaflet + OpenStreetMap |
-| ORM / Validación | Prisma + Zod |
-| Integraciones | Talent Protocol · POAP · Luma |
+| Mapa | Leaflet + CARTO (tiles) + Nominatim (geocoding) |
+| Validación | Zod (DB access via Supabase JS client — no ORM) |
+| Estado servidor | TanStack Query (client) · axios (HTTP) |
+| Formularios | react-hook-form + @hookform/resolvers (Zod) |
+| UI | shadcn/ui (Radix primitives) · sonner (toasts) · nuqs (URL state) |
+| Integraciones | Talent Protocol (score + skill tags + credentials) · POAP · Luma |
 
 ---
 
@@ -68,7 +71,7 @@ Grupos de builders que forman organizaciones propias. Fuera del alcance del MVP.
 | Fase | Foco |
 |---|---|
 | **Fase 0** | Repo, design system, dominio y handles |
-| **Fase 1 — MVP Core** | Auth + Cypher Identity + Hack Spaces + Hacker Houses gratuitas + Mapa + Matching + Notificaciones |
+| **Fase 1 — MVP Core** | Auth + Cypher Identity + Hack Spaces + Hacker Houses gratuitas + Mapa + Matching + Notificaciones + Builder Discovery + Friendships |
 | **Fase 2 — Pagos On-chain** | Smart contract auditado + Hacker Houses de pago + Key NFT + POAPs propios + Staking + Organizaciones + Filtros on-chain |
 | **V2** | Chat interno + Comunidades + Cypher Kittens NFT + Analytics + EVVM Name Service |
 | **V3** | ZK Matching privado + ZK Identity |

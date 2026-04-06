@@ -32,7 +32,10 @@ Las superficies están escalonadas por luminosidad (L) para crear profundidad si
 |---|---|---|---|
 | `--foreground` | `oklch(0.96 0.01 277)` | 96% | Texto principal — contraste ~14:1 sobre background |
 | `--card-foreground` | `oklch(0.96 0.01 277)` | 96% | Texto dentro de cards |
+| `--popover-foreground` | `oklch(0.96 0.01 277)` | 96% | Texto dentro de popovers |
+| `--secondary-foreground` | `oklch(0.96 0.01 277)` | 96% | Texto sobre secondary |
 | `--muted-foreground` | `oklch(0.62 0.03 278)` | 62% | Labels, metadata, texto de apoyo — ~6.2:1 |
+| `--accent-foreground` | `oklch(0.96 0.01 277)` | 96% | Texto sobre accent |
 
 ### Brand — Primary
 
@@ -49,14 +52,30 @@ Las superficies están escalonadas por luminosidad (L) para crear profundidad si
 | Token CSS | oklch | Uso |
 |---|---|---|
 | `--visionary` | `oklch(0.52 0.24 333)` | Magenta — bordes de avatar, badges, highlights |
+| `--visionary-foreground` | `oklch(0.96 0.01 277)` | Blanco — contraste ~6:1 sobre magenta L=52 |
 | `--strategist` | `oklch(0.68 0.14 279)` | Lavender — bordes de avatar, badges, highlights |
+| `--strategist-foreground` | `oklch(0.09 0.04 277)` | Oscuro — contraste ~8:1 sobre lavender L=68 |
 | `--builder-archetype` | `oklch(0.84 0.15 140)` | Green — bordes de avatar, badges, highlights |
+| `--builder-foreground` | `oklch(0.09 0.04 277)` | Oscuro — contraste ~10:1 sobre green L=84 |
 
 ### Utilidades
 
 | Token CSS | oklch | Uso |
 |---|---|---|
 | `--destructive` | `oklch(0.577 0.245 27.325)` | Errores, acciones destructivas |
+
+### Sidebar
+
+| Token CSS | oklch | Uso |
+|---|---|---|
+| `--sidebar` | `oklch(0.11 0.05 276)` | Fondo sidebar — ligeramente más claro que background |
+| `--sidebar-foreground` | `oklch(0.96 0.01 277)` | Texto sidebar — igual que foreground |
+| `--sidebar-primary` | `oklch(0.62 0.26 295)` | Elemento activo sidebar — igual que primary |
+| `--sidebar-primary-foreground` | `oklch(0.09 0.04 277)` | Texto sobre sidebar-primary |
+| `--sidebar-accent` | `oklch(0.22 0.14 290)` | Hover/active state sidebar — purple-tinted |
+| `--sidebar-accent-foreground` | `oklch(0.96 0.01 277)` | Texto sobre sidebar-accent |
+| `--sidebar-border` | `oklch(0.28 0.06 276)` | Bordes sidebar — igual que border |
+| `--sidebar-ring` | `oklch(0.62 0.26 295)` | Focus ring sidebar — igual que ring |
 
 ---
 

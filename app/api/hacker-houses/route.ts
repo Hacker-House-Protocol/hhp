@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { privy } from "@/lib/privy"
 import { supabaseServer } from "@/lib/supabase-server"
 import { createHackerHouseSchema } from "@/lib/schemas/hacker-house"
+import { geocodeAndUpdate } from "@/lib/geocode"
 
 async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -38,7 +39,10 @@ export async function GET(req: NextRequest) {
   }
 
   if (q) {
-    query = query.or(`name.ilike.%${q}%,city.ilike.%${q}%`)
+    const sanitized = q.replace(/[%_,()]/g, "")
+    if (sanitized) {
+      query = query.or(`name.ilike.%${sanitized}%,city.ilike.%${sanitized}%`)
+    }
   }
 
   query = query.range(offset, offset + limit - 1)
@@ -154,6 +158,8 @@ export async function POST(req: NextRequest) {
     console.error("[POST /api/hacker-houses]", error)
     return NextResponse.json({ message: "Database error" }, { status: 500 })
   }
+
+  geocodeAndUpdate("hacker_houses", data.id, fields.city, fields.country)
 
   const hackerHouse = {
     ...data,

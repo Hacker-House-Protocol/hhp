@@ -5,12 +5,12 @@
 | Tab | Ícono | Contenido |
 |---|---|---|
 | Home | Casa | Dashboard — CypherIdentityCard + HackSpacesFeed |
-| Map | Pin | Mapa — pendiente |
+| Map | Pin | Mapa interactivo — Leaflet dark tiles, marcadores de Hacker Houses y Hack Spaces vinculados a eventos, filtros por tipo ✅ |
 | **Create +** | Plus central (botón circular) | Modal: elegir Hack Space o Hacker House |
-| Builders | Personas | Explorar builders — pendiente |
+| Builders | Personas | Explorar builders — listado con filtros, sugerencias y cards ✅ |
 | Profile | Avatar (kitten) | Cypher identity, skills, on-chain, Hack Spaces activos |
 
-> En mobile el bottom nav muestra: Home · Map · **+** · Builders · Profile. No incluye Hack Spaces, Hacker Houses ni Notifications (solo accesibles en sidebar desktop o desde Home).
+> En mobile el bottom nav muestra: Home · Map · **+** · Builders · Profile. No incluye Hack Spaces, Hacker Houses ni Notifications (solo accesibles en sidebar desktop o desde sus respectivas listado pages).
 
 ## Flujo Principal
 
@@ -45,10 +45,11 @@ app/
       hacker-houses/[id]/page.tsx     → /dashboard/hacker-houses/[id]
       hacker-houses/[id]/edit/page.tsx → /dashboard/hacker-houses/[id]/edit
       hacker-houses/create/page.tsx   → /dashboard/hacker-houses/create
-      map/page.tsx                    → /dashboard/map — pendiente
-      builders/page.tsx               → /dashboard/builders — UI stub (search bar + "Coming soon")
+      map/page.tsx                    → /dashboard/map — mapa interactivo con Leaflet ✅
+      builders/page.tsx               → /dashboard/builders — listado completo con filtros y sugerencias ✅
+      builders/[username]/page.tsx    → /dashboard/builders/[username] — perfil público ✅
       profile/page.tsx                → /dashboard/profile
-      notifications/page.tsx          → /dashboard/notifications — "Coming soon"
+      notifications/page.tsx          → /dashboard/notifications — centro de notificaciones ✅
 ```
 
 ## Todas las Rutas del MVP
@@ -68,10 +69,10 @@ app/
 | `/dashboard/hacker-houses/create` | Formulario de creación multi-paso |
 | `/dashboard/hacker-houses/[id]/edit` | Editar Hacker House (solo creador) |
 | `/dashboard/hacker-houses/[id]/payment` | Pago grupal, split, estado del contrato — Fase 2 — pendiente |
-| `/dashboard/builders` | Explorar builders, matching, sugerencias — pendiente (solo search bar) |
-| `/dashboard/builders/[username]` | Perfil público de un builder — pendiente |
-| `/dashboard/profile` | Mi Cypher Identity, skills, on-chain, Hack Spaces activos |
-| `/dashboard/notifications` | Centro de notificaciones — pendiente ("Coming soon") |
+| `/dashboard/builders` | Explorar builders — ✅ implementado: listado paginado, filtro por arquetipo, search, carrusel de sugerencias algorítmicas |
+| `/dashboard/builders/[username]` | Perfil público de un builder — ✅ implementado (usa `ProfileView` con `isOwner=false`, `ConnectButton`) |
+| `/dashboard/profile` | Mi Cypher Identity, skills, on-chain (Talent Score + Tags + POAPs), Hack Spaces activos |
+| `/dashboard/notifications` | Centro de notificaciones — ✅ implementado: listado paginado, mark as read, mark all as read, badge de unread |
 
 ## Pantalla: /dashboard — Estado actual (marzo 2026)
 
@@ -98,29 +99,36 @@ Orden de los carruseles cuando estén implementados (priorizados por relevancia)
 
 Ver detalle completo en [`docs/features/onboarding.md`](../features/onboarding.md).
 
-## Pantalla: /map
+## Pantalla: /map — ✅ Implementado
 
-- Vista alternativa accesible desde el bottom nav. No es la vista por defecto.
-- **Macro** (mundo): estilo pixel art. Muestra eventos globales como pins.
-- **Micro** (ciudad): Leaflet + OSM en tema oscuro. Pins de houses y builders.
-- Al tocar un pin → bottom sheet con resumen del evento/house y builders de tu red que van.
-- Filtros: eventos / houses / builders / todo.
+Mapa interactivo full-screen accesible desde el bottom nav (mobile) y sidebar (desktop).
+
+- **Tiles**: CARTO dark (`basemaps.cartocdn.com/dark_all`) — tema oscuro consistente con el design system.
+- **Vista inicial**: centrado en `[20, 0]` zoom 2 (vista mundial).
+- **Marcadores**: iconos circulares con `DivIcon` de Leaflet. `Building2` para Hacker Houses, `Code` para Hack Spaces. Color del borde/fondo según estado (`open` = primary, `full` = builder-archetype, `active/in_progress` = strategist).
+- **Filtros**: pills flotantes centrados arriba del mapa — `All · Hacker Houses · Hack Spaces`. Toggle activo con borde y fondo primary.
+- **Popups**: al hacer click en un marcador, popup con datos clave (nombre, ciudad, evento, capacidad/miembros, imagen).
+- **Datos**: `GET /api/map/markers` — retorna Hacker Houses con coordenadas (`open/full/active`) y Hack Spaces con coordenadas **solo si están vinculados a un evento** (`open/full/in_progress`).
+- **Estado vacío**: overlay centrado con mensaje contextual según filtro activo.
+- **SSR**: `dynamic(() => import(...), { ssr: false })` — Leaflet se carga solo en cliente.
+- **Geocodificación**: las coordenadas `lat/lng` se generan automáticamente al crear/editar via Nominatim OSM (ver `lib/geocode.ts`). Fire-and-forget — no bloquea la respuesta.
 
 ## Estado actual (marzo 2026)
 
 **Implementado:**
-- `/dashboard` — layout con CypherIdentityCard + HackSpacesFeed, mobile top bar con Bell
+- `/dashboard` — layout con CypherIdentityCard + HackSpacesFeed, mobile top bar con Bell + NotificationBadge
 - `/dashboard/hack-spaces` — listado, filtros, detalle, create, apply, manage applications
 - `/dashboard/hacker-houses` — listado, filtros, detalle, create, apply, manage applications
-- `/dashboard/profile` — perfil propio con edit mode
-- `/onboarding` — wizard de 4 pasos + pantalla Scanning condicional
+- `/dashboard/profile` — perfil propio con edit mode, Talent Tags, credentials
+- `/dashboard/builders/[username]` — perfil publico con `ProfileView` (`isOwner=false`) + `ConnectButton` (friendship)
+- `/dashboard/builders` — listado paginado con filtros (archetype, search), carrusel de sugerencias algoritmicas, `BuilderCard` con `ConnectButton`
+- `/dashboard/notifications` — centro de notificaciones: listado paginado, mark individual/all as read, badge de unread en Bell
+- `/onboarding` — wizard de 4 pasos + pantalla Scanning condicional (importa score, tags y credentials de Talent Protocol)
 - Layout protegido: `AppSidebar` (desktop) + `BottomNav` (mobile) + auth guard
 
+- `/dashboard/map` — mapa interactivo con Leaflet: Hacker Houses + Hack Spaces vinculados a eventos, filtros por tipo, popups, geocodificación automática
+
 **Pendiente:**
-- `/dashboard/map` — ruta existe, contenido no implementado
-- `/dashboard/builders` — solo search bar visible, sin resultados reales
-- `/dashboard/builders/[username]` — ruta no implementada
-- `/dashboard/notifications` — muestra "Coming soon"
 - `/dashboard/hacker-houses/[id]/payment` — Fase 2
 - Carruseles personalizados en `/dashboard` — pendiente
 

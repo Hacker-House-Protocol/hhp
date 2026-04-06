@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { privy } from "@/lib/privy"
 import { supabaseServer } from "@/lib/supabase-server"
 import { updateHackerHouseSchema } from "@/lib/schemas/hacker-house"
+import { geocodeAndUpdate } from "@/lib/geocode"
 
 async function getPrivyUserId(req: NextRequest): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace("Bearer ", "")
@@ -74,7 +75,7 @@ export async function PATCH(
 
   const { data: hackerHouse } = await supabaseServer
     .from("hacker_houses")
-    .select("id, creator_id")
+    .select("id, creator_id, city, country")
     .eq("id", id)
     .single()
 
@@ -122,6 +123,14 @@ export async function PATCH(
   if (error) {
     console.error("[PATCH /api/hacker-houses/:id]", error)
     return NextResponse.json({ message: error.message }, { status: 500 })
+  }
+
+  if (cleaned.city !== undefined || cleaned.country !== undefined) {
+    const finalCity = (cleaned.city as string | null) ?? hackerHouse.city
+    const finalCountry = (cleaned.country as string | null) ?? hackerHouse.country
+    if (finalCity && finalCountry) {
+      geocodeAndUpdate("hacker_houses", id, finalCity, finalCountry)
+    }
   }
 
   return NextResponse.json({ hacker_house: { ...data, participants: [], participants_count: 1 } })

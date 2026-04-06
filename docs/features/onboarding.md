@@ -44,8 +44,10 @@ Inmediatamente después del auth, la plataforma importa el historial on-chain de
 
 | Dato | Fuente | Comportamiento si falla |
 |---|---|---|
-| POAPs | POAP API | Continúa sin POAPs — se pueden importar después desde el perfil |
-| Talent Protocol score | Talent Protocol API | Continúa sin score — campo queda vacío |
+| POAPs | POAP API | Continua sin POAPs — se pueden importar despues desde el perfil |
+| Talent Protocol score | Talent Protocol API (`/scores`) | Continua sin score — campo queda vacio |
+| Talent Tags (skill tags) | Talent Protocol API (`/profile`) | Continua sin tags — array vacio |
+| Talent Credentials | Talent Protocol API (`/credentials`) | Continua sin credentials — array vacio |
 
 **UX:** Se muestra una pantalla transitoria breve *"Scanning your on-chain history..."* mientras la importación corre en background. Avanza automáticamente sin esperar el resultado — nunca bloquea el flujo. El objetivo es hacer visible que el historial on-chain del builder es parte de su identidad en el protocolo.
 
@@ -56,8 +58,13 @@ Inmediatamente después del auth, la plataforma importa el historial on-chain de
 **Arquitectura de las llamadas:** Las API keys (`TALENT_PROTOCOL_APIKEY`, `POAP_APIKEY`) viven en `env.server.ts` y nunca se exponen al cliente. El flujo es:
 ```
 Browser → POST /api/integrations/talent-protocol → Next.js server (con API key) → api.talentprotocol.com
+  ├── GET /scores?id={wallet}&account_source=wallet     → talent_protocol_score
+  ├── GET /profile?id={wallet}&account_source=wallet    → talent_tags
+  └── GET /credentials?id={wallet}&account_source=wallet → talent_credentials
 Browser → POST /api/integrations/poap           → Next.js server (con API key) → api.poap.tech
 ```
+
+La llamada a Talent Protocol ejecuta los 3 endpoints en paralelo via `Promise.allSettled` y persiste `talent_protocol_score`, `talent_tags` (text[]) y `talent_credentials` (jsonb) en la tabla `users`.
 
 **Fase 2 (futura):** Un paso dedicado donde el builder puede ver lo que se importó ("We found 12 POAPs and your Builder Score is 847") y conectar manualmente si no se detectó nada. Esto activa `is_verified: true` en el perfil.
 
@@ -122,7 +129,7 @@ Schema: `contextSchema` en `lib/schemas/onboarding.ts`.
 
 ## Datos que se crean al completar el onboarding
 
-Se actualiza la fila en `profiles` de Supabase con:
+Se actualiza la fila en `users` de Supabase con:
 
 | Campo | Origen |
 |---|---|
@@ -132,8 +139,10 @@ Se actualiza la fila en `profiles` de Supabase con:
 | `skills` | Step 3 |
 | `bio`, `languages`, `region`, `country`, `city`, `timezone` | Step 4 (si no hizo skip) |
 | `github_url`, `twitter_url`, `farcaster_url` | Step 4 (si no hizo skip) |
-| `poaps` | Importación automática background |
-| `talent_protocol_score` | Importación automática background |
+| `poaps` | Importacion automatica background |
+| `talent_protocol_score` | Importacion automatica background (Talent Protocol `/scores`) |
+| `talent_tags` | Importacion automatica background (Talent Protocol `/profile`) |
+| `talent_credentials` | Importacion automatica background (Talent Protocol `/credentials`) |
 | `is_verified` | `false` hasta Fase 2 |
 
 ---
@@ -163,7 +172,7 @@ Se actualiza la fila en `profiles` de Supabase con:
 **Implementado:**
 - Wizard de 4 pasos: Archetype → Identity → Skills → Context
 - Pantalla de scanning condicional (`StepScanning`) — solo para wallets externas con imports pendientes
-- Importación automática de Talent Protocol score y POAPs en background
+- Importacion automatica de Talent Protocol (score + tags + credentials) y POAPs en background
 - Persistencia del paso actual en `profile.onboarding_step` — permite retomar si se abandona
 - Validación de handle único con error inline
 - Skip en Step 4 (Context)

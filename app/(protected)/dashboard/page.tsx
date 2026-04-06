@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useQueryClient } from "@tanstack/react-query"
 import { Bell } from "lucide-react"
+import { NotificationBadge } from "../_components/notification-badge"
 import { useProfile, syncAndGetProfile } from "@/services/api/profile"
 import { queryKeys } from "@/lib/query-keys"
 import { LoadingScreen } from "@/components/loading-screen"
@@ -52,7 +53,10 @@ export default function DashboardPage() {
           aria-label="Notifications"
           className="absolute right-0 flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
         >
-          <Bell className="size-5" />
+          <span className="relative">
+            <Bell className="size-5" />
+            <NotificationBadge variant="absolute" />
+          </span>
         </Link>
       </div>
 
