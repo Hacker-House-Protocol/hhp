@@ -5,8 +5,9 @@ import { Bell } from "lucide-react"
 import { NotificationBadge } from "../_components/notification-badge"
 import { useProfile } from "@/services/api/profile"
 import { LoadingScreen } from "@/components/loading-screen"
-import { CypherIdentityCard } from "./_components/cypher-identity-card"
 import { HackSpacesFeed } from "./_components/hack-spaces-feed"
+import { HackerHousesFeed } from "./_components/hacker-houses-feed"
+import { SuggestedBuildersFeed } from "./_components/suggested-builders-feed"
 import { PageContainer } from "./_components/page-container"
 
 export default function DashboardPage() {
@@ -37,13 +38,10 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
-        <aside>
-          <CypherIdentityCard profile={profile} />
-        </aside>
-        <section>
-          <HackSpacesFeed currentUserId={profile.id} />
-        </section>
+      <div className="flex flex-col gap-8">
+        <HackSpacesFeed currentUserId={profile.id} />
+        <HackerHousesFeed currentUserId={profile.id} />
+        <SuggestedBuildersFeed />
       </div>
     </PageContainer>
   )

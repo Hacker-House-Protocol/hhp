@@ -1,15 +1,9 @@
 "use client"
 
+import Link from "next/link"
 import { ARCHETYPES } from "@/lib/onboarding"
-
-interface UserProfile {
-  handle: string | null
-  bio: string | null
-  archetype: string | null
-  skills: string[] | null
-  wallet_address: string | null
-  email: string | null
-}
+import { Shield } from "lucide-react"
+import type { UserProfile } from "@/lib/types"
 
 interface CypherIdentityCardProps {
   profile: UserProfile
@@ -22,13 +16,24 @@ export function CypherIdentityCard({ profile }: CypherIdentityCardProps) {
     <div className="bg-card border border-border rounded-lg p-6 flex flex-col gap-5">
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-1">
-          <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
-            Cypher Identity
-          </p>
-          <h2 className="font-display font-bold text-foreground text-xl">
-            @{profile.handle ?? "—"}
-          </h2>
+        <div className="flex items-center gap-3">
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.handle ?? "Avatar"}
+              className="size-12 rounded-full object-cover border-2 border-border shrink-0"
+            />
+          ) : (
+            <div className="size-12 rounded-full bg-muted border-2 border-border shrink-0" />
+          )}
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest">
+              Cypher Identity
+            </p>
+            <h2 className="font-display font-bold text-foreground text-xl">
+              @{profile.handle ?? "—"}
+            </h2>
+          </div>
         </div>
         {archetypeData && (
           <div
@@ -91,13 +96,43 @@ export function CypherIdentityCard({ profile }: CypherIdentityCardProps) {
         </div>
       </div>
 
-      {/* On-chain — placeholder */}
-      <div
-        className="flex items-center gap-2 px-3 py-2.5 rounded-sm border border-dashed border-border text-xs font-mono text-muted-foreground/50"
-      >
-        <span>⛓</span>
-        <span>On-chain credentials — coming soon</span>
-      </div>
+      {/* On-chain */}
+      {profile.wallet_address ? (
+        <div className="flex items-center gap-4 px-3 py-2.5 rounded-sm border border-border">
+          {profile.talent_protocol_score != null && (
+            <div className="flex flex-col items-center gap-0.5">
+              <span
+                className="text-lg font-display font-bold"
+                style={{ color: "var(--primary)" }}
+              >
+                {profile.talent_protocol_score}
+              </span>
+              <span className="text-[10px] font-mono text-muted-foreground">Talent Score</span>
+            </div>
+          )}
+          {(profile.poaps ?? []).length > 0 && (
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-lg font-display font-bold text-foreground">
+                {profile.poaps.length}
+              </span>
+              <span className="text-[10px] font-mono text-muted-foreground">POAPs</span>
+            </div>
+          )}
+          {profile.is_verified && (
+            <div className="flex items-center gap-1 ml-auto">
+              <Shield className="size-3.5 text-primary" />
+              <span className="text-[10px] font-mono text-primary">Verified</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-sm border border-dashed border-border text-xs font-mono text-muted-foreground/50 hover:text-muted-foreground hover:border-primary/30 transition-colors"
+        >
+          <span>Link wallet in profile</span>
+        </Link>
+      )}
     </div>
   )
 }

@@ -60,8 +60,9 @@ export function HackerHouseCard({ hackerHouse, currentUserId }: HackerHouseCardP
   const statusCfg = STATUS_CONFIG[hackerHouse.status] ?? STATUS_CONFIG.open
   const creatorArchetype = ARCHETYPES.find((a) => a.id === hackerHouse.creator.archetype)
 
-  // Participants: creator first then accepted participants (up to 6 total)
-  const allParticipants = [hackerHouse.creator, ...(hackerHouse.participants ?? [])]
+  // Participants: creator first then accepted participants (deduplicated, up to 6 total)
+  const raw = [hackerHouse.creator, ...(hackerHouse.participants ?? [])]
+  const allParticipants = raw.filter((p, i, arr) => arr.findIndex((x) => x.id === p.id) === i)
   const visibleParticipants = allParticipants.slice(0, 6)
   const extraParticipants = hackerHouse.participants_count - visibleParticipants.length
 
@@ -83,7 +84,7 @@ export function HackerHouseCard({ hackerHouse, currentUserId }: HackerHouseCardP
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/30 transition-all duration-200">
+    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/30 transition-all duration-200 h-full">
       {/* Image carousel */}
       <div className="relative h-52 w-full overflow-hidden group/img">
         {images.length > 0 ? (
@@ -231,7 +232,7 @@ export function HackerHouseCard({ hackerHouse, currentUserId }: HackerHouseCardP
                 const archetype = ARCHETYPES.find((a) => a.id === p.archetype)
                 return (
                   <div
-                    key={p.id ?? i}
+                    key={`${p.id}-${i}`}
                     className="size-6 rounded-full overflow-hidden border-2 -ml-1 first:ml-0 bg-muted flex items-center justify-center shrink-0"
                     style={
                       archetype

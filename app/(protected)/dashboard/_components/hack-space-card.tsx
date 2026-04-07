@@ -58,7 +58,7 @@ export function HackSpaceCard({
   const participants = hackSpace.participants ?? []
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/30 transition-all duration-200">
+    <div className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:border-primary/30 transition-all duration-200 h-full">
       {/* Cover image */}
       <div className="relative h-48 w-full overflow-hidden">
         {hackSpace.image_url ? (

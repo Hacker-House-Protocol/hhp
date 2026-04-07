@@ -17,11 +17,56 @@ async function getPrivyUserId(req: NextRequest): Promise<string | null> {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
+  const creatorId = searchParams.get("creator_id")
   const status = searchParams.get("status")
   const profileSought = searchParams.get("profile_sought")
   const q = searchParams.get("q")
   const limit = parseInt(searchParams.get("limit") ?? "12", 10)
   const offset = parseInt(searchParams.get("offset") ?? "0", 10)
+
+  type Participant = { id: string; handle: string | null; archetype: string | null; avatar_url: string | null }
+
+  async function enrichWithParticipants(houses: { id: string; creator: Participant }[]) {
+    if (!houses.length) return houses
+    const ids = houses.map((h) => h.id)
+    const { data: apps } = await supabaseServer
+      .from("applications")
+      .select("hacker_house_id, applicant:users!applicant_id(id, handle, archetype, avatar_url)")
+      .in("hacker_house_id", ids)
+      .eq("status", "accepted")
+      .eq("target_type", "hacker_house")
+    const byHouse: Record<string, Participant[]> = {}
+    for (const app of apps ?? []) {
+      const houseId = app.hacker_house_id as string
+      if (!byHouse[houseId]) byHouse[houseId] = []
+      byHouse[houseId].push(app.applicant as unknown as Participant)
+    }
+    return houses.map((house) => {
+      const accepted = byHouse[house.id] ?? []
+      return {
+        ...house,
+        participants: [house.creator, ...accepted].slice(0, 6),
+        participants_count: accepted.length + 1,
+      }
+    })
+  }
+
+  // Creator-specific query (no pagination)
+  if (creatorId) {
+    const { data, error } = await supabaseServer
+      .from("hacker_houses")
+      .select(`*, creator:users!creator_id(id, handle, archetype, avatar_url)`)
+      .eq("creator_id", creatorId)
+      .in("status", ["open", "full", "active"])
+      .order("created_at", { ascending: false })
+
+    if (error) {
+      console.error("[GET /api/hacker-houses] creator_id filter", error)
+      return NextResponse.json({ message: "Database error" }, { status: 500 })
+    }
+
+    return NextResponse.json({ hacker_houses: await enrichWithParticipants(data ?? []) })
+  }
 
   let query = supabaseServer
     .from("hacker_houses")
@@ -54,41 +99,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "Database error" }, { status: 500 })
   }
 
-  const houses = data ?? []
-
-  // Fetch accepted participants for each house
-  let participantsByHouse: Record<string, { id: string; handle: string | null; archetype: string | null; avatar_url: string | null }[]> = {}
-
-  if (houses.length > 0) {
-    const houseIds = houses.map((h) => h.id)
-    const { data: apps } = await supabaseServer
-      .from("applications")
-      .select("hacker_house_id, applicant:users!applicant_id(id, handle, archetype, avatar_url)")
-      .in("hacker_house_id", houseIds)
-      .eq("status", "accepted")
-      .eq("target_type", "hacker_house")
-
-    if (apps) {
-      for (const app of apps) {
-        const houseId = app.hacker_house_id as string
-        if (!participantsByHouse[houseId]) {
-          participantsByHouse[houseId] = []
-        }
-        participantsByHouse[houseId].push(
-          app.applicant as unknown as { id: string; handle: string | null; archetype: string | null; avatar_url: string | null }
-        )
-      }
-    }
-  }
-
-  const hackerHouses = houses.map((house) => {
-    const acceptedParticipants = participantsByHouse[house.id] ?? []
-    return {
-      ...house,
-      participants: acceptedParticipants.slice(0, 6),
-      participants_count: acceptedParticipants.length + 1, // +1 for creator
-    }
-  })
+  const hackerHouses = await enrichWithParticipants(data ?? [])
 
   return NextResponse.json({ hacker_houses: hackerHouses, total: count ?? 0, offset, limit })
 }

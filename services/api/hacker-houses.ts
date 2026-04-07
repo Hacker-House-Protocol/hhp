@@ -38,6 +38,20 @@ export const useFilteredHackerHouses = (filters: HackerHouseListParams) =>
     },
   })
 
+export const useMyHackerHouses = (creatorId: string) =>
+  useAppQuery<HackerHouse[]>({
+    fetcher: async () => {
+      const { hacker_houses } = await genericAuthRequest<{
+        hacker_houses: HackerHouse[]
+      }>("get", "/api/hacker-houses", {
+        creator_id: creatorId,
+      })
+      return hacker_houses ?? []
+    },
+    queryKey: [queryKeys.hackerHouses, creatorId],
+    enabled: !!creatorId,
+  })
+
 export const useHackerHouse = (id: string) =>
   useAppQuery<HackerHouse>({
     fetcher: async () => {

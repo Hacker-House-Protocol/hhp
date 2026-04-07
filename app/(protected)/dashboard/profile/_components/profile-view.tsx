@@ -47,9 +47,9 @@ export function ProfileView({ profile, isOwner }: ProfileViewProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6">
       {/* LEFT COLUMN — sticky sidebar on desktop */}
-      <div className="flex flex-col gap-4 lg:sticky lg:top-20">
+      <div className="flex flex-col gap-6 lg:sticky lg:top-20">
         <div className="relative">
           <ProfileIdentity profile={profile} />
           <div className="absolute top-4 right-4 z-10">
@@ -91,7 +91,7 @@ export function ProfileView({ profile, isOwner }: ProfileViewProps) {
       </div>
 
       {/* RIGHT COLUMN — main content */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         <Card>
           <CardContent>
             <ProfileSkills profile={profile} />
