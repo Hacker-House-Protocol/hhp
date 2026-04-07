@@ -197,8 +197,7 @@ Se oculta automaticamente cuando el count es 0 (retorna `null`).
 ## Estado actual (abril 2026)
 
 **Implementado:**
-- `/dashboard` muestra `HackSpacesFeed` como feed principal (Hack Spaces open/full/in_progress)
-- `CypherIdentityCard` en sidebar del dashboard
+- `/dashboard` muestra 3 carruseles horizontales: `HackSpacesFeed`, `HackerHousesFeed` y `SuggestedBuildersFeed`
 - `/dashboard/builders` — listado paginado completo con filtro por arquetipo, busqueda por handle/bio, carrusel de sugerencias algoritmicas
 - `BuilderCard` — card completa con avatar, handle, archetype, bio, skills, talent tags, match info, `ConnectButton`
 - Algoritmo de matching Builder-Builder — scoring ponderado por skills, arquetipo, POAPs, talent tags, ubicacion, idiomas, talent score
@@ -209,7 +208,7 @@ Se oculta automaticamente cuando el count es 0 (retorna `null`).
 
 **Pendiente:**
 - Matching Hack Space-Builder (contenido relevante en feed) — pendiente
-- Carruseles personalizados en feed — pendiente
+- Carruseles de contexto activo, eventos proximos, ciudades activas — pendiente
 - Amigos como primera opcion al crear Hacker Houses — pendiente
 - Builders en el mapa — pendiente
 - Builders que marcaron asistencia a evento visibles en el mapa — pendiente

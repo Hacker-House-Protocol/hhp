@@ -95,11 +95,11 @@ Landing → Auth (Privy)
 ---
 
 ### 5. Builder Feed
-- Feed simple en `/dashboard` ordenado por relevancia de skills
-- No requiere algoritmo sofisticado en MVP — matching básico por `skills_needed` vs `profile.skills`
-- Muestra Hack Spaces y Hacker Houses relevantes
+- Feed en `/dashboard` con 3 carruseles horizontales: Hack Spaces, Hacker Houses y Suggested Builders
+- Hack Spaces y Hacker Houses muestran items `open/full/in_progress` (o `active` para houses)
+- Suggested Builders usa algoritmo de matching ponderado (skills, arquetipo, POAPs, tags, ubicacion, idiomas)
 
-**Criterio de aceptación**: un builder con skills `['Frontend', 'Smart Contracts']` ve Hack Spaces que buscan esas skills en su feed.
+**Criterio de aceptación**: un builder ve los 3 feeds en su dashboard con scroll horizontal, y los Suggested Builders reflejan afinidad con su perfil.
 
 ---
 
@@ -129,7 +129,7 @@ Estas features están diseñadas pero **no se implementan en MVP**. Cualquier tr
 
 ---
 
-## Estado de implementación (marzo 2026)
+## Estado de implementación (abril 2026)
 
 | Feature | Estado |
 |---|---|
@@ -138,7 +138,7 @@ Estas features están diseñadas pero **no se implementan en MVP**. Cualquier tr
 | Hack Spaces (crear, listar, aplicar, gestionar) | ✅ Implementado |
 | Perfiles de builders (propio + público) | ✅ Implementado |
 | Hacker Houses (crear, listar, aplicar, gestionar) | ✅ Implementado |
-| Builder Feed (algoritmo + carruseles) | 🟡 Parcial — solo Hack Spaces en feed, sin Hacker Houses ni carruseles personalizados |
+| Builder Feed (3 carruseles horizontales) | ✅ Implementado — Hack Spaces, Hacker Houses y Suggested Builders en scroll horizontal |
 | Builder Discovery (listado, filtros, sugerencias) | ✅ Implementado |
 | Sistema de amistad (conectar builders) | ✅ Implementado |
 | Notificaciones | ✅ Implementado |

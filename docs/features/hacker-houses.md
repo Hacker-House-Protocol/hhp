@@ -220,8 +220,17 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 | `q` | string | — | Búsqueda en `name` OR `city` (`ilike %q%`) |
 | `limit` | number | 12 | Items por página |
 | `offset` | number | 0 | Desplazamiento para paginación |
+| `creator_id` | string | — | Filtro por creador (rama separada, retorna sin paginación) |
 
-**Respuesta**: `{ hacker_houses: HackerHouse[], total: number, offset: number, limit: number }`
+**Respuesta paginada** (cuando no hay `creator_id`):
+```ts
+{ hacker_houses: HackerHouse[], total: number, offset: number, limit: number }
+```
+
+**Respuesta legacy** (cuando hay `creator_id`):
+```ts
+{ hacker_houses: HackerHouse[] }
+```
 
 ---
 
@@ -230,6 +239,7 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 | Hook | Descripción |
 |---|---|
 | `useFilteredHackerHouses(filters)` | Lista paginada con `useInfiniteQuery`. |
+| `useMyHackerHouses(creatorId)` | Lista por creador (perfil). Sin paginación. Usa `creator_id` param. |
 | `useHackerHouse(id)` | Detalle de una hacker house. |
 | `useCreateHackerHouse()` | POST — crear. |
 | `useUpdateHackerHouse(id)` | PATCH — actualizar. |
@@ -237,8 +247,6 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 | `useHackerHouseApplications(id)` | GET — listar aplicaciones (solo creador). |
 | `useReviewHackerHouseApplication(id)` | PATCH — aceptar/rechazar aplicación. |
 | `useUploadHackerHouseImage()` | POST FormData — subir imagen, retorna `{ image_url }`. |
-
-> **Pendiente:** `useMyHackerHouses(creatorId)` no existe todavía. Hack Spaces tiene su equivalente (`useMyHackSpaces` en `services/api/hack-spaces.ts`), pero Hacker Houses carece de este hook. Es necesario para mostrar "Mis Hacker Houses" en la sección Activity del perfil del builder. Bloqueante para esa feature.
 
 ---
 
@@ -252,9 +260,10 @@ Filtros en URL via `nuqs` (`useQueryStates`). Parámetros: `status`, `profile_so
 - Edición por el creador (`/dashboard/hacker-houses/[id]/edit`)
 - Transición de estados manual: `open/full → active → finished`
 - Upload de imágenes a Supabase Storage
+- Hook `useMyHackerHouses(creatorId)` — usado en perfil Activity section
+- Feed de Hacker Houses en `/dashboard` (componente `HackerHousesFeed`)
 
 **Pendiente:**
-- Hook `useMyHackerHouses(creatorId)` en `services/api/hacker-houses.ts` — bloquea "Hacker Houses in profile Activity"
 - Modalidades de pago (`paid`, `staking`) — Fase 2
 - Filtros on-chain (POAPs, NFTs, Talent Score) — Fase 2
 - Key NFT por cupo — Fase 2

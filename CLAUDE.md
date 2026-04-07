@@ -21,6 +21,7 @@ All product and design documentation lives in `docs/`. **Always read the relevan
 | [`docs/features/hack-spaces.md`](./docs/features/hack-spaces.md) | Main feature — forms, states, UI card |
 | [`docs/features/hacker-houses.md`](./docs/features/hacker-houses.md) | Hacker Houses — modalities, flow, UI card |
 | [`docs/features/matching-and-feed.md`](./docs/features/matching-and-feed.md) | Matching algorithm, feed, Builder card |
+| [`docs/features/link-wallet.md`](./docs/features/link-wallet.md) | Link wallet from profile, auto-import on-chain data |
 
 ## Skills — detailed rules for implementation
 

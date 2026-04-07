@@ -4,7 +4,7 @@
 
 | Tab | Ícono | Contenido |
 |---|---|---|
-| Home | Casa | Dashboard — CypherIdentityCard + HackSpacesFeed |
+| Home | Casa | Dashboard — 3 feeds: HackSpacesFeed + HackerHousesFeed + SuggestedBuildersFeed |
 | Map | Pin | Mapa interactivo — Leaflet dark tiles, marcadores de Hacker Houses y Hack Spaces vinculados a eventos, filtros por tipo ✅ |
 | **Create +** | Plus central (botón circular) | Modal: elegir Hack Space o Hacker House |
 | Builders | Personas | Explorar builders — listado con filtros, sugerencias y cards ✅ |
@@ -58,7 +58,7 @@ app/
 |---|---|
 | `/` | Landing comercial |
 | `/onboarding` | Registro + Cypher Identity (4 pasos) |
-| `/dashboard` | Feed principal — carruseles personalizados (entry point post-login) |
+| `/dashboard` | Feed principal — 3 carruseles horizontales: Hack Spaces, Hacker Houses, Suggested Builders (entry point post-login) |
 | `/dashboard/map` | Mapa interactivo filtrable (Leaflet + OSM) |
 | `/dashboard/hack-spaces` | Listado de Hack Spaces con filtros |
 | `/dashboard/hack-spaces/[id]` | Detalle, aplicar, ver equipo, ver evento vinculado |
@@ -74,26 +74,25 @@ app/
 | `/dashboard/profile` | Mi Cypher Identity, skills, on-chain (Talent Score + Tags + POAPs), Hack Spaces activos |
 | `/dashboard/notifications` | Centro de notificaciones — ✅ implementado: listado paginado, mark as read, mark all as read, badge de unread |
 
-## Pantalla: /dashboard — Estado actual (marzo 2026)
+## Pantalla: /dashboard — Estado actual (abril 2026)
 
 Layout actual implementado:
-- **Mobile top bar**: logo centrado + ícono Bell (link a `/dashboard/notifications`) a la derecha.
-- **Grid layout**: `grid-cols-1 lg:grid-cols-[320px_1fr]`
-- **Columna izquierda**: `CypherIdentityCard` — muestra kitten, handle, arquetipo, skills, wallet del builder autenticado.
-- **Columna derecha**: `HackSpacesFeed` — muestra los primeros Hack Spaces (open/full/in_progress).
+- **Mobile top bar**: logo centrado + icono Bell (link a `/dashboard/notifications`) con `NotificationBadge` a la derecha.
+- **Layout**: columna unica vertical con 3 carruseles horizontales apilados (`flex flex-col gap-8`).
+- **Feed 1**: `HackSpacesFeed` — Hack Spaces recientes (open/full/in_progress) en scroll horizontal. Header con contador total, "View all" link y boton "+ Create".
+- **Feed 2**: `HackerHousesFeed` — Hacker Houses recientes (open/full/active) en scroll horizontal. Mismo patron de header.
+- **Feed 3**: `SuggestedBuildersFeed` — Builders sugeridos por algoritmo de matching en scroll horizontal. "View all" link a `/dashboard/builders`.
+- Sin `CypherIdentityCard` en el dashboard — removido.
 
 ### Carruseles planificados (pendientes)
 
-Orden de los carruseles cuando estén implementados (priorizados por relevancia):
+Orden de carruseles adicionales planificados:
 
-| # | Carrusel | Lógica |
+| # | Carrusel | Logica |
 |---|---|---|
 | 1 | **Contexto activo** | Banner personalizado: 'X builders de tu red van a ETH Cannes' o 'Hay un Hack Space buscando tu skill'. |
-| 2 | Eventos próximos | Hackathons y eventos en tu región o vinculados a tus POAPs. |
-| 3 | Hack Spaces para ti | Proyectos que necesitan tus habilidades. Filtrado por skills y arquetipo. |
-| 4 | Hacker Houses | Co-livings activos en tu región o vinculados a eventos próximos. |
-| 5 | Builder Match | Builders sugeridos. Sidebar tipo X (Twitter). |
-| 6 | Ciudades activas | Ciudades con mayor actividad builder. Puerta al mapa. |
+| 2 | Eventos proximos | Hackathons y eventos en tu region o vinculados a tus POAPs. |
+| 3 | Ciudades activas | Ciudades con mayor actividad builder. Puerta al mapa. |
 
 ## Pantalla: /onboarding
 
@@ -113,10 +112,10 @@ Mapa interactivo full-screen accesible desde el bottom nav (mobile) y sidebar (d
 - **SSR**: `dynamic(() => import(...), { ssr: false })` — Leaflet se carga solo en cliente.
 - **Geocodificación**: las coordenadas `lat/lng` se generan automáticamente al crear/editar via Nominatim OSM (ver `lib/geocode.ts`). Fire-and-forget — no bloquea la respuesta.
 
-## Estado actual (marzo 2026)
+## Estado actual (abril 2026)
 
 **Implementado:**
-- `/dashboard` — layout con CypherIdentityCard + HackSpacesFeed, mobile top bar con Bell + NotificationBadge
+- `/dashboard` — 3 carruseles horizontales (HackSpacesFeed + HackerHousesFeed + SuggestedBuildersFeed), mobile top bar con Bell + NotificationBadge
 - `/dashboard/hack-spaces` — listado, filtros, detalle, create, apply, manage applications
 - `/dashboard/hacker-houses` — listado, filtros, detalle, create, apply, manage applications
 - `/dashboard/profile` — perfil propio con edit mode, Talent Tags, credentials
@@ -130,7 +129,7 @@ Mapa interactivo full-screen accesible desde el bottom nav (mobile) y sidebar (d
 
 **Pendiente:**
 - `/dashboard/hacker-houses/[id]/payment` — Fase 2
-- Carruseles personalizados en `/dashboard` — pendiente
+- Carruseles adicionales en `/dashboard` (contexto activo, eventos, ciudades) — pendiente
 
 ---
 

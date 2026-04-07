@@ -105,7 +105,8 @@ Card compacta mostrando el score numérico de Talent Protocol con glow sutil de 
 ```
 
 - Si `talent_protocol_score` es null y hay wallet: "No score found." con botón Sync.
-- Si no hay wallet: "Connect a wallet to import your Builder Score."
+- Si no hay wallet y es owner: botón "Link Wallet" — abre modal de Privy via `useLinkAccount`. Al completar: `syncAndGetProfile()` + auto-import de Talent Protocol y POAPs.
+- Si no hay wallet y no es owner: "No wallet connected."
 
 **Talent Tags — Verified Tags** (via Talent Protocol) — ✅ Implementado
 
@@ -166,9 +167,11 @@ Cards compactas de los Hack Spaces donde el builder es **creador o miembro** con
 
 Si no tiene ninguno: "No active Hack Spaces. [Create one →]" con link a `/dashboard/hack-spaces/create`.
 
-**Hacker Houses activas**
+**Hacker Houses activas** — ✅ Implementado
 
-Igual que Hack Spaces pero para Hacker Houses. Implementar cuando la feature exista.
+Cards compactas de las Hacker Houses donde el builder es **creador o miembro** con status `open | full | active`. Usa `useMyHackerHouses(profile.id)` y el componente `HackerHouseCard` existente.
+
+Si no tiene ninguna: "No active Hacker Houses. [Create one →]" con link a `/dashboard/hacker-houses/create`.
 
 ---
 
@@ -308,7 +311,8 @@ app/api/builders/
 | Item | Prioridad |
 |---|---|
 | ~~CTA "Connect" en perfil público (friendship system)~~ | ✅ Implementado — `ConnectButton` con estados Connect/Pending/Accept/Connected |
-| Hacker Houses activas en sección Activity | ~~Cuando feature Hacker Houses esté implementada~~ — Hacker Houses ya están implementadas; integrar en Activity |
+| ~~Hacker Houses activas en sección Activity~~ | ✅ Implementado — usa `useMyHackerHouses` + `HackerHouseCard` |
+| ~~Link Wallet en on-chain section~~ | ✅ Implementado — `useLinkAccount` de Privy + auto-import |
 | `is_verified` activado automáticamente tras import exitoso | Fase 2 — hoy siempre es `false` |
 | Kitten colección expandida | Bloqueado por assets |
 | ~~`/dashboard/builders/[username]` — perfil público~~ | ✅ Implementado — usa `ProfileView` con `isOwner=false`, skeleton de carga, 404 con redirect a `/dashboard/builders` |
@@ -319,14 +323,15 @@ app/api/builders/
 
 **Implementado:**
 - `/dashboard/profile` — perfil propio completo con edit mode
-- Secciones: Cypher Identity, Skills, Location & Languages, Social Links, On-chain (Talent Score + Talent Tags + POAPs), Activity (Hack Spaces del usuario)
+- Secciones: Cypher Identity, Skills, Location & Languages, Social Links, On-chain (Talent Score + Talent Tags + POAPs), Activity (Hack Spaces + Hacker Houses del usuario)
 - Talent Tags: badges verificados importados de Talent Protocol, mostrados en `ProfileTags`
 - Talent Credentials: credenciales verificadas importadas y persistidas en `talent_credentials jsonb`
 - Edit mode: archetype, bio, avatar (kitten selector), skills, languages, location, social links
 - Boton Sync de on-chain data (Talent Score + Tags + Credentials + POAPs) si hay wallet
+- Link Wallet button en on-chain section — `useLinkAccount` de Privy, auto-import tras vincular wallet
 - Skeleton de carga
 - `ConnectButton` en perfil publico — sistema de amistad completo (enviar/aceptar/rechazar/eliminar)
+- Activity section con Hack Spaces y Hacker Houses activas (usa `useMyHackSpaces` + `useMyHackerHouses`)
 
 **Pendiente:**
-- Hacker Houses activas en sección Activity
 - `is_verified` automático tras import — Fase 2

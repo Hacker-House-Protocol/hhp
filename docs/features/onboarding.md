@@ -163,6 +163,7 @@ Se actualiza la fila en `users` de Supabase con:
 - Mutaciones: `usePatchProfile` (`PATCH /api/profile`) — nunca Supabase directo desde cliente
 - Cache: TanStack Query con key `queryKeys.profile`
 - Schemas en `lib/schemas/onboarding.ts` — usar `handleSchema` (step 2) y `contextSchema` (step 4). Los schemas `profileSchema` e `identitySchema` son legacy.
+- **Onboarding guard**: el layout protegido (`app/(protected)/layout.tsx`) llama a `syncAndGetProfile()` tras autenticar. Si `onboarding_step !== "complete"`, redirige a `/onboarding`. El dashboard no se renderiza hasta que el onboarding esté completo.
 - Al completar cualquier paso: `onboarding_step` avanza en DB. Al completar step 4 o hacer skip: `router.push("/dashboard")`
 
 ---

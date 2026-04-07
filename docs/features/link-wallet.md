@@ -2,7 +2,7 @@
 
 > Allow users who signed up with email to link their crypto wallet from the profile page, then auto-import on-chain data (Talent Protocol score/tags and POAPs).
 
-**Status**: Spec written — 2026-04-06
+**Status**: ✅ Implemented — 2026-04-06
 **Complexity**: Small
 
 ---
@@ -14,29 +14,30 @@ Users who register with email (no wallet) currently see static "Connect a wallet
 ## Scope (MVP)
 
 ### In scope
-- Expose `linkWallet` from Privy via `useAuth` hook
-- Add "Link Wallet" button in `profile-onchain.tsx` when no wallet is connected
-- After successful wallet link: call `/api/auth/sync` to persist wallet address, then auto-import Talent Protocol + POAPs
-- Show importing state (spinner/animation) during the sync+import process
-- On success: on-chain section updates to show score, tags, and POAPs
-- Button should also work for users who want to change/add a wallet
+- "Link Wallet" button in `profile-onchain.tsx` when no wallet is connected (owner only)
+- Uses `useLinkAccount` from `@privy-io/react-auth` directly in the component (not via `useAuth`)
+- After successful wallet link: `syncAndGetProfile()` persists wallet address, then auto-imports Talent Protocol + POAPs via `Promise.allSettled`
+- Show importing state (spinner + "Importing...") during the sync+import process
+- On success: invalidates profile query, on-chain section updates to show score, tags, and POAPs
 
 ### Out of scope (Phase 2)
 - Unlink wallet functionality
 - Multiple wallet support
 - Wallet-specific permissions or signing
 
-## Changes needed
+## Implementation
 
 - **DB**: none — `wallet_address` column already exists in `users` table
-- **API**: none — `/api/auth/sync` already syncs wallet, `/api/integrations/talent-protocol` and `/api/integrations/poap` already handle imports
-- **UI**: modify `profile-onchain.tsx` — replace static text with interactive "Link Wallet" button + import flow
-- **Hooks**: modify `hooks/use-auth.ts` — expose `linkWallet` from `usePrivy()`
+- **API**: none — `syncAndGetProfile()` already syncs wallet, `/api/integrations/talent-protocol` and `/api/integrations/poap` already handle imports
+- **UI**: modified `profile-onchain.tsx` — added "Link Wallet" button with `useLinkAccount` hook + `onSuccess` callback for sync+import flow
+- **Hooks**: `hooks/use-auth.ts` was NOT modified — `useLinkAccount` is used directly in the component instead of going through `useAuth`
 - **Service**: none — `useImportTalentScore` and `useImportPoaps` already exist in `services/api/integrations.ts`
 
 ## Notes
 
-- Privy's `linkWallet()` opens a modal — no custom UI needed for the wallet connection itself
-- After `linkWallet()` resolves, need to call `syncAndGetProfile()` to persist the wallet address to Supabase before triggering imports
-- The `profile-onchain.tsx` component already handles the "has wallet" vs "no wallet" states — just need to add the interactive button for the "no wallet" case
+- Privy's `useLinkAccount` provides `linkWallet` — opens a modal, no custom UI needed for wallet connection
+- The `onSuccess` callback in `useLinkAccount` handles the full chain: `syncAndGetProfile()` → `Promise.allSettled([importTalent, importPoaps])` → `invalidateQueries`
+- The component tracks `isLinkingWallet` state separately from `isImporting` (Sync button state)
+- Both the Sync button and Link Wallet button are disabled while either operation is in progress
+- The button only shows for the profile owner (`isOwner`) when there is no wallet connected
 - Related features: onboarding (step-scanning does the same import), profile (on-chain section)
