@@ -1,21 +1,44 @@
 "use client"
 
 import { useState } from "react"
+import { useLinkAccount } from "@privy-io/react-auth"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useImportTalentScore, useImportPoaps } from "@/services/api/integrations"
+import { syncAndGetProfile } from "@/services/api/profile"
+import { queryKeys } from "@/lib/query-keys"
 import { PoapCard } from "./poap-card"
 import { ProfileTags } from "./profile-tags"
 import type { UserProfile } from "@/lib/types"
 
 interface ProfileOnchainProps {
   profile: UserProfile
+  isOwner: boolean
 }
 
-export function ProfileOnchain({ profile }: ProfileOnchainProps) {
+export function ProfileOnchain({ profile, isOwner }: ProfileOnchainProps) {
   const [isImporting, setIsImporting] = useState(false)
+  const [isLinkingWallet, setIsLinkingWallet] = useState(false)
   const importTalentScore = useImportTalentScore()
   const importPoaps = useImportPoaps()
+  const queryClient = useQueryClient()
+
+  const { linkWallet } = useLinkAccount({
+    onSuccess: async () => {
+      setIsLinkingWallet(true)
+      try {
+        await syncAndGetProfile()
+        await Promise.allSettled([
+          importTalentScore.mutateAsync(undefined),
+          importPoaps.mutateAsync(undefined),
+        ])
+        queryClient.invalidateQueries({ queryKey: [queryKeys.profile] })
+      } finally {
+        setIsLinkingWallet(false)
+      }
+    },
+  })
 
   async function handleReimport() {
     setIsImporting(true)
@@ -39,7 +62,7 @@ export function ProfileOnchain({ profile }: ProfileOnchainProps) {
             variant="outline"
             size="sm"
             onClick={handleReimport}
-            disabled={isImporting}
+            disabled={isImporting || isLinkingWallet}
             className="rounded-lg font-mono text-xs h-7"
           >
             {isImporting ? (
@@ -79,11 +102,30 @@ export function ProfileOnchain({ profile }: ProfileOnchainProps) {
               <span className="text-xs font-mono text-muted-foreground/40 mb-1">pts</span>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground/50 italic mt-1">
-              {profile.wallet_address
-                ? "No score found."
-                : "Connect a wallet to import your Builder Score."}
-            </p>
+            <div className="mt-1">
+              {profile.wallet_address ? (
+                <p className="text-sm text-muted-foreground/50 italic">No score found.</p>
+              ) : isOwner ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => linkWallet()}
+                  disabled={isLinkingWallet || isImporting}
+                  className="rounded-lg font-mono text-xs h-8"
+                >
+                  {isLinkingWallet ? (
+                    <>
+                      <Spinner className="mr-1.5 size-3" /> Importing...
+                    </>
+                  ) : (
+                    "Link Wallet"
+                  )}
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground/50 italic">No wallet connected.</p>
+              )}
+            </div>
           )}
           <p className="text-xs text-muted-foreground/60 font-mono">Used for team matching</p>
         </div>
@@ -107,7 +149,9 @@ export function ProfileOnchain({ profile }: ProfileOnchainProps) {
           <p className="text-sm text-muted-foreground/40 italic">
             {profile.wallet_address
               ? "No POAPs found on this wallet."
-              : "Connect a wallet to see your POAP collection."}
+              : isOwner
+                ? "Link a wallet to see your POAP collection."
+                : "No wallet connected."}
           </p>
         )}
       </div>

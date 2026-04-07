@@ -1,8 +1,11 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/use-auth"
+import { syncAndGetProfile } from "@/services/api/profile"
+import { queryKeys } from "@/lib/query-keys"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "./_components/app-sidebar"
 import { BottomNav } from "./_components/bottom-nav"
@@ -15,6 +18,8 @@ export default function ProtectedLayout({
 }) {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const [ready, setReady] = useState(false)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -22,7 +27,24 @@ export default function ProtectedLayout({
     }
   }, [isLoading, isAuthenticated, router])
 
-  if (isLoading || !isAuthenticated) {
+  useEffect(() => {
+    if (!isAuthenticated) return
+
+    syncAndGetProfile()
+      .then((profile) => {
+        queryClient.setQueryData([queryKeys.profile], profile)
+
+        if (profile.onboarding_step !== "complete") {
+          router.replace("/onboarding")
+        } else {
+          setReady(true)
+        }
+      })
+      .catch(console.error)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
+
+  if (isLoading || !isAuthenticated || !ready) {
     return <LoadingScreen message="Connecting" />
   }
 
