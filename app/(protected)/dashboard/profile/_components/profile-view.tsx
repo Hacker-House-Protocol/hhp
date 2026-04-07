@@ -100,7 +100,7 @@ export function ProfileView({ profile, isOwner }: ProfileViewProps) {
 
         <Card>
           <CardContent>
-            <ProfileOnchain profile={profile} />
+            <ProfileOnchain profile={profile} isOwner={isOwner} />
           </CardContent>
         </Card>
 
